@@ -1,11 +1,11 @@
 .navbar {
   position: fixed;
-  left: 48px;
   bottom: 48px;
   display: flex;
+  left: 0;
+  right: 0;
   align-items: center;
-  gap: 18px;
-  z-index: 10;
+  justify-content: space-evenly;
 }
 
 .navbar-item-wrap {
@@ -28,7 +28,7 @@
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #8a8a8a;
+  color: #364654;
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -40,7 +40,7 @@
 }
 
 .navbar-item.active {
-  color: #1a1a1a;
+  color: #0004ff;
   background: rgba(20, 20, 20, 0.06);
 }
 

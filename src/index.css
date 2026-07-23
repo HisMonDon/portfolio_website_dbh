@@ -14,14 +14,19 @@ body,
   height: 100%;
 }
 
+@font-face {
+  font-family: 'Gotham';
+  src: url("./assets/fonts/Gotham\ Medium.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   margin: 0;
   background: #ffffff;
   color: #1a1a1a;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-weight: 300;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Gotham', system-ui, -apple-system, sans-serif;
+
 }
 
 button {

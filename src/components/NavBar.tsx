@@ -43,4 +43,6 @@ export default function NavBar({ active, onSelect }: NavBarProps) {
       ))}
     </nav>
   )
+
 }
+
