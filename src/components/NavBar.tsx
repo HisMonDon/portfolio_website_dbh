@@ -1,4 +1,5 @@
 import './NavBar.css'
+import { useEffect, useState } from 'react'
 
 export type SectionId = 'about' | 'resume' | 'projects' | 'skills' | 'credits'
 
@@ -21,28 +22,48 @@ interface NavBarProps {
 }
 
 export default function NavBar({ active, onSelect }: NavBarProps) {
+  const [visualActive, setVisualActive] = useState<SectionId>(active)
+
+  useEffect(() => {
+    setVisualActive(active)
+  }, [active])
+
   return (
     <nav className="navbar">
-      {NAV_ITEMS.map((item, i) => (
-        <div className="navbar-item-wrap" key={item.id}>
-          <button
-            type="button"
-            className={`navbar-item${active === item.id ? ' active' : ''}`}
-            onClick={() => onSelect(item.id)}
-          >
-            {active === item.id && (
-              <>
-                <span className="navbar-item-corner tl" />
-                <span className="navbar-item-corner br" />
-              </>
-            )}
-            {item.label}
-          </button>
-          {i < NAV_ITEMS.length - 1 && <span className="navbar-tick" />}
-        </div>
-      ))}
+      {NAV_ITEMS.map((item, i) => {
+        const isActive = visualActive === item.id
+
+        return (
+          <div className="navbar-item-wrap" key={item.id}>
+            <button
+              type="button"
+              className={`navbar-item${isActive ? ' active' : ''}`}
+              onClick={() => {
+                setVisualActive(item.id)
+                onSelect(item.id)
+              }}
+              onMouseEnter={() => setVisualActive(item.id)}
+            >
+              {isActive && (
+                <>
+                  <span className="navbar-triangle-layer" aria-hidden="true">
+                    <span className="navbar-triangle one" />
+                    <span className="navbar-triangle two" />
+                    <span className="navbar-triangle three" />
+                  </span>
+                  <span className="navbar-item-corner tl" />
+                  <span className="navbar-item-corner tr" />
+                  <span className="navbar-item-corner bl" />
+                  <span className="navbar-item-corner br" />
+                </>
+              )}
+              <span className="navbar-item-label">{item.label}</span>
+            </button>
+            {i < NAV_ITEMS.length - 1 && <span className="navbar-tick" />}
+          </div>
+        )
+      })}
     </nav>
   )
 
 }
-

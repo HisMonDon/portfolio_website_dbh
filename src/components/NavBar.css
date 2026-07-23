@@ -1,70 +1,311 @@
 .navbar {
   position: fixed;
-  bottom: 48px;
-  display: flex;
+  bottom: 34px;
   left: 0;
   right: 0;
+  z-index: 20;
+  display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  height: 76px;
+  padding: 0 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(195, 225, 242, 0.72), rgba(232, 247, 255, 0.68) 36%, rgba(199, 226, 242, 0.62)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(135, 183, 208, 0.22));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    inset 0 -1px 0 rgba(76, 112, 132, 0.12);
+  backdrop-filter: blur(12px);
 }
 
 .navbar-item-wrap {
+  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: center;
+  height: 100%;
 }
 
 .navbar-tick {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   width: 1px;
-  height: 10px;
-  background: #c8c8c8;
+  height: 12px;
+  background: rgba(39, 62, 76, 0.18);
 }
 
 .navbar-item {
   position: relative;
+  isolation: isolate;
+  width: clamp(130px, 76%, 174px);
+  height: 42px;
   background: none;
   border: none;
-  padding: 10px 18px;
+  padding: 0 18px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-family: "Gotham_medium";
-  font-size: 13px;
-  letter-spacing: 2px;
+  font-size: 12px;
+  letter-spacing: 0;
   text-transform: uppercase;
-  color: #364654;
+  color: rgba(31, 39, 46, 0.7);
   cursor: pointer;
   transition:
     color 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .navbar-item:hover {
-  color: #1a1a1a;
+  color: rgba(12, 25, 35, 0.9);
 }
 
 .navbar-item.active {
-  color: #fefefe;
-  background: rgba(20, 20, 20, 0.06);
+  color: #f5fbff;
+  background:
+    linear-gradient(90deg, rgba(35, 77, 108, 0.94), rgba(28, 72, 105, 0.84)),
+    rgba(25, 69, 105, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(12, 35, 54, 0.45),
+    0 0 20px rgba(87, 150, 190, 0.2);
+}
+
+.navbar-item.active::before,
+.navbar-item.active::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 12px;
+  height: 1px;
+  background: rgba(19, 35, 48, 0.78);
+}
+
+.navbar-item.active::before {
+  left: -2px;
+}
+
+.navbar-item.active::after {
+  right: -2px;
+}
+
+.navbar-item-label {
+  position: relative;
+  z-index: 3;
+}
+
+.navbar-triangle-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.navbar-triangle {
+  position: absolute;
+  top: -8px;
+  width: 52px;
+  height: 62px;
+  opacity: 0;
+  background: linear-gradient(135deg, rgba(148, 202, 235, 0.8), rgba(7, 42, 72, 0.78));
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  animation: navbar-triangle-glitch 1.5s steps(1, end) forwards;
+}
+
+.navbar-triangle.one {
+  left: 26px;
+}
+
+.navbar-triangle.two {
+  left: 72px;
+  top: -3px;
+  width: 44px;
+  height: 54px;
+  animation-name: navbar-triangle-glitch-soft;
+}
+
+.navbar-triangle.three {
+  left: 118px;
+  top: 2px;
+  width: 38px;
+  height: 48px;
+  animation-name: navbar-triangle-glitch-faint;
 }
 
 .navbar-item-corner {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 1px solid #1a1a1a;
+  z-index: 4;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(23, 43, 58, 0.92);
 }
 
 .navbar-item-corner.tl {
-  top: 2px;
-  left: 2px;
+  top: 0;
+  left: 0;
   border-right: none;
   border-bottom: none;
 }
 
+.navbar-item-corner.tr {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.navbar-item-corner.bl {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
 .navbar-item-corner.br {
-  bottom: 2px;
-  right: 2px;
+  bottom: 0;
+  right: 0;
   border-left: none;
   border-top: none;
+}
+
+@keyframes navbar-triangle-glitch {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.96) skewX(-7deg);
+  }
+
+  8% {
+    opacity: 0.34;
+    transform: translate(-2px, 1px) scale(1.02) skewX(-9deg);
+  }
+
+  14% {
+    opacity: 0;
+    transform: translate(1px, -1px) scale(0.98) skewX(5deg);
+  }
+
+  24% {
+    opacity: 0.28;
+    transform: translate(3px, 0) scale(1) skewX(7deg);
+  }
+
+  31% {
+    opacity: 0.08;
+    transform: translate(-1px, 2px) scale(1.04) skewX(-4deg);
+  }
+
+  43% {
+    opacity: 0.24;
+    transform: translate(2px, -2px) scale(0.98) skewX(10deg);
+  }
+
+  55% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1) skewX(-3deg);
+  }
+
+  68% {
+    opacity: 0.16;
+    transform: translate(-2px, 0) scale(1.01) skewX(6deg);
+  }
+
+  82% {
+    opacity: 0.08;
+    transform: translate(1px, 1px) scale(0.99) skewX(-6deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1) skewX(0deg);
+  }
+}
+
+@keyframes navbar-triangle-glitch-soft {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1) skewX(5deg);
+  }
+
+  10% {
+    opacity: 0.2;
+    transform: translate(2px, -1px) scale(1.04) skewX(9deg);
+  }
+
+  18% {
+    opacity: 0;
+    transform: translate(-2px, 1px) scale(0.98) skewX(-7deg);
+  }
+
+  36% {
+    opacity: 0.18;
+    transform: translate(1px, 2px) scale(1) skewX(-5deg);
+  }
+
+  49% {
+    opacity: 0.06;
+    transform: translate(-1px, -1px) scale(1.02) skewX(6deg);
+  }
+
+  64% {
+    opacity: 0.16;
+    transform: translate(2px, 0) scale(0.99) skewX(-8deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1) skewX(0deg);
+  }
+}
+
+@keyframes navbar-triangle-glitch-faint {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.98) skewX(-4deg);
+  }
+
+  12% {
+    opacity: 0.15;
+    transform: translate(-1px, 2px) scale(1.05) skewX(-8deg);
+  }
+
+  26% {
+    opacity: 0;
+    transform: translate(2px, -1px) scale(0.96) skewX(7deg);
+  }
+
+  39% {
+    opacity: 0.13;
+    transform: translate(2px, 1px) scale(1.01) skewX(5deg);
+  }
+
+  72% {
+    opacity: 0.08;
+    transform: translate(-2px, -1px) scale(1) skewX(-6deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1) skewX(0deg);
+  }
+}
+
+@media (max-width: 720px) {
+  .navbar {
+    bottom: 20px;
+    height: 70px;
+    padding: 0 8px;
+  }
+
+  .navbar-item {
+    width: 100%;
+    height: 40px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
 }
