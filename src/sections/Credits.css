@@ -1,0 +1,16 @@
+.credits-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: #4a4a4a;
+  max-width: 46ch;
+}
+
+.credits-list li {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eeeeee;
+}

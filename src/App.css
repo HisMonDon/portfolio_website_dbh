@@ -1,0 +1,18 @@
+.app {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.app-stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  padding: 80px 64px 180px;
+}
+
+.app-panel {
+  flex: 1;
+  max-width: 640px;
+}

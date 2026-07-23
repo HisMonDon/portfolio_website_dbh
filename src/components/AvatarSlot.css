@@ -1,0 +1,13 @@
+.avatar-slot {
+  width: min(38vw, 480px);
+  height: min(70vh, 640px);
+  border: 1px dashed #d8d8d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c4c4c4;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
