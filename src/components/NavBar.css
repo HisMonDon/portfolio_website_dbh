@@ -44,7 +44,7 @@
   height: 42px;
   background: none;
   border: none;
-  padding: 0 18px;
+  padding: 0 16px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -54,6 +54,7 @@
   text-transform: uppercase;
   color: rgba(31, 39, 46, 0.7);
   cursor: pointer;
+  text-align: left;
   transition:
     color 0.2s ease,
     background 0.2s ease,
@@ -67,31 +68,19 @@
 .navbar-item.active {
   color: #f5fbff;
   background:
-    linear-gradient(90deg, rgba(35, 77, 108, 0.94), rgba(28, 72, 105, 0.84)),
+    linear-gradient(
+      90deg,
+      rgba(18, 55, 86, 0.98) 0%,
+      rgba(42, 84, 113, 0.95) 22%,
+      rgba(78, 120, 145, 0.84) 50%,
+      rgba(42, 84, 113, 0.95) 78%,
+      rgba(18, 55, 86, 0.98) 100%
+    ),
     rgba(25, 69, 105, 0.88);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -1px 0 rgba(12, 35, 54, 0.45),
     0 0 20px rgba(87, 150, 190, 0.2);
-}
-
-.navbar-item.active::before,
-.navbar-item.active::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  width: 12px;
-  height: 1px;
-  background: rgba(19, 35, 48, 0.78);
-}
-
-.navbar-item.active::before {
-  left: -2px;
-}
-
-.navbar-item.active::after {
-  right: -2px;
 }
 
 .navbar-item-label {
@@ -109,32 +98,35 @@
 
 .navbar-triangle {
   position: absolute;
-  top: -8px;
-  width: 52px;
-  height: 62px;
+  top: -7px;
+  width: 54px;
+  height: 56px;
   opacity: 0;
-  background: linear-gradient(135deg, rgba(148, 202, 235, 0.8), rgba(7, 42, 72, 0.78));
+  background: linear-gradient(180deg, rgba(156, 202, 229, 0.58), rgba(16, 64, 96, 0.42));
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   animation: navbar-triangle-glitch 1.5s steps(1, end) forwards;
 }
 
 .navbar-triangle.one {
-  left: 26px;
+  left: 56px;
 }
 
 .navbar-triangle.two {
-  left: 72px;
-  top: -3px;
-  width: 44px;
-  height: 54px;
+  left: 92px;
+  top: 0;
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(180deg, rgba(9, 48, 78, 0.44), rgba(130, 188, 220, 0.5));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
   animation-name: navbar-triangle-glitch-soft;
 }
 
 .navbar-triangle.three {
-  left: 118px;
-  top: 2px;
-  width: 38px;
-  height: 48px;
+  left: 130px;
+  top: -7px;
+  width: 54px;
+  height: 56px;
+  background: linear-gradient(180deg, rgba(149, 201, 230, 0.5), rgba(8, 46, 76, 0.46));
   animation-name: navbar-triangle-glitch-faint;
 }
 
@@ -177,121 +169,121 @@
 @keyframes navbar-triangle-glitch {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(0.96) skewX(-7deg);
+    transform: translate(0, 0) scale(0.96);
   }
 
   8% {
-    opacity: 0.34;
-    transform: translate(-2px, 1px) scale(1.02) skewX(-9deg);
+    opacity: 0.68;
+    transform: translate(-2px, 1px) scale(1.02);
   }
 
   14% {
     opacity: 0;
-    transform: translate(1px, -1px) scale(0.98) skewX(5deg);
+    transform: translate(1px, -1px) scale(0.98);
   }
 
   24% {
-    opacity: 0.28;
-    transform: translate(3px, 0) scale(1) skewX(7deg);
+    opacity: 0.58;
+    transform: translate(3px, 0) scale(1);
   }
 
   31% {
-    opacity: 0.08;
-    transform: translate(-1px, 2px) scale(1.04) skewX(-4deg);
+    opacity: 0.28;
+    transform: translate(-1px, 2px) scale(1.04);
   }
 
   43% {
-    opacity: 0.24;
-    transform: translate(2px, -2px) scale(0.98) skewX(10deg);
+    opacity: 0.54;
+    transform: translate(2px, -2px) scale(0.98);
   }
 
   55% {
     opacity: 0;
-    transform: translate(0, 0) scale(1) skewX(-3deg);
+    transform: translate(0, 0) scale(1);
   }
 
   68% {
-    opacity: 0.16;
-    transform: translate(-2px, 0) scale(1.01) skewX(6deg);
+    opacity: 0.46;
+    transform: translate(-2px, 0) scale(1.01);
   }
 
   82% {
-    opacity: 0.08;
-    transform: translate(1px, 1px) scale(0.99) skewX(-6deg);
+    opacity: 0.24;
+    transform: translate(1px, 1px) scale(0.99);
   }
 
   100% {
     opacity: 0;
-    transform: translate(0, 0) scale(1) skewX(0deg);
+    transform: translate(0, 0) scale(1);
   }
 }
 
 @keyframes navbar-triangle-glitch-soft {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(1) skewX(5deg);
+    transform: translate(0, 0) scale(1);
   }
 
   10% {
-    opacity: 0.2;
-    transform: translate(2px, -1px) scale(1.04) skewX(9deg);
+    opacity: 0.54;
+    transform: translate(2px, -1px) scale(1.04);
   }
 
   18% {
     opacity: 0;
-    transform: translate(-2px, 1px) scale(0.98) skewX(-7deg);
+    transform: translate(-2px, 1px) scale(0.98);
   }
 
   36% {
-    opacity: 0.18;
-    transform: translate(1px, 2px) scale(1) skewX(-5deg);
+    opacity: 0.48;
+    transform: translate(1px, 2px) scale(1);
   }
 
   49% {
-    opacity: 0.06;
-    transform: translate(-1px, -1px) scale(1.02) skewX(6deg);
+    opacity: 0.26;
+    transform: translate(-1px, -1px) scale(1.02);
   }
 
   64% {
-    opacity: 0.16;
-    transform: translate(2px, 0) scale(0.99) skewX(-8deg);
+    opacity: 0.44;
+    transform: translate(2px, 0) scale(0.99);
   }
 
   100% {
     opacity: 0;
-    transform: translate(0, 0) scale(1) skewX(0deg);
+    transform: translate(0, 0) scale(1);
   }
 }
 
 @keyframes navbar-triangle-glitch-faint {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(0.98) skewX(-4deg);
+    transform: translate(0, 0) scale(0.98);
   }
 
   12% {
-    opacity: 0.15;
-    transform: translate(-1px, 2px) scale(1.05) skewX(-8deg);
+    opacity: 0.42;
+    transform: translate(-1px, 2px) scale(1.05);
   }
 
   26% {
     opacity: 0;
-    transform: translate(2px, -1px) scale(0.96) skewX(7deg);
+    transform: translate(2px, -1px) scale(0.96);
   }
 
   39% {
-    opacity: 0.13;
-    transform: translate(2px, 1px) scale(1.01) skewX(5deg);
+    opacity: 0.4;
+    transform: translate(2px, 1px) scale(1.01);
   }
 
   72% {
-    opacity: 0.08;
-    transform: translate(-2px, -1px) scale(1) skewX(-6deg);
+    opacity: 0.28;
+    transform: translate(-2px, -1px) scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: translate(0, 0) scale(1) skewX(0deg);
+    transform: translate(0, 0) scale(1);
   }
 }
 
