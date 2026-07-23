@@ -50,6 +50,11 @@ export default function NavBar({ active, onSelect }: NavBarProps) {
                     <span className="navbar-triangle one" />
                     <span className="navbar-triangle two" />
                     <span className="navbar-triangle three" />
+                    <span className="navbar-triangle four" />
+                    <span className="navbar-triangle five" />
+                    <span className="navbar-triangle six" />
+                    <span className="navbar-triangle seven" />
+                    <span className="navbar-triangle eight" />
                   </span>
                   <span className="navbar-item-corner tl" />
                   <span className="navbar-item-corner tr" />

@@ -40,7 +40,7 @@
 .navbar-item {
   position: relative;
   isolation: isolate;
-  width: clamp(130px, 76%, 174px);
+  width: clamp(178px, 90%, 240px);
   height: 42px;
   background: none;
   border: none;
@@ -89,6 +89,8 @@
 }
 
 .navbar-triangle-layer {
+  --triangle-size: 48px;
+
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -98,36 +100,38 @@
 
 .navbar-triangle {
   position: absolute;
-  top: -7px;
-  width: 54px;
-  height: 56px;
+  top: 0;
+  width: var(--triangle-size);
+  height: 100%;
   opacity: 0;
-  background: linear-gradient(180deg, rgba(156, 202, 229, 0.58), rgba(16, 64, 96, 0.42));
+  background: linear-gradient(180deg, rgba(166, 211, 235, 0.62), rgba(12, 54, 86, 0.48));
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   animation: navbar-triangle-glitch 1.5s steps(1, end) forwards;
 }
 
 .navbar-triangle.one {
-  left: 56px;
+  left: 72px;
 }
 
 .navbar-triangle.two {
-  left: 92px;
+  left: 120px;
   top: 0;
-  width: 58px;
-  height: 58px;
-  background: linear-gradient(180deg, rgba(9, 48, 78, 0.44), rgba(130, 188, 220, 0.5));
+  background: linear-gradient(180deg, rgba(9, 48, 78, 0.5), rgba(143, 197, 225, 0.58));
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   animation-name: navbar-triangle-glitch-soft;
 }
 
 .navbar-triangle.three {
-  left: 130px;
-  top: -7px;
-  width: 54px;
-  height: 56px;
-  background: linear-gradient(180deg, rgba(149, 201, 230, 0.5), rgba(8, 46, 76, 0.46));
+  left: 168px;
+  background: linear-gradient(180deg, rgba(150, 204, 232, 0.58), rgba(8, 46, 76, 0.5));
   animation-name: navbar-triangle-glitch-faint;
+}
+
+.navbar-triangle.four {
+  left: 216px;
+  background: linear-gradient(180deg, rgba(8, 45, 74, 0.46), rgba(132, 190, 222, 0.54));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  animation-name: navbar-triangle-glitch-soft;
 }
 
 .navbar-item-corner {
@@ -169,121 +173,98 @@
 @keyframes navbar-triangle-glitch {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(0.96);
   }
 
   8% {
     opacity: 0.68;
-    transform: translate(-2px, 1px) scale(1.02);
   }
 
   14% {
     opacity: 0;
-    transform: translate(1px, -1px) scale(0.98);
   }
 
   24% {
     opacity: 0.58;
-    transform: translate(3px, 0) scale(1);
   }
 
   31% {
     opacity: 0.28;
-    transform: translate(-1px, 2px) scale(1.04);
   }
 
   43% {
     opacity: 0.54;
-    transform: translate(2px, -2px) scale(0.98);
   }
 
   55% {
     opacity: 0;
-    transform: translate(0, 0) scale(1);
   }
 
   68% {
     opacity: 0.46;
-    transform: translate(-2px, 0) scale(1.01);
   }
 
   82% {
     opacity: 0.24;
-    transform: translate(1px, 1px) scale(0.99);
   }
 
   100% {
     opacity: 0;
-    transform: translate(0, 0) scale(1);
   }
 }
 
 @keyframes navbar-triangle-glitch-soft {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(1);
   }
 
   10% {
     opacity: 0.54;
-    transform: translate(2px, -1px) scale(1.04);
   }
 
   18% {
     opacity: 0;
-    transform: translate(-2px, 1px) scale(0.98);
   }
 
   36% {
     opacity: 0.48;
-    transform: translate(1px, 2px) scale(1);
   }
 
   49% {
     opacity: 0.26;
-    transform: translate(-1px, -1px) scale(1.02);
   }
 
   64% {
     opacity: 0.44;
-    transform: translate(2px, 0) scale(0.99);
   }
 
   100% {
     opacity: 0;
-    transform: translate(0, 0) scale(1);
   }
 }
 
 @keyframes navbar-triangle-glitch-faint {
   0% {
     opacity: 0;
-    transform: translate(0, 0) scale(0.98);
   }
 
   12% {
     opacity: 0.42;
-    transform: translate(-1px, 2px) scale(1.05);
   }
 
   26% {
     opacity: 0;
-    transform: translate(2px, -1px) scale(0.96);
   }
 
   39% {
     opacity: 0.4;
-    transform: translate(2px, 1px) scale(1.01);
   }
 
   72% {
     opacity: 0.28;
-    transform: translate(-2px, -1px) scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: translate(0, 0) scale(1);
   }
 }
 
