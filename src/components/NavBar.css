@@ -25,6 +25,10 @@
   background: none;
   border: none;
   padding: 10px 18px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: "Gotham_medium";
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -40,7 +44,7 @@
 }
 
 .navbar-item.active {
-  color: #0004ff;
+  color: #fefefe;
   background: rgba(20, 20, 20, 0.06);
 }
 

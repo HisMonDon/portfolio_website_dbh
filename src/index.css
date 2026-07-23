@@ -15,8 +15,15 @@ body,
 }
 
 @font-face {
-  font-family: 'Gotham';
+  font-family: 'Gotham_medium';
   src: url("./assets/fonts/Gotham\ Medium.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Gotham_thin';
+  src: url("./assets/fonts/Gotham\ Thin.otf");
   font-weight: normal;
   font-style: normal;
 }
@@ -25,7 +32,7 @@ body {
   margin: 0;
   background: #ffffff;
   color: #1a1a1a;
-  font-family: 'Gotham', system-ui, -apple-system, sans-serif;
+  font-family: 'Gotham_thin', system-ui, -apple-system, sans-serif;
 
 }
 
