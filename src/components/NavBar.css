@@ -40,7 +40,7 @@
 .navbar-item {
   position: relative;
   isolation: isolate;
-  width: clamp(178px, 90%, 240px);
+  width: clamp(210px, 94%, 280px);
   height: 42px;
   background: none;
   border: none;
@@ -89,13 +89,15 @@
 }
 
 .navbar-triangle-layer {
-  --triangle-size: 48px;
+  --triangle-size: 56px;
 
   position: absolute;
   inset: 0;
   z-index: 1;
+  opacity: 0;
   pointer-events: none;
   overflow: hidden;
+  animation: navbar-triangle-layer-glitch 1.5s steps(1, end) forwards;
 }
 
 .navbar-triangle {
@@ -103,35 +105,52 @@
   top: 0;
   width: var(--triangle-size);
   height: 100%;
-  opacity: 0;
+  opacity: 1;
   background: linear-gradient(180deg, rgba(166, 211, 235, 0.62), rgba(12, 54, 86, 0.48));
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  animation: navbar-triangle-glitch 1.5s steps(1, end) forwards;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
 .navbar-triangle.one {
-  left: 72px;
+  left: 88px;
 }
 
 .navbar-triangle.two {
-  left: 120px;
-  top: 0;
+  left: 116px;
   background: linear-gradient(180deg, rgba(9, 48, 78, 0.5), rgba(143, 197, 225, 0.58));
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  animation-name: navbar-triangle-glitch-soft;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
 .navbar-triangle.three {
-  left: 168px;
+  left: 144px;
   background: linear-gradient(180deg, rgba(150, 204, 232, 0.58), rgba(8, 46, 76, 0.5));
-  animation-name: navbar-triangle-glitch-faint;
 }
 
 .navbar-triangle.four {
-  left: 216px;
+  left: 172px;
   background: linear-gradient(180deg, rgba(8, 45, 74, 0.46), rgba(132, 190, 222, 0.54));
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  animation-name: navbar-triangle-glitch-soft;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.navbar-triangle.five {
+  left: 200px;
+  background: linear-gradient(180deg, rgba(166, 211, 235, 0.58), rgba(12, 54, 86, 0.48));
+}
+
+.navbar-triangle.six {
+  left: 228px;
+  background: linear-gradient(180deg, rgba(9, 48, 78, 0.48), rgba(143, 197, 225, 0.54));
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.navbar-triangle.seven {
+  left: 256px;
+  background: linear-gradient(180deg, rgba(150, 204, 232, 0.54), rgba(8, 46, 76, 0.46));
+}
+
+.navbar-triangle.eight {
+  left: 284px;
+  background: linear-gradient(180deg, rgba(8, 45, 74, 0.44), rgba(132, 190, 222, 0.5));
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
 .navbar-item-corner {
@@ -170,13 +189,13 @@
   border-top: none;
 }
 
-@keyframes navbar-triangle-glitch {
+@keyframes navbar-triangle-layer-glitch {
   0% {
     opacity: 0;
   }
 
   8% {
-    opacity: 0.68;
+    opacity: 0.74;
   }
 
   14% {
@@ -184,15 +203,15 @@
   }
 
   24% {
-    opacity: 0.58;
+    opacity: 0.66;
   }
 
   31% {
-    opacity: 0.28;
+    opacity: 0.34;
   }
 
   43% {
-    opacity: 0.54;
+    opacity: 0.62;
   }
 
   55% {
@@ -200,67 +219,11 @@
   }
 
   68% {
-    opacity: 0.46;
+    opacity: 0.5;
   }
 
   82% {
-    opacity: 0.24;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes navbar-triangle-glitch-soft {
-  0% {
-    opacity: 0;
-  }
-
-  10% {
-    opacity: 0.54;
-  }
-
-  18% {
-    opacity: 0;
-  }
-
-  36% {
-    opacity: 0.48;
-  }
-
-  49% {
     opacity: 0.26;
-  }
-
-  64% {
-    opacity: 0.44;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes navbar-triangle-glitch-faint {
-  0% {
-    opacity: 0;
-  }
-
-  12% {
-    opacity: 0.42;
-  }
-
-  26% {
-    opacity: 0;
-  }
-
-  39% {
-    opacity: 0.4;
-  }
-
-  72% {
-    opacity: 0.28;
   }
 
   100% {
