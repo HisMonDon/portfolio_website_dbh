@@ -40,3 +40,30 @@
   background: #1a1a1a;
   color: #ffffff;
 }
+
+.about-section {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  max-width: 980px;
+}
+
+.about-portrait {
+  width: min(34vw, 320px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  flex: 0 0 auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .about-section {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .about-portrait {
+    width: min(100%, 320px);
+  }
+}

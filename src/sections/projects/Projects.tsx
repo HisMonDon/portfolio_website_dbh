@@ -15,8 +15,8 @@ export default function Projects() {
 
   return (
     <div>
-      <p className="section-eyebrow">Work</p>
-      <h1 className="section-title">Projects</h1>
+      <h1 className="section-title">My Projects</h1>
+      <p className="section-text">Here are a few things I&apos;ve been working on.</p>
       <ProjectList projects={PROJECTS} onSelect={setSelectedId} />
     </div>
   )

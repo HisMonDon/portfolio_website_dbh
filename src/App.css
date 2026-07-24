@@ -58,5 +58,17 @@
 
 .app-panel {
   flex: 1;
-  max-width: 640px;
+  width: calc(100vw - min(38vw, 480px) - 178px);
+  max-width: calc(100vw - min(38vw, 480px) - 178px);
+}
+
+@media (max-width: 720px) {
+  .section-page {
+    padding: 48px 24px;
+  }
+
+  .app-panel {
+    width: 100%;
+    max-width: none;
+  }
 }

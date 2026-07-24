@@ -29,7 +29,10 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
           &lsaquo;
         </button>
         <div className="project-carousel-frame">
-          Image {imgIndex + 1} / {project.images.length}
+          <img
+            src={project.images[imgIndex]}
+            alt={`${project.title} screenshot ${imgIndex + 1}`}
+          />
         </div>
         <button
           type="button"
@@ -55,6 +58,27 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
 
       <h1 className="section-title">{project.title}</h1>
       <p className="section-text">{project.description}</p>
+      {project.technologies.length > 0 && (
+        <div className="project-technologies">
+          {project.technologies.map((technology) => (
+            <span key={technology}>{technology}</span>
+          ))}
+        </div>
+      )}
+      {(project.githubUrl || project.liveUrl) && (
+        <div className="project-links">
+          {project.githubUrl && (
+            <a href={project.githubUrl} target="_blank" rel="noreferrer">
+              View on GitHub
+            </a>
+          )}
+          {project.liveUrl && (
+            <a href={project.liveUrl} target="_blank" rel="noreferrer">
+              View Live Demo
+            </a>
+          )}
+        </div>
+      )}
     </div>
   )
 }
