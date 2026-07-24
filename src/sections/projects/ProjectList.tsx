@@ -1,3 +1,4 @@
+import type { WheelEvent } from 'react'
 import type { Project } from '../../data/projects'
 
 interface ProjectListProps {
@@ -5,9 +6,16 @@ interface ProjectListProps {
   onSelect: (id: string) => void
 }
 
+const PROJECT_SCROLL_SPEED = 0.35
+
 export default function ProjectList({ projects, onSelect }: ProjectListProps) {
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    event.currentTarget.scrollTop += event.deltaY * PROJECT_SCROLL_SPEED
+  }
+
   return (
-    <div className="project-list">
+    <div className="project-list" onWheel={handleWheel}>
       {projects.map((project) => (
         <button
           type="button"
