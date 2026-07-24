@@ -169,7 +169,7 @@ function App() {
         ))}
       </div>
 
-      <AvatarSlot />
+      {activeSection.second !== 'projects' && <AvatarSlot />}
 
       <NavBar
         active={activeSection.second}
