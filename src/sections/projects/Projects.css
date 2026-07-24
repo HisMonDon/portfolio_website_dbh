@@ -17,6 +17,12 @@
   background: #0c598c;
 }
 
+.avatar-fixed {
+  position: fixed;
+  right: 64px;
+  bottom: 76px;
+}
+
 .project-panel {
   all: unset;
   cursor: pointer;
