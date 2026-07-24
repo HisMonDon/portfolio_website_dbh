@@ -45,6 +45,7 @@
 .section-page {
   min-height: 100vh;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   padding: 80px 64px;
 }
 

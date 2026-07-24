@@ -12,17 +12,28 @@ import sfmlIcon from '../assets/portfolio-source/skill_icons/sfml_icon_skills.pn
 import vscodeIcon from '../assets/portfolio-source/skill_icons/vscode_icon_skills.png'
 
 const SKILLS = [
-  { name: 'React', time: '1 Year', icon: reactIcon },
-  { name: 'Javascript', time: '1 Year', icon: javascriptIcon },
-  { name: 'Flutter', time: '2 Years', icon: flutterIcon },
-  { name: 'Dart', time: '2 Years', icon: dartIcon },
-  { name: 'C++', time: '3 Years', icon: cppIcon },
-  { name: 'Python', time: '4 Years', icon: pythonIcon },
-  { name: 'Java', time: '3 Years', icon: javaIcon },
-  { name: 'Git', time: '2 Years', icon: gitIcon },
-  { name: 'SFML', time: '2 Years', icon: sfmlIcon },
-  { name: 'VS Code', time: '4 Years', icon: vscodeIcon },
+  { name: 'React', started: '2025-07-01', icon: reactIcon },
+  { name: 'Javascript', started: '2025-07-01', icon: javascriptIcon },
+  { name: 'Flutter', started: '2024-07-01', icon: flutterIcon },
+  { name: 'Dart', started: '2024-07-01', icon: dartIcon },
+  { name: 'C++', started: '2023-07-01', icon: cppIcon },
+  { name: 'Python', started: '2022-07-01', icon: pythonIcon },
+  { name: 'Java', started: '2023-07-01', icon: javaIcon },
+  { name: 'Git', started: '2024-07-01', icon: gitIcon },
+  { name: 'SFML', started: '2024-07-01', icon: sfmlIcon },
+  { name: 'VS Code', started: '2022-07-01', icon: vscodeIcon },
 ]
+
+function getExperience(started: string) {
+  const [startYear, startMonth, startDay] = started.split('-').map(Number)
+  const today = new Date()
+  const anniversaryHasPassed =
+    today.getMonth() > startMonth - 1 ||
+    (today.getMonth() === startMonth - 1 && today.getDate() >= startDay)
+  const years = today.getFullYear() - startYear - (anniversaryHasPassed ? 0 : 1)
+
+  return `${years} ${years === 1 ? 'Year' : 'Years'}`
+}
 
 export default function Skills() {
   return (
@@ -34,7 +45,7 @@ export default function Skills() {
             <img src={skill.icon} alt="" />
             <span>
               <strong>{skill.name}</strong>
-              <small>{skill.time}</small>
+              <small>{getExperience(skill.started)}</small>
             </span>
           </div>
         ))}

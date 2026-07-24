@@ -14,11 +14,22 @@
   color: #1a1a1a;
 }
 
+.row-container {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.column-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .section-text {
   font-size: 15px;
   line-height: 1.7;
   color: #4a4a4a;
-  max-width: 46ch;
   margin: 0 0 16px;
 }
 
@@ -39,31 +50,4 @@
 .section-button:hover {
   background: #1a1a1a;
   color: #ffffff;
-}
-
-.about-section {
-  display: flex;
-  align-items: center;
-  gap: 48px;
-  max-width: 980px;
-}
-
-.about-portrait {
-  width: min(34vw, 320px);
-  aspect-ratio: 1;
-  object-fit: cover;
-  flex: 0 0 auto;
-  border-radius: 8px;
-}
-
-@media (max-width: 720px) {
-  .about-section {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .about-portrait {
-    width: min(100%, 320px);
-  }
 }
