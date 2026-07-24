@@ -30,7 +30,11 @@
   flex-direction: column;
   gap: 4px;
   padding: 16px 48px 16px 20px;
-  background: #fafafa;
+  background-image: url('../../assets/project_nameplate.png');
+  background-size: cover;
+  background-position: center;
+
+
   clip-path: polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%);
   transition: background 0.2s ease;
 }
@@ -39,16 +43,25 @@
   background: #efefef;
 }
 
+.project-panel:hover .project-panel-title {
+  color: #1a1a1a;
+}
+
+.project-panel:hover .project-panel-desc {
+  color: #7a7a7a;
+}
+
 .project-panel-title {
   font-size: 15px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #1a1a1a;
+  color: #F2F5F7;
 }
+
 
 .project-panel-desc {
   font-size: 13px;
-  color: #7a7a7a;
+  color: #C7D0D8;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
