@@ -10,7 +10,7 @@ export const PROJECTS: Project[] = [
     id: 'project-1',
     title: 'Project One',
     description:
-      'Placeholder description for project one. Replace with a real summary of what it does and the stack used.',
+      'Placeholder description for project one.',
     images: ['1', '2', '3'],
   },
   {
@@ -30,5 +30,12 @@ export const PROJECTS: Project[] = [
     title: 'Project Four',
     description: 'Placeholder description for project four.',
     images: ['1'],
+  },
+  {
+    id: 'project-1',
+    title: 'Project One',
+    description:
+      'Placeholder description for project one.',
+    images: ['1', '2', '3'],
   },
 ]

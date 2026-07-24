@@ -8,8 +8,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: scroll;
   gap: 64px;
   padding: 80px 64px 180px;
+}
+
+.scroll-stage {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.scroll-stage::-webkit-scrollbar {
+  display: none;
+}
+
+.section-page {
+  min-height: 100vh;
+  scroll-snap-align: start;
+}
+
+.app-stage::-webkit-scrollbar {
+  width: 4px;
+}
+
+.project-list::-webkit-scrollbar-thumb {
+  background: #0c598c;
 }
 
 .app-panel {
