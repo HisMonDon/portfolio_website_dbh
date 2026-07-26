@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import NavBar, { type SectionId } from './components/NavBar'
 import AvatarSlot from './components/AvatarSlot'
 import AboutMe from './sections/AboutMe'
@@ -9,6 +9,8 @@ import Projects from './sections/projects/Projects'
 import './App.css'
 import backgroundVideo from './assets/backgroung_portfolio.mp4'
 import { getActiveSectionList, type ActiveSection } from './sections/sectionConfig'
+
+const FaceChatWidget = lazy(() => import('./features/faceChat/FaceChatWidget'))
 
 const INITIAL_SECTION: SectionId = 'about'
 const NAV_SCROLL_DURATION_MS = 900
@@ -170,6 +172,12 @@ function App() {
       </div>
 
       {activeSection.second !== 'projects' && <AvatarSlot />}
+
+      {activeSection.second === 'about' && (
+        <Suspense fallback={null}>
+          <FaceChatWidget />
+        </Suspense>
+      )}
 
       <NavBar
         active={activeSection.second}
