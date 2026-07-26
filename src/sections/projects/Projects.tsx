@@ -5,13 +5,19 @@ import { PROJECTS, type Project } from '../../data/projects'
 import '../Section.css'
 import './Projects.css'
 
-export default function Projects() {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+interface ProjectsProps {
+  // Lifted to App so it can drive the persistent assistant's fade behavior
+  // ("fade back in when they click into a specific project tab").
+  selectedId: string | null
+  onSelect: (id: string | null) => void
+}
+
+export default function Projects({ selectedId, onSelect }: ProjectsProps) {
   const [previewProject, setPreviewProject] = useState<Project | null>(null)
   const selected = PROJECTS.find((project) => project.id === selectedId) ?? null
 
   if (selected) {
-    return <ProjectDetail project={selected} onBack={() => setSelectedId(null)} />
+    return <ProjectDetail project={selected} onBack={() => onSelect(null)} />
   }
 
   return (
@@ -41,7 +47,7 @@ export default function Projects() {
       </aside>
       <ProjectList
         projects={PROJECTS}
-        onSelect={setSelectedId}
+        onSelect={onSelect}
         onPreview={setPreviewProject}
       />
     </div>

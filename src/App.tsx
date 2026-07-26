@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import NavBar, { type SectionId } from './components/NavBar'
+import PersistentAssistant from './components/PersistentAssistant'
 import AboutMe from './sections/AboutMe'
 import Resume from './sections/Resume'
 import Skills from './sections/Skills'
@@ -8,18 +9,23 @@ import Projects from './sections/projects/Projects'
 import './App.css'
 import backgroundVideo from './assets/backgroung_portfolio.mp4'
 import { getActiveSectionList, type ActiveSection } from './sections/sectionConfig'
+import { useIsMobile } from './hooks/useIsMobile'
 
 const INITIAL_SECTION: SectionId = 'about'
 const NAV_SCROLL_DURATION_MS = 900
 
-function renderSection(active: SectionId) {
+function renderSection(
+  active: SectionId,
+  selectedProjectId: string | null,
+  onSelectProject: (id: string | null) => void,
+) {
   switch (active) {
     case 'about':
       return <AboutMe />
     case 'resume':
       return <Resume />
     case 'projects':
-      return <Projects />
+      return <Projects selectedId={selectedProjectId} onSelect={onSelectProject} />
     case 'skills':
       return <Skills />
     case 'credits':
@@ -43,6 +49,9 @@ function App() {
   const [activeSection, setActiveSection] = useState<ActiveSection>(
     getActiveSectionList(INITIAL_SECTION),
   )
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const isMobile = useIsMobile()
+  const isAssistantVisible = activeSection.second !== 'projects' || selectedProjectId !== null
 
   useEffect(() => {
     const scrollStage = scrollStageRef.current
@@ -163,10 +172,14 @@ function App() {
             data-section={id}
             className="section-page"
           >
-            <div className="app-panel">{renderSection(id)}</div>
+            <div className="app-panel">
+              {renderSection(id, selectedProjectId, setSelectedProjectId)}
+            </div>
           </div>
         ))}
       </div>
+
+      {!isMobile && <PersistentAssistant visible={isAssistantVisible} />}
 
       <NavBar
         active={activeSection.second}

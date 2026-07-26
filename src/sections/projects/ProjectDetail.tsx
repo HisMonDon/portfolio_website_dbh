@@ -1,7 +1,5 @@
-import { lazy, Suspense, useState } from 'react'
+import { useState } from 'react'
 import type { Project } from '../../data/projects'
-
-const FaceChatWidget = lazy(() => import('../../features/faceChat/FaceChatWidget'))
 
 interface ProjectDetailProps {
   project: Project
@@ -22,22 +20,18 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
       </button>
 
       {project.interactive ? (
-        <>
-          <Suspense fallback={null}>
-            <FaceChatWidget />
-          </Suspense>
-          <p className="section-text">
-            <strong>How it works:</strong> MediaPipe's FaceLandmarker runs in the browser and scores
-            a fixed set of named facial blendshapes (e.g. <code>jawOpen</code>,{' '}
-            <code>mouthSmileLeft</code>) from the webcam feed every frame. Those scores are
-            calibrated against a short rest-pose baseline, then applied by name to the matching
-            morph target on a Three.js avatar mesh — no keyframes, just per-frame influence
-            values driving the mesh's existing morph targets. Dialogue answers reuse the same
-            pipeline in reverse: prerecorded blendshape frames (captured the same way, saved as
-            timestamped JSON) get walked back on a clock and applied the same way, so the avatar
-            "speaks" pre-recorded answers through the identical rendering path as live tracking.
-          </p>
-        </>
+        <p className="section-text">
+          <strong>How it works:</strong> that's the assistant docked at the right of your screen —
+          MediaPipe's FaceLandmarker runs in the browser and scores a fixed set of named facial
+          blendshapes (e.g. <code>jawOpen</code>, <code>mouthSmileLeft</code>) from the webcam feed
+          every frame. Those scores are calibrated against a short rest-pose baseline, then applied
+          by name to the matching morph target on a Three.js avatar mesh — no keyframes, just
+          per-frame influence values driving the mesh's existing morph targets. Dialogue answers
+          reuse the same pipeline in reverse: prerecorded blendshape frames (captured the same way,
+          saved as timestamped JSON) get walked back on a clock and applied the same way, so the
+          avatar "speaks" pre-recorded answers through the identical rendering path as live
+          tracking.
+        </p>
       ) : (
         <>
           <div className="project-carousel">
