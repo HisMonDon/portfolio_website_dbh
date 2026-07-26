@@ -6,12 +6,23 @@ export interface Project {
   technologies: string[]
   githubUrl?: string
   liveUrl?: string
+  // When true, ProjectDetail renders the live FaceChatWidget in place of the
+  // image carousel — this project has no static screenshots.
+  interactive?: boolean
 }
 
 const image = (name: string) =>
   new URL(`../assets/portfolio-source/project_images/${name}`, import.meta.url).href
 
 export const PROJECTS: Project[] = [
+  {
+    id: 'face-tracking-avatar',
+    title: 'Face-Tracking Avatar',
+    description: 'A live webcam demo that uses MediaPipe to detect facial blendshapes and maps them onto a 3D avatar in Three.js, with calibration so expressions read naturally. Enable your camera below to chat with it.',
+    technologies: ['MediaPipe', 'Three.js', 'React', 'TypeScript'],
+    images: [],
+    interactive: true,
+  },
   {
     id: 'vera',
     title: 'Vera',

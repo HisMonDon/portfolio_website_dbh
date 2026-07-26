@@ -24,11 +24,13 @@ export default function Projects() {
       >
         {previewProject && (
           <>
-            <img
-              className="project-preview-image"
-              src={previewProject.images[0]}
-              alt={`${previewProject.title} preview`}
-            />
+            {previewProject.images[0] && (
+              <img
+                className="project-preview-image"
+                src={previewProject.images[0]}
+                alt={`${previewProject.title} preview`}
+              />
+            )}
             <div className="project-preview-content">
               <p className="project-preview-eyebrow">Project preview</p>
               <h2 className="project-preview-title">{previewProject.title}</h2>

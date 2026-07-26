@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { applyBlendshapesToMeshes } from './clipPlayback'
 import './FaceTrackingAvatar.css'
 
 interface FaceTrackingAvatarProps {
   // Controlled from outside so the permission gate / stop button can drive it.
   started: boolean
   onError?: (message: string) => void
+  // Per-frame blendshape categories from a clip player (see clipPlayback.ts). Applied to any
+  // mesh in the scene with morph targets — a no-op today since the placeholder sphere below has
+  // none, but this is the hookup point for once a real morph-target avatar replaces it.
+  activeCategories?: { categoryName: string; score: number }[] | null
 }
 
 // Wraps the camera + Three.js engine. Renders a placeholder box until
@@ -13,10 +18,11 @@ interface FaceTrackingAvatarProps {
 // up the WebGL scene. Everything created in the effect is torn down in the
 // effect's cleanup, so StrictMode's mount/unmount/mount in dev, and repeated
 // start/stop toggling, never leak MediaStream tracks or WebGL contexts.
-export default function FaceTrackingAvatar({ started, onError }: FaceTrackingAvatarProps) {
+export default function FaceTrackingAvatar({ started, onError, activeCategories }: FaceTrackingAvatarProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const morphMeshesRef = useRef<THREE.Mesh[]>([])
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -73,6 +79,7 @@ export default function FaceTrackingAvatar({ started, onError }: FaceTrackingAva
       material = new THREE.MeshStandardMaterial({ color: 0x4c8bf5 })
       const mesh = new THREE.Mesh(geometry, material)
       scene.add(mesh)
+      morphMeshesRef.current = [mesh]
 
       const light = new THREE.DirectionalLight(0xffffff, 1)
       light.position.set(2, 2, 2)
@@ -94,6 +101,7 @@ export default function FaceTrackingAvatar({ started, onError }: FaceTrackingAva
     return () => {
       cancelled = true
       setReady(false)
+      morphMeshesRef.current = []
 
       if (frameId !== null) cancelAnimationFrame(frameId)
 
@@ -114,6 +122,11 @@ export default function FaceTrackingAvatar({ started, onError }: FaceTrackingAva
       renderer?.forceContextLoss()
     }
   }, [started, onError])
+
+  useEffect(() => {
+    if (!activeCategories) return
+    applyBlendshapesToMeshes(activeCategories, morphMeshesRef.current)
+  }, [activeCategories])
 
   return (
     <div className="face-tracking-avatar" ref={containerRef}>

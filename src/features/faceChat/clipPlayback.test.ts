@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { __clearClipCacheForTests, findFrameAt, loadClip, type BlendshapeFrame } from './clipPlayback'
 
-describe('findFrameAt (video/audio currentTime-driven frame selection)', () => {
+describe('findFrameAt (latest CLIP_FORMAT frame at-or-before a given time)', () => {
   const frames: BlendshapeFrame[] = [
     { t: 0, blendshapes: [{ name: 'jawOpen', score: 0 }] },
     { t: 1, blendshapes: [{ name: 'jawOpen', score: 0.2 }] },
@@ -53,35 +53,31 @@ describe('loadClip', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(new Response('', { status: 404 }))
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ clipId: 'clip00', frames: [] }), { status: 200 }),
-      )
+      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(loadClip('clip00')).rejects.toThrow(/failed to load \(HTTP 404\)/)
+    await expect(loadClip('0_1')).rejects.toThrow(/failed to load \(HTTP 404\)/)
 
-    const data = await loadClip('clip00')
-    expect(data.frames).toEqual([])
+    const data = await loadClip('0_1')
+    expect(data).toEqual([])
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('rejects when the JSON body is missing a "frames" array', async () => {
+  it('rejects when the JSON body is not an array of frames', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(new Response(JSON.stringify({ clipId: 'clip00' }), { status: 200 })),
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ notAnArray: true }), { status: 200 })),
     )
 
-    await expect(loadClip('clip00')).rejects.toThrow(/malformed/)
+    await expect(loadClip('0_1')).rejects.toThrow(/malformed/)
   })
 
   it('caches a successful load so a second call does not re-fetch', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ clipId: 'clip00', frames: [] }), { status: 200 }))
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await loadClip('clip00')
-    await loadClip('clip00')
+    await loadClip('0_1')
+    await loadClip('0_1')
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })

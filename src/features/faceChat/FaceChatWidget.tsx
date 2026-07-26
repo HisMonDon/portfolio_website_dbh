@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import FaceTrackingAvatar from './FaceTrackingAvatar'
 import TranscriptPanel from './TranscriptPanel'
-import { DIALOGUE_GRAPH, OPENING_NODE_IDS } from './dialogueGraph'
+import { DIALOGUE_GRAPH, IDLE_CLIP_ID, OPENING_NODE_IDS } from './dialogueGraph'
 import { TRANSCRIPT_SCRIPT } from './transcriptScript'
 import { useClipPlayer } from './clipPlayback'
 import { isLikelyMobile } from './deviceDetect'
@@ -11,14 +11,14 @@ type GateState = 'gate' | 'granted' | 'declined'
 
 // Self-contained face-tracking avatar chat widget: permission gate ->
 // live camera/Three.js avatar + branching dialogue with clip playback and
-// a toggleable transcript. See dialogueGraph.ts for the 16-node structure.
+// a toggleable transcript. See dialogueGraph.ts for the 17-node structure.
 //
 // NOTE on browser history: `currentNodeId` is plain component state, not
 // synced to the URL/history at all (no pushState, no popstate listener).
 // So there's nothing today for browser back/forward to interact with —
 // navigating dialogue nodes never creates history entries, and pressing
 // back leaves the site entirely rather than stepping to a previous node.
-// The loop node (#14) behaves correctly *within* the graph (its
+// The loop node (#19) behaves correctly *within* the graph (its
 // transitions correctly fan back out to all 4 openings), but if the
 // intent was for back/forward to step through dialogue history, that's a
 // gap, not something fixed here — wiring node state into the URL/history
@@ -28,12 +28,19 @@ export default function FaceChatWidget() {
   const [gate, setGate] = useState<GateState>('gate')
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [currentNodeId, setCurrentNodeId] = useState<number>(OPENING_NODE_IDS[0])
-  const clipVideoRef = useRef<HTMLVideoElement | null>(null)
+  // The avatar idles (looped) until the visitor picks their first question, or whenever it's
+  // sitting on the loop node's own reconvergence line (no dedicated recording exists for that
+  // transitional line, so it idles there too).
+  const [hasInteracted, setHasInteracted] = useState(false)
   const promptHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
   const node = DIALOGUE_GRAPH[currentNodeId]
-  const { error: clipError } = useClipPlayer(node.clipId, clipVideoRef)
+  const isIdling = !hasInteracted || node.type === 'loop'
+  const { activeFrame, error: clipError } = useClipPlayer(
+    isIdling ? IDLE_CLIP_ID : node.clipId,
+    isIdling ? 'loop' : 'once',
+  )
 
   const started = gate === 'granted' && !mobileFallback
 
@@ -108,13 +115,13 @@ export default function FaceChatWidget() {
             </button>
           </div>
         ) : (
-          <FaceTrackingAvatar started={started} onError={handleCameraError} />
+          <FaceTrackingAvatar
+            started={started}
+            onError={handleCameraError}
+            activeCategories={activeFrame?.categories ?? null}
+          />
         )}
       </div>
-
-      {/* src/play/pause are owned imperatively by useClipPlayer so that
-          switching nodes mid-playback can't overlap two clips. */}
-      <video ref={clipVideoRef} className="face-chat-clip-video" muted playsInline loop />
 
       <div className="face-chat-dialogue">
         {clipError && (
@@ -145,7 +152,10 @@ export default function FaceChatWidget() {
               type="button"
               className="face-chat-option-btn"
               tabIndex={index === 0 ? 0 : -1}
-              onClick={() => setCurrentNodeId(nextId)}
+              onClick={() => {
+                setHasInteracted(true)
+                setCurrentNodeId(nextId)
+              }}
               onKeyDown={(event) => handleOptionKeyDown(event, index)}
             >
               {TRANSCRIPT_SCRIPT[nextId]?.prompt}

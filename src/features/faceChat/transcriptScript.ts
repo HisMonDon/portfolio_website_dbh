@@ -1,7 +1,5 @@
-// Finalized script text for each dialogue node, verbatim. See
-// dialogueGraph.ts for the node structure these ids map onto:
-//   1-4   openings, 5-12 follow-ups, 13/15/16 closings, 14 loop node.
-
+// Finalized script text for each dialogue node, verbatim. See dialogueGraph.ts for the node
+// structure these ids map onto.
 export interface TranscriptEntry {
   id: number
   prompt: string
@@ -13,7 +11,7 @@ export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
     id: 1,
     prompt: "How'd you get into coding?",
     response:
-      'I started coding because I wanted to turn ideas into real tools. My first major project was Vera, a free physics platform built with Flutter and Firebase for students at my school.',
+      "I started coding because I wanted to turn ideas into real tools. My first major project was Vera, a free physics platform built with Flutter and Firebase for my school's physics club.",
   },
   2: {
     id: 2,
@@ -25,13 +23,13 @@ export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
     id: 3,
     prompt: "What's a project that went wrong?",
     response:
-      'I combined three ML models expecting majority voting to boost accuracy. Instead, the two weaker ones agreed on the same mistake and overruled the best one — more on my resume.',
+      'For a machine-learning research project on skeleton-based action recognition supervised by a university professor, I combined three different models I trained that recognize human actions from skeleton data. I expected majority voting to improve accuracy, but the two weaker models often agreed on the same mistake and overruled the strongest, making the fusion ineffective. You can see more of this on my resume.',
   },
   4: {
     id: 4,
     prompt: "Anything you want to ask that's not about code?",
     response:
-      "Outside coding, I teach physics, mathematics, swimming, and skiing. I don't have much free time, but when I do, I love hanging out and playing games with my friends.",
+      "Outside coding, I enjoy doing physics, mathematics, swimming, and skiing. I don't have much free time, but when I do, I love hanging out and playing games with my friends.",
   },
   5: {
     id: 5,
@@ -49,7 +47,7 @@ export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
     id: 7,
     prompt: 'What were some problems in this project?',
     response:
-      "The tracking technically worked, but the model's expressions looked weak and unnatural. I fixed that by calibrating the model to my own face first, then amplifying expressions like smiles and eyebrow raises so the animation felt much more natural and responsive.",
+      'The tracking technically worked, but the model’s expressions looked weak and unnatural. I fixed that by calibrating the model to own face first, then amplifying expressions like smiles and eyebrow raises so the animation felt much more natural and responsive.',
   },
   8: {
     id: 8,
@@ -61,7 +59,7 @@ export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
     id: 9,
     prompt: "What'd you do differently after?",
     response:
-      "I switched from majority-vote fusion to feature fusion — combining the models' raw outputs instead of their final decisions. That fixed it, more on my resume.",
+      'I wrote an evaluation script that measured exactly which predictions the fusion fixed and which correct answers it destroyed, and ultimately tried a different type of fusion method: feature fusion. I don’t want to get too technical, so all in all this proved to work very well. You can see more in my resume.',
   },
   10: {
     id: 10,
@@ -79,7 +77,7 @@ export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
     id: 12,
     prompt: 'What languages do you speak?',
     response:
-      "I speak English and Mandarin fluently, mais je peux parler français aussi through my IB school and my work with La Silhouette, my school's French writing club.",
+      "I speak English and Mandarin fluently, mais je peux parler francais aussi through my IB school and my work with La Silhouette, my school's French writing club.",
   },
   13: {
     id: 13,
@@ -87,22 +85,22 @@ export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
     response:
       'Haha, probably tea. I drink coffee occasionally, but not often enough to pretend it represents my personality, work ethic, or entire approach to software engineering.',
   },
-  14: {
-    id: 14,
-    prompt: "Anything else you're curious about?",
-    response:
-      "Definitely. You can return to the opening questions and explore another project, something I learned from failure, or what I do outside software.",
-  },
-  15: {
-    id: 15,
+  17: {
+    id: 17,
     prompt: 'What are you looking for in a role?',
     response:
       "I'm looking for a role where I can contribute to a real product, learn from experienced developers, and work on problems that are technically challenging and useful to people.",
   },
-  16: {
-    id: 16,
+  18: {
+    id: 18,
     prompt: "Thanks for chatting. What's one thing you want me to remember?",
     response:
-      "I'm both a builder and a teacher. I enjoy solving difficult technical problems, but I also care about making the result understandable and useful to other people.",
+      "I'm both a builder and a problem solver. I enjoy solving difficult technical problems, but I also care about making the result understandable and useful to other people.",
+  },
+  19: {
+    id: 19,
+    prompt: 'Anything else you’re curious about?',
+    response:
+      'Definitely. You can return to the opening questions and explore another project, something I learned from failure, or what I do outside software.',
   },
 }

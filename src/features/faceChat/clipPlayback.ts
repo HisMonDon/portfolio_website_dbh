@@ -1,30 +1,49 @@
 import { useEffect, useRef, useState } from 'react'
+import { advanceFrameCursor } from './frameCursor'
+import { fromClipFormat, type ClipFormatFrame, type InternalFrame } from './clipFormat'
 
-export interface BlendshapeFrame {
-  t: number
-  blendshapes: { name: string; score: number }[]
-}
+export type BlendshapeFrame = ClipFormatFrame
 
-export interface ClipData {
-  clipId: string
-  frames: BlendshapeFrame[]
-}
+// Per CLIP_FORMAT.md, clipNN.json on disk is a bare JSON array of frames — no wrapping object,
+// no clipId field in the file.
+export type ClipData = ClipFormatFrame[]
 
 const clipCache = new Map<string, Promise<ClipData>>()
 
-// Placeholder clip assets are bundled statically today (clip00.webm /
-// clip00.json). Real per-node clips would be fetched by NN index the same
-// way — only this lookup needs to change, not the playback logic below.
+function clipUrl(name: string) {
+  return new URL(`./clips/${name}.json`, import.meta.url).href
+}
+
+// Recorded per-node dialogue clips (see dialogueGraph.ts) plus the idle loop and clips reserved
+// for other portfolio sections (intro/credits/resume/skills) not yet wired up outside this
+// project card.
 const CLIP_JSON_URLS: Record<string, string> = {
-  clip00: new URL('./clips/clip00.json', import.meta.url).href,
+  '0_1': clipUrl('0_1'),
+  '0_2': clipUrl('0_2'),
+  '0_3': clipUrl('0_3'),
+  '0_4': clipUrl('0_4'),
+  '1_0': clipUrl('1_0'),
+  '1_1': clipUrl('1_1'),
+  '2_0': clipUrl('2_0'),
+  '2_1': clipUrl('2_1'),
+  '3_0': clipUrl('3_0'),
+  '3_1': clipUrl('3_1'),
+  '4_0': clipUrl('4_0'),
+  '4_1': clipUrl('4_1'),
+  '4_2': clipUrl('4_2'),
+  '4_3': clipUrl('4_3'),
+  last_0: clipUrl('last_0'),
+  last_1: clipUrl('last_1'),
+  idle_0: clipUrl('idle_0'),
+  idle_1: clipUrl('idle_1'),
+  intro: clipUrl('intro'),
+  credits: clipUrl('credits'),
+  resume: clipUrl('resume'),
+  skills: clipUrl('skills'),
 }
 
-export const CLIP_VIDEO_URLS: Record<string, string> = {
-  clip00: new URL('./clips/clip00.webm', import.meta.url).href,
-}
-
-// Test-only escape hatch so unit tests can exercise loadClip's error/retry
-// paths against the same 'clip00' key without cross-test cache pollution.
+// Test-only escape hatch so unit tests can exercise loadClip's error/retry paths against the
+// same clip id without cross-test cache pollution.
 export function __clearClipCacheForTests(): void {
   clipCache.clear()
 }
@@ -49,8 +68,8 @@ export function loadClip(clipId: string): Promise<ClipData> {
 
     const data = (await res.json()) as ClipData
 
-    if (!data || !Array.isArray(data.frames)) {
-      throw new Error(`Clip "${clipId}" JSON is malformed (missing "frames" array).`)
+    if (!Array.isArray(data)) {
+      throw new Error(`Clip "${clipId}" JSON is malformed (expected an array of frames).`)
     }
 
     return data
@@ -58,14 +77,17 @@ export function loadClip(clipId: string): Promise<ClipData> {
 
   clipCache.set(clipId, promise)
 
-  // A failed load shouldn't be permanently cached — let a later attempt
-  // (e.g. after a network hiccup, or once the real asset exists) retry.
+  // A failed load shouldn't be permanently cached — let a later attempt (e.g. after a network
+  // hiccup, or once the real asset exists) retry.
   promise.catch(() => clipCache.delete(clipId))
 
   return promise
 }
 
-export function findFrameAt(frames: BlendshapeFrame[], t: number): BlendshapeFrame | null {
+// Finds the latest CLIP_FORMAT-shaped frame at-or-before a given time (seconds). Kept for
+// callers that want a one-off lookup against the raw seconds/name contract; the live playback
+// loop below walks the internal ms/categoryName frames via advanceFrameCursor instead.
+export function findFrameAt(frames: ClipFormatFrame[], t: number): ClipFormatFrame | null {
   if (frames.length === 0) return null
 
   let match = frames[0]
@@ -78,28 +100,58 @@ export function findFrameAt(frames: BlendshapeFrame[], t: number): BlendshapeFra
   return match
 }
 
-export interface ClipPlayerState {
-  activeFrame: BlendshapeFrame | null
-  error: string | null
+// Duck-typed rather than importing three.js here, so this file (and its round-trip/edge-case
+// tests) stay usable outside a WebGL context.
+interface MorphableMesh {
+  morphTargetDictionary?: Record<string, number>
+  morphTargetInfluences?: number[]
 }
 
-// Drives clip playback for a given dialogue node's clip id, imperatively
-// owning the <video> element passed via `mediaRef`:
-//  - On every clipId change, the previous clip is paused and detached
-//    (src cleared + reloaded) *before* the next clip's src is attached, so
-//    rapid node-to-node navigation never leaves two clips overlapping.
-//  - Blendshape frames are looked up from the media element's own
-//    `currentTime` (never performance.now()/Date.now()), per the clip
-//    format contract.
-//  - Both the JSON fetch and the <video> element surface load failures via
-//    the returned `error`, instead of throwing/breaking the component.
-export function useClipPlayer(
-  clipId: string,
-  mediaRef: React.RefObject<HTMLVideoElement | null>,
-): ClipPlayerState {
-  const [clip, setClip] = useState<ClipData | null>(null)
-  const [activeFrame, setActiveFrame] = useState<BlendshapeFrame | null>(null)
+// Mirrors face_mapping_sandbox's applyBlendshapes(categories, meshes): sets each named morph
+// target's influence to its frame score. A mesh without morph targets (e.g. this repo's current
+// placeholder avatar) is silently skipped — this is the hookup point for once a real
+// morph-target avatar model replaces the placeholder.
+export function applyBlendshapesToMeshes(
+  categories: { categoryName: string; score: number }[],
+  meshes: MorphableMesh[],
+): void {
+  meshes.forEach((mesh) => {
+    const dict = mesh.morphTargetDictionary
+    const influences = mesh.morphTargetInfluences
+
+    if (!dict || !influences) return
+
+    categories.forEach(({ categoryName, score }) => {
+      const index = dict[categoryName]
+
+      if (index !== undefined) influences[index] = score
+    })
+  })
+}
+
+export type ClipPlayMode = 'loop' | 'once'
+
+export interface ClipPlayerState {
+  activeFrame: InternalFrame | null
+  isPlaying: boolean
+  error: string | null
+  play: () => void
+  pause: () => void
+}
+
+// Blendshapes-only clip player: loads clipId's JSON (CLIP_FORMAT.md contract) and walks its
+// frames on a plain rAF clock (no audio/video element — this repo has no audio to sync to yet).
+// 'loop' mode restarts from t=0 once the clip's last frame passes (for an idle clip); 'once'
+// mode holds the final frame and stops (for a dialogue answer clip).
+export function useClipPlayer(clipId: string | null, mode: ClipPlayMode): ClipPlayerState {
+  const [activeFrame, setActiveFrame] = useState<InternalFrame | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const framesRef = useRef<InternalFrame[]>([])
+  const cursorRef = useRef(0)
+  const epochRef = useRef<number | null>(null)
+  const pausedElapsedRef = useRef(0)
   const rafRef = useRef<number | null>(null)
   const requestIdRef = useRef(0)
 
@@ -107,44 +159,23 @@ export function useClipPlayer(
     const requestId = ++requestIdRef.current
     let cancelled = false
 
-    setClip(null)
+    framesRef.current = []
+    cursorRef.current = 0
+    epochRef.current = null
+    pausedElapsedRef.current = 0
     setActiveFrame(null)
     setError(null)
+    setIsPlaying(false)
 
-    const media = mediaRef.current
-    const videoUrl = CLIP_VIDEO_URLS[clipId]
-
-    // Stop whatever the previous clip was doing *before* wiring up the new
-    // one — avoids any window where two sources could both be playing.
-    let handleVideoError: (() => void) | null = null
-
-    if (media) {
-      media.pause()
-      media.removeAttribute('src')
-      media.load()
-
-      handleVideoError = () => {
-        if (requestIdRef.current !== requestId) return
-        setError((prev) => prev ?? `Clip "${clipId}" video failed to load.`)
-      }
-
-      media.addEventListener('error', handleVideoError)
-
-      if (videoUrl) {
-        media.src = videoUrl
-        media.load()
-        media.play().catch(() => {
-          /* autoplay rejection is non-fatal; blendshape sync just waits */
-        })
-      } else {
-        setError(`No clip video is registered for clip id "${clipId}".`)
-      }
-    }
+    if (!clipId) return
 
     loadClip(clipId)
       .then((data) => {
         if (cancelled || requestIdRef.current !== requestId) return
-        setClip(data)
+
+        framesRef.current = fromClipFormat(data)
+        epochRef.current = performance.now()
+        setIsPlaying(true)
       })
       .catch((err) => {
         if (cancelled || requestIdRef.current !== requestId) return
@@ -153,21 +184,38 @@ export function useClipPlayer(
 
     return () => {
       cancelled = true
-
-      if (media && handleVideoError) {
-        media.removeEventListener('error', handleVideoError)
-      }
     }
-  }, [clipId, mediaRef])
+  }, [clipId])
 
   useEffect(() => {
-    if (!clip) return
+    if (!isPlaying) return
 
     const tick = () => {
-      const media = mediaRef.current
+      const frames = framesRef.current
+      const epoch = epochRef.current
 
-      if (media) {
-        setActiveFrame(findFrameAt(clip.frames, media.currentTime))
+      if (frames.length > 0 && epoch !== null) {
+        const lastFrameT = frames[frames.length - 1].t
+        const elapsedMs = performance.now() - epoch
+
+        if (elapsedMs > lastFrameT) {
+          cursorRef.current = advanceFrameCursor(frames, cursorRef.current, lastFrameT, (frame) => {
+            setActiveFrame(frame)
+          })
+
+          if (mode === 'loop') {
+            // Re-derive from a fresh epoch rather than accumulating drift across loops.
+            epochRef.current = performance.now()
+            cursorRef.current = 0
+          } else {
+            setIsPlaying(false)
+            return
+          }
+        } else {
+          cursorRef.current = advanceFrameCursor(frames, cursorRef.current, elapsedMs, (frame) => {
+            setActiveFrame(frame)
+          })
+        }
       }
 
       rafRef.current = requestAnimationFrame(tick)
@@ -177,8 +225,24 @@ export function useClipPlayer(
 
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
     }
-  }, [clip, mediaRef])
+  }, [isPlaying, mode])
 
-  return { activeFrame, error }
+  const play = () => {
+    if (framesRef.current.length === 0) return
+
+    epochRef.current = performance.now() - pausedElapsedRef.current
+    setIsPlaying(true)
+  }
+
+  const pause = () => {
+    if (epochRef.current !== null) {
+      pausedElapsedRef.current = performance.now() - epochRef.current
+    }
+
+    setIsPlaying(false)
+  }
+
+  return { activeFrame, isPlaying, error, play, pause }
 }

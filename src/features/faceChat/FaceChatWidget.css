@@ -1,17 +1,15 @@
 .face-chat-widget {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 10;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: min(32vw, 400px);
-  max-width: calc(100vw - 48px);
+  width: 100%;
+  max-width: 480px;
   background: rgba(20, 20, 20, 0.55);
   padding: 12px;
   border-radius: 6px;
   backdrop-filter: blur(4px);
+  margin-bottom: 20px;
 }
 
 .face-chat-stage {
@@ -23,10 +21,6 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-
-.face-chat-clip-video {
-  display: none;
 }
 
 .face-chat-gate,
