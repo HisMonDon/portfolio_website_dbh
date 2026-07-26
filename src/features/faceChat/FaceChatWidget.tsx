@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import FaceTrackingAvatar from './FaceTrackingAvatar'
 import TranscriptPanel from './TranscriptPanel'
 import { DIALOGUE_GRAPH, OPENING_NODE_IDS } from './dialogueGraph'
@@ -29,11 +29,21 @@ export default function FaceChatWidget() {
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [currentNodeId, setCurrentNodeId] = useState<number>(OPENING_NODE_IDS[0])
   const clipVideoRef = useRef<HTMLVideoElement | null>(null)
+  const promptHeadingRef = useRef<HTMLHeadingElement | null>(null)
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
   const node = DIALOGUE_GRAPH[currentNodeId]
   const { error: clipError } = useClipPlayer(node.clipId, clipVideoRef)
 
   const started = gate === 'granted' && !mobileFallback
+
+  // Focus management: every time the active node changes, move focus to
+  // the new prompt heading. That both puts focus somewhere sensible after
+  // a transition (rather than leaving it on a now-stale/removed button)
+  // and causes screen readers to announce the new question.
+  useEffect(() => {
+    promptHeadingRef.current?.focus()
+  }, [currentNodeId])
 
   function handleEnableCamera() {
     setCameraError(null)
@@ -45,11 +55,37 @@ export default function FaceChatWidget() {
     setGate('declined')
   }
 
+  // Roving-tabindex arrow-key navigation across the current node's option
+  // buttons (a standard pattern for a button group: only one option is a
+  // tab stop at a time, arrow keys move focus between siblings).
+  function handleOptionKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    const count = node.transitions.length
+
+    if (count === 0) return
+
+    let nextIndex: number | null = null
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+      nextIndex = (index + 1) % count
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + count) % count
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = count - 1
+    }
+
+    if (nextIndex !== null) {
+      event.preventDefault()
+      optionRefs.current[nextIndex]?.focus()
+    }
+  }
+
   return (
     <div className="face-chat-widget">
       <div className="face-chat-stage">
         {mobileFallback || gate === 'declined' ? (
-          <div className="face-chat-fallback">
+          <div className="face-chat-fallback" role="status" aria-live="polite">
             <p>Camera preview isn't available here.</p>
             <p className="face-chat-fallback-sub">
               {mobileFallback
@@ -59,10 +95,15 @@ export default function FaceChatWidget() {
           </div>
         ) : gate === 'gate' ? (
           <div className="face-chat-gate">
-            <div className="face-tracking-avatar-placeholder-standin">
+            <div className="face-tracking-avatar-placeholder-standin" aria-hidden="true">
               <span>Your avatar goes here</span>
             </div>
-            <button type="button" className="face-chat-enable-btn" onClick={handleEnableCamera}>
+            <button
+              type="button"
+              className="face-chat-enable-btn"
+              onClick={handleEnableCamera}
+              aria-label="Enable camera and start the live face-tracking avatar"
+            >
               Click to enable camera
             </button>
           </div>
@@ -82,15 +123,30 @@ export default function FaceChatWidget() {
           </p>
         )}
 
-        <p className="face-chat-node-prompt">{TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}</p>
+        <h2
+          className="face-chat-node-prompt"
+          ref={promptHeadingRef}
+          tabIndex={-1}
+        >
+          {TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}
+        </h2>
 
-        <div className="face-chat-options">
-          {node.transitions.map((nextId) => (
+        <div
+          className="face-chat-options"
+          role="group"
+          aria-label="Dialogue options"
+        >
+          {node.transitions.map((nextId, index) => (
             <button
               key={nextId}
+              ref={(el) => {
+                optionRefs.current[index] = el
+              }}
               type="button"
               className="face-chat-option-btn"
+              tabIndex={index === 0 ? 0 : -1}
               onClick={() => setCurrentNodeId(nextId)}
+              onKeyDown={(event) => handleOptionKeyDown(event, index)}
             >
               {TRANSCRIPT_SCRIPT[nextId]?.prompt}
             </button>

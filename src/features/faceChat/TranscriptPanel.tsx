@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { TRANSCRIPT_SCRIPT } from './transcriptScript'
 import './TranscriptPanel.css'
 
@@ -10,6 +10,7 @@ interface TranscriptPanelProps {
 export default function TranscriptPanel({ nodeId }: TranscriptPanelProps) {
   const [visible, setVisible] = useState(false)
   const entry = TRANSCRIPT_SCRIPT[nodeId]
+  const bodyId = useId()
 
   return (
     <div className="transcript-panel">
@@ -18,12 +19,13 @@ export default function TranscriptPanel({ nodeId }: TranscriptPanelProps) {
         className="transcript-toggle"
         onClick={() => setVisible((v) => !v)}
         aria-expanded={visible}
+        aria-controls={bodyId}
       >
         {visible ? 'Hide transcript' : 'Show transcript'}
       </button>
 
       {visible && entry && (
-        <div className="transcript-body">
+        <div className="transcript-body" id={bodyId} role="region" aria-label="Dialogue transcript">
           <p className="transcript-prompt">{entry.prompt}</p>
           <p className="transcript-response">{entry.response}</p>
         </div>
