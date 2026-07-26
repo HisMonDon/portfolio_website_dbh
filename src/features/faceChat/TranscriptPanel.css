@@ -1,0 +1,32 @@
+.transcript-panel {
+  width: 100%;
+  font-size: 13px;
+}
+
+.transcript-toggle {
+  background: none;
+  border: 1px solid #d8d8d8;
+  color: inherit;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.transcript-body {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px dashed #d8d8d8;
+  border-radius: 4px;
+}
+
+.transcript-prompt {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.transcript-response {
+  margin: 0;
+  line-height: 1.4;
+}
