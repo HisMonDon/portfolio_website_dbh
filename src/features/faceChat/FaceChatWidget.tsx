@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import FaceTrackingAvatar from './FaceTrackingAvatar'
+import { useEffect, useRef, useState } from 'react'
+import ClipAvatar from './ClipAvatar'
 import TranscriptPanel from './TranscriptPanel'
 import { DIALOGUE_GRAPH, IDLE_CLIP_ID, OPENING_NODE_IDS } from './dialogueGraph'
 import { TRANSCRIPT_SCRIPT } from './transcriptScript'
 import { useClipPlayer } from './clipPlayback'
-import { isLikelyMobile } from './deviceDetect'
 import './FaceChatWidget.css'
 
-type GateState = 'gate' | 'granted' | 'declined'
-
-// Self-contained face-tracking avatar chat widget: permission gate ->
-// live camera/Three.js avatar + branching dialogue with clip playback and
-// a toggleable transcript. See dialogueGraph.ts for the 17-node structure.
+// Self-contained prerecorded-clip avatar chat widget: a camera-free Three.js
+// avatar (ClipAvatar) driven entirely by clip playback (clipPlayback.ts) +
+// branching dialogue with a toggleable transcript. See dialogueGraph.ts for
+// the 16-node structure. This never requests camera access — that's a
+// distinct concern belonging to the live-tracking component
+// (FaceTrackingAvatar), which isn't mounted here.
 //
 // NOTE on browser history: `currentNodeId` is plain component state, not
 // synced to the URL/history at all (no pushState, no popstate listener).
@@ -24,9 +24,6 @@ type GateState = 'gate' | 'granted' | 'declined'
 // gap, not something fixed here — wiring node state into the URL/history
 // API is a bigger architectural addition than this hardening pass implies.
 export default function FaceChatWidget() {
-  const mobileFallback = useMemo(() => isLikelyMobile(), [])
-  const [gate, setGate] = useState<GateState>('gate')
-  const [cameraError, setCameraError] = useState<string | null>(null)
   const [currentNodeId, setCurrentNodeId] = useState<number>(OPENING_NODE_IDS[0])
   // The avatar idles (looped) until the visitor picks their first question, or whenever it's
   // sitting on the loop node's own reconvergence line (no dedicated recording exists for that
@@ -42,8 +39,6 @@ export default function FaceChatWidget() {
     isIdling ? 'loop' : 'once',
   )
 
-  const started = gate === 'granted' && !mobileFallback
-
   // Focus management: every time the active node changes, move focus to
   // the new prompt heading. That both puts focus somewhere sensible after
   // a transition (rather than leaving it on a now-stale/removed button)
@@ -51,16 +46,6 @@ export default function FaceChatWidget() {
   useEffect(() => {
     promptHeadingRef.current?.focus()
   }, [currentNodeId])
-
-  function handleEnableCamera() {
-    setCameraError(null)
-    setGate('granted')
-  }
-
-  function handleCameraError(message: string) {
-    setCameraError(message)
-    setGate('declined')
-  }
 
   // Roving-tabindex arrow-key navigation across the current node's option
   // buttons (a standard pattern for a button group: only one option is a
@@ -91,36 +76,7 @@ export default function FaceChatWidget() {
   return (
     <div className="face-chat-widget">
       <div className="face-chat-stage">
-        {mobileFallback || gate === 'declined' ? (
-          <div className="face-chat-fallback" role="status" aria-live="polite">
-            <p>Camera preview isn't available here.</p>
-            <p className="face-chat-fallback-sub">
-              {mobileFallback
-                ? 'Try this on a desktop browser to chat with the live face-tracking avatar.'
-                : cameraError ?? 'Camera access was declined.'}
-            </p>
-          </div>
-        ) : gate === 'gate' ? (
-          <div className="face-chat-gate">
-            <div className="face-tracking-avatar-placeholder-standin" aria-hidden="true">
-              <span>Your avatar goes here</span>
-            </div>
-            <button
-              type="button"
-              className="face-chat-enable-btn"
-              onClick={handleEnableCamera}
-              aria-label="Enable camera and start the live face-tracking avatar"
-            >
-              Click to enable camera
-            </button>
-          </div>
-        ) : (
-          <FaceTrackingAvatar
-            started={started}
-            onError={handleCameraError}
-            activeCategories={activeFrame?.categories ?? null}
-          />
-        )}
+        <ClipAvatar activeCategories={activeFrame?.categories ?? null} />
       </div>
 
       <div className="face-chat-dialogue">
