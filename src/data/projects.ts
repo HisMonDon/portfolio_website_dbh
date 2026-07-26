@@ -18,7 +18,7 @@ export const PROJECTS: Project[] = [
   {
     id: 'face-tracking-avatar',
     title: 'Face-Tracking Avatar',
-    description: 'A live webcam demo that uses MediaPipe to detect facial blendshapes and maps them onto a 3D avatar in Three.js, with calibration so expressions read naturally. Enable your camera below to chat with it.',
+    description: 'MediaPipe detects facial blendshapes from a webcam and maps them onto a 3D avatar in Three.js, with calibration so expressions read naturally. Try the interview Q&A below — it replays pre-recorded blendshape clips, so no camera is needed.',
     technologies: ['MediaPipe', 'Three.js', 'React', 'TypeScript'],
     images: [],
     interactive: true,

@@ -18,6 +18,7 @@ export default function ClipAvatar({ activeCategories }: ClipAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const morphMeshesRef = useRef<THREE.Mesh[]>([])
   const [ready, setReady] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -26,33 +27,50 @@ export default function ClipAvatar({ activeCategories }: ClipAvatarProps) {
 
     let cancelled = false
     let frameId: number | null = null
+    // Declared outside the try so cleanup can still dispose whatever got created before a
+    // mid-setup failure (e.g. WebGLRenderer construction can throw if the browser refuses a
+    // context — out of contexts, GPU denylisted, etc).
+    let renderer: THREE.WebGLRenderer | null = null
+    let geometry: THREE.BufferGeometry | null = null
+    let material: THREE.Material | null = null
+    let scene: THREE.Scene | null = null
 
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
-    camera.position.z = 3
+    try {
+      scene = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
+      camera.position.z = 3
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
-    renderer.setSize(canvas.clientWidth || 320, canvas.clientHeight || 240, false)
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
+      renderer.setSize(canvas.clientWidth || 320, canvas.clientHeight || 240, false)
 
-    const geometry = new THREE.SphereGeometry(1, 32, 32)
-    const material = new THREE.MeshStandardMaterial({ color: 0x4c8bf5 })
-    const mesh = new THREE.Mesh(geometry, material)
-    scene.add(mesh)
-    morphMeshesRef.current = [mesh]
+      geometry = new THREE.SphereGeometry(1, 32, 32)
+      material = new THREE.MeshStandardMaterial({ color: 0x4c8bf5 })
+      const mesh = new THREE.Mesh(geometry, material)
+      scene.add(mesh)
+      morphMeshesRef.current = [mesh]
 
-    const light = new THREE.DirectionalLight(0xffffff, 1)
-    light.position.set(2, 2, 2)
-    scene.add(light)
+      const light = new THREE.DirectionalLight(0xffffff, 1)
+      light.position.set(2, 2, 2)
+      scene.add(light)
 
-    const animate = () => {
-      if (cancelled) return
-      mesh.rotation.y += 0.01
-      renderer.render(scene, camera)
-      frameId = requestAnimationFrame(animate)
+      const renderScene = scene
+      const renderer_ = renderer
+
+      const animate = () => {
+        if (cancelled) return
+        mesh.rotation.y += 0.01
+        renderer_.render(renderScene, camera)
+        frameId = requestAnimationFrame(animate)
+      }
+
+      animate()
+      setReady(true)
+    } catch (err) {
+      // WebGL isn't guaranteed to be available (context limits, a denylisted GPU, a headless
+      // test environment) — fail into a visible placeholder instead of throwing during render,
+      // which would otherwise take the whole widget tree down with no error boundary.
+      setError(err instanceof Error ? err.message : 'The 3D avatar failed to start.')
     }
-
-    animate()
-    setReady(true)
 
     return () => {
       cancelled = true
@@ -61,11 +79,11 @@ export default function ClipAvatar({ activeCategories }: ClipAvatarProps) {
 
       if (frameId !== null) cancelAnimationFrame(frameId)
 
-      geometry.dispose()
-      material.dispose()
-      scene.clear()
-      renderer.dispose()
-      renderer.forceContextLoss()
+      geometry?.dispose()
+      material?.dispose()
+      scene?.clear()
+      renderer?.dispose()
+      renderer?.forceContextLoss()
     }
   }, [])
 
@@ -79,7 +97,7 @@ export default function ClipAvatar({ activeCategories }: ClipAvatarProps) {
       <canvas ref={canvasRef} className="clip-avatar-canvas" style={{ display: ready ? 'block' : 'none' }} />
       {!ready && (
         <div className="clip-avatar-placeholder">
-          <span>Avatar loading…</span>
+          <span>{error ? '3D avatar unavailable here' : 'Avatar loading…'}</span>
         </div>
       )}
     </div>
