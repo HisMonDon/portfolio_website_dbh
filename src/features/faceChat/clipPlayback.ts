@@ -23,7 +23,13 @@ export const CLIP_VIDEO_URLS: Record<string, string> = {
   clip00: new URL('./clips/clip00.webm', import.meta.url).href,
 }
 
-function loadClip(clipId: string): Promise<ClipData> {
+// Test-only escape hatch so unit tests can exercise loadClip's error/retry
+// paths against the same 'clip00' key without cross-test cache pollution.
+export function __clearClipCacheForTests(): void {
+  clipCache.clear()
+}
+
+export function loadClip(clipId: string): Promise<ClipData> {
   const cached = clipCache.get(clipId)
 
   if (cached) return cached
