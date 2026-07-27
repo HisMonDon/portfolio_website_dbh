@@ -2,16 +2,18 @@
   font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: #9a9a9a;
+  color: #4f5b63;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   margin: 0 0 8px;
 }
 
 .section-title {
   font-size: 34px;
-  font-weight: 300;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-weight: normal;
   letter-spacing: 1px;
   margin: 0 0 24px;
-  color: #1a1a1a;
+  color: #101820;
 }
 
 .row-container {
@@ -29,7 +31,8 @@
 .section-text {
   font-size: 15px;
   line-height: 1.7;
-  color: #4a4a4a;
+  color: #26333b;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   margin: 0 0 16px;
 }
 

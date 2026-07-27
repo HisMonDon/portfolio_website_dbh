@@ -1,6 +1,7 @@
 // Dialogue state machine data for the face-tracking avatar chat feature.
 //
 // Structure, per the recorded clip set in ./clips (file basenames = clipId below):
+//   - Node 0      : introduction, played once before the opening menu — intro
 //   - Nodes 1-4    : openings (level 0) — 0_1..0_4
 //   - Nodes 5-13   : follow-ups (level 1) — 2 each under openings 1-3, 3 under opening 4
 //                    (1 -> 5,6) (2 -> 7,8) (3 -> 9,10) (4 -> 11,12,13)
@@ -11,8 +12,8 @@
 //   - Node 19      : the "loop" node — reachable from both closings, offers to jump back to the
 //                    4 opening questions. Uses the idle clip (no dedicated recording exists for
 //                    this transitional line).
-// Total: 4 + 9 + 2 + 1 = 16 nodes.
-export type DialogueNodeType = 'opening' | 'followup' | 'closing' | 'loop'
+// Total: 1 + 4 + 9 + 2 + 1 = 17 nodes.
+export type DialogueNodeType = 'intro' | 'opening' | 'followup' | 'closing' | 'loop'
 
 export interface DialogueNode {
   id: number
@@ -21,6 +22,7 @@ export interface DialogueNode {
   transitions: number[]
 }
 
+export const INTRO_NODE_ID = 0 as const
 export const OPENING_NODE_IDS = [1, 2, 3, 4] as const
 export const CLOSING_NODE_IDS = [17, 18] as const
 export const LOOP_NODE_ID = 19 as const
@@ -33,6 +35,8 @@ export const IDLE_CLIP_ID = IDLE_CLIP_IDS[0]
 const CLOSING_TRANSITIONS = [...CLOSING_NODE_IDS]
 
 export const DIALOGUE_GRAPH: Record<number, DialogueNode> = {
+  0: { id: 0, type: 'intro', clipId: 'intro', transitions: [...OPENING_NODE_IDS] },
+
   1: { id: 1, type: 'opening', clipId: '0_1', transitions: [5, 6] },
   2: { id: 2, type: 'opening', clipId: '0_2', transitions: [7, 8] },
   3: { id: 3, type: 'opening', clipId: '0_3', transitions: [9, 10] },

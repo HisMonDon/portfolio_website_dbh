@@ -5,50 +5,90 @@
   grid-row: 1;
   width: 100%;
   min-width: 0;
-  padding: clamp(10px, 1.2vw, 16px) clamp(12px, 1.5vw, 20px);
-  border: 1px solid rgba(129, 208, 248, 0.4);
-  background: linear-gradient(90deg, rgba(15, 35, 48, 0.76), rgba(23, 56, 76, 0.34));
-  backdrop-filter: blur(3px);
-  font-family: 'Gotham_thin', system-ui, -apple-system, sans-serif;
-  font-size: 13px;
+  padding: clamp(18px, 1.8vw, 24px) clamp(18px, 2vw, 26px);
+  border: 1px solid rgba(55, 74, 86, 0.72);
+  background: linear-gradient(105deg, rgba(5, 19, 29, 0.94), rgba(12, 35, 49, 0.88));
+  box-shadow: 0 12px 28px rgba(5, 18, 28, 0.18);
+  backdrop-filter: blur(6px);
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: clamp(12px, 0.95vw, 14px);
 }
 
-.transcript-eyebrow {
-  margin: 0 0 8px;
-  color: #81d0f8;
-  font-family: 'Gotham_thin', system-ui, -apple-system, sans-serif;
-  font-size: 11px;
-  font-weight: normal;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+.transcript-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: calc(100% - 110px);
+  margin-bottom: 10px;
+}
+
+.transcript-activity {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 3px;
+  height: 1.25em;
+}
+
+.transcript-activity span {
+  width: 3px;
+  height: 5px;
+  border-radius: 2px;
+  background: #9ba8af;
+}
+
+.transcript-activity.is-active span {
+  background: #69cfff;
+  animation: transcript-audio 760ms ease-in-out infinite alternate;
+}
+
+.transcript-activity.is-active span:nth-child(2) {
+  animation-delay: 160ms;
+}
+
+.transcript-activity.is-active span:nth-child(3) {
+  animation-delay: 320ms;
 }
 
 .transcript-prompt {
-  margin: 0 0 6px;
-  color: #f2f5f7;
-  font-family: 'Gotham_thin', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: clamp(14px, 1.12vw, 17px);
   font-weight: normal;
+  line-height: 1.35;
 }
 
 .transcript-response {
-  position: relative;
   margin: 0;
-  color: #c7d0d8;
-  font-family: 'Gotham_thin', system-ui, -apple-system, sans-serif;
+  height: 4.8em;
+  overflow: hidden;
+  color: #eef3f6;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-weight: normal;
-  line-height: 1.4;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
 }
 
-/* Reserve the paragraph's final height so typing never pushes the HUD or avatar around. */
-.transcript-response-reserve {
-  display: block;
-  visibility: hidden;
+.transcript-response::-webkit-scrollbar {
+  display: none;
 }
 
 .transcript-response-visible {
-  position: absolute;
-  inset: 0;
   display: block;
+}
+
+.transcript-full-response {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .transcript-response.is-typing .transcript-response-visible::after {
@@ -68,14 +108,27 @@
   }
 }
 
+@keyframes transcript-audio {
+  from {
+    height: 5px;
+    opacity: 0.65;
+  }
+
+  to {
+    height: 14px;
+    opacity: 1;
+  }
+}
+
 @media (max-width: 1000px) {
   .transcript-panel {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .transcript-response.is-typing .transcript-response-visible::after {
+  .transcript-response.is-typing .transcript-response-visible::after,
+  .transcript-activity.is-active span {
     animation: none;
   }
 }

@@ -223,12 +223,14 @@ export default function ClipAvatar({
     try {
       setError(null)
       scene = new THREE.Scene()
-      // Match the head-and-shoulders framing from face_mapping_sandbox's live-avatar phase.
-      // The recording harness uses a much wider full-body camera for arm capture, which makes
-      // this HUD avatar tiny and exposes the model's neutral T-pose.
-      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100)
-      camera.position.set(0, 1.6, 1.2)
-      camera.lookAt(0, 1.55, 0)
+      // Treat the face as the main subject. The intentionally tight head-and-shoulders framing
+      // leaves the lower torso outside the shot, while the extra-wide canvas preserves useful
+      // horizontal room without pulling the camera away from the avatar.
+      const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
+      // Pan the framing downward without changing the camera distance or FOV. This shifts the
+      // avatar upward in the finished shot and leaves room for low hand gestures at the bottom.
+      camera.position.set(0, 1.63, 1)
+      camera.lookAt(0, 1.6, 0)
       camera.layers.enable(1)
 
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })

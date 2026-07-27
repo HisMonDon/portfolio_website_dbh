@@ -4,8 +4,13 @@ import {
   markFollowupCompleted,
   type CompletedFollowups,
 } from './dialogueFlow'
+import { INTRO_NODE_ID } from './dialogueGraph'
 
 describe('follow-up branch flow', () => {
+  it('offers the opening questions after the introduction', () => {
+    expect(getVisibleDialogueChoices(INTRO_NODE_ID, 1, {})).toEqual([1, 2, 3, 4])
+  })
+
   it('returns the remaining follow-up after the first answer instead of jumping to closings', () => {
     const completed = markFollowupCompleted({}, 1, 5)
 

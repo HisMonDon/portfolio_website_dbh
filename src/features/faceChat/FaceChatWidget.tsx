@@ -9,7 +9,12 @@ import {
   type ChoiceMarkerKind,
 } from './HudIcons'
 import TranscriptPanel from './TranscriptPanel'
-import { DIALOGUE_GRAPH, IDLE_CLIP_IDS, OPENING_NODE_IDS } from './dialogueGraph'
+import {
+  DIALOGUE_GRAPH,
+  IDLE_CLIP_IDS,
+  INTRO_NODE_ID,
+  OPENING_NODE_IDS,
+} from './dialogueGraph'
 import {
   getVisibleDialogueChoices,
   markFollowupCompleted,
@@ -36,12 +41,12 @@ const CHOICE_MARKERS: readonly ChoiceMarkerKind[] = [
 // stay completed, the remaining prompts continue to be offered, and the closing prompts unlock
 // only after the active opening's follow-ups are exhausted.
 export default function FaceChatWidget() {
-  const [currentNodeId, setCurrentNodeId] = useState<number>(OPENING_NODE_IDS[0])
+  const [currentNodeId, setCurrentNodeId] = useState<number>(INTRO_NODE_ID)
   const [activeOpeningId, setActiveOpeningId] = useState<number>(OPENING_NODE_IDS[0])
-  const [isOpeningMenu, setIsOpeningMenu] = useState(true)
+  const [isOpeningMenu, setIsOpeningMenu] = useState(false)
   const [completedFollowups, setCompletedFollowups] = useState<CompletedFollowups>({})
   const [dialogueHistory, setDialogueHistory] = useState<DialogueHistoryEntry[]>([])
-  const [playbackPhase, setPlaybackPhase] = useState<'idle' | 'answer'>('idle')
+  const [playbackPhase, setPlaybackPhase] = useState<'idle' | 'answer'>('answer')
   const [idleClipIndex, setIdleClipIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -63,13 +68,18 @@ export default function FaceChatWidget() {
 
   const handleClipComplete = useCallback(() => {
     if (playbackPhase === 'answer') {
+      if (currentNodeId === INTRO_NODE_ID) {
+        setCurrentNodeId(OPENING_NODE_IDS[0])
+        setIsOpeningMenu(true)
+      }
+
       setPlaybackPhase('idle')
       return
     }
 
     // Run both silent recorded idle performances continuously.
     setIdleClipIndex((index) => (index + 1) % IDLE_CLIP_IDS.length)
-  }, [playbackPhase])
+  }, [currentNodeId, playbackPhase])
 
   const activeClipId = isIdling ? IDLE_CLIP_IDS[idleClipIndex] : node.clipId
   const {
@@ -182,7 +192,7 @@ export default function FaceChatWidget() {
         />
       </div>
 
-      <div className="face-chat-top-hud">
+      <div className={`face-chat-top-hud${isOpeningMenu ? ' is-opening-menu' : ''}`}>
         {!isOpeningMenu && (
           <TranscriptPanel
             nodeId={currentNodeId}

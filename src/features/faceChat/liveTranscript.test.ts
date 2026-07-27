@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { revealTimedTranscriptText, revealTranscriptText } from './liveTranscript'
+import {
+  revealTimedTranscriptText,
+  revealTranscriptText,
+} from './liveTranscript'
 
 describe('live avatar transcript', () => {
   it('starts empty and ends with the exact full response', () => {

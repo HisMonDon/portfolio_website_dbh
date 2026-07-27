@@ -5170,6 +5170,519 @@
           "endMs": 11280
         }
       ]
+    },
+    "intro": {
+      "nodeId": 0,
+      "durationMs": 29280,
+      "text": "Hi, I'm Chenyu Lu, but I also go by Eric. I'm a student and developer who enjoys turning technical ideas into projects that people can actually use. The avatar you're speaking with is one of those projects that is inside my portfolio. It uses real-time face tracking to mirror my expressions while answering questions about my work, experiences, and interests. You can start by choosing any of the questions on the screen.",
+      "recognizedText": "Hi, I'm Chen Yulu, but I also go by Eric. I'm a student and developer who enjoys turning technical ideas into projects that people can actually use. The avatar you're speaking with is one of those projects that is inside my portfolio. It uses real-time face tracking to mirror my expressions while answering questions about my work, experiences, and interests. You can start by choosing any of the questions on the screen.",
+      "alignmentCost": 0.0324,
+      "words": [
+        {
+          "text": "Hi,",
+          "startChar": 0,
+          "endChar": 3,
+          "startMs": 1490,
+          "endMs": 1880
+        },
+        {
+          "text": "I'm",
+          "startChar": 4,
+          "endChar": 7,
+          "startMs": 2610,
+          "endMs": 3000
+        },
+        {
+          "text": "Chenyu",
+          "startChar": 8,
+          "endChar": 14,
+          "startMs": 3000,
+          "endMs": 3160
+        },
+        {
+          "text": "Lu,",
+          "startChar": 15,
+          "endChar": 18,
+          "startMs": 3160,
+          "endMs": 3540
+        },
+        {
+          "text": "but",
+          "startChar": 19,
+          "endChar": 22,
+          "startMs": 3680,
+          "endMs": 4080
+        },
+        {
+          "text": "I",
+          "startChar": 23,
+          "endChar": 24,
+          "startMs": 4080,
+          "endMs": 4220
+        },
+        {
+          "text": "also",
+          "startChar": 25,
+          "endChar": 29,
+          "startMs": 4220,
+          "endMs": 4540
+        },
+        {
+          "text": "go",
+          "startChar": 30,
+          "endChar": 32,
+          "startMs": 4540,
+          "endMs": 4800
+        },
+        {
+          "text": "by",
+          "startChar": 33,
+          "endChar": 35,
+          "startMs": 4800,
+          "endMs": 5100
+        },
+        {
+          "text": "Eric.",
+          "startChar": 36,
+          "endChar": 41,
+          "startMs": 5100,
+          "endMs": 5420
+        },
+        {
+          "text": "I'm",
+          "startChar": 42,
+          "endChar": 45,
+          "startMs": 5780,
+          "endMs": 5820
+        },
+        {
+          "text": "a",
+          "startChar": 46,
+          "endChar": 47,
+          "startMs": 5780,
+          "endMs": 5980
+        },
+        {
+          "text": "student",
+          "startChar": 48,
+          "endChar": 55,
+          "startMs": 5980,
+          "endMs": 6280
+        },
+        {
+          "text": "and",
+          "startChar": 56,
+          "endChar": 59,
+          "startMs": 6280,
+          "endMs": 6560
+        },
+        {
+          "text": "developer",
+          "startChar": 60,
+          "endChar": 69,
+          "startMs": 6560,
+          "endMs": 6940
+        },
+        {
+          "text": "who",
+          "startChar": 70,
+          "endChar": 73,
+          "startMs": 7060,
+          "endMs": 7520
+        },
+        {
+          "text": "enjoys",
+          "startChar": 74,
+          "endChar": 80,
+          "startMs": 7520,
+          "endMs": 7880
+        },
+        {
+          "text": "turning",
+          "startChar": 81,
+          "endChar": 88,
+          "startMs": 7880,
+          "endMs": 8260
+        },
+        {
+          "text": "technical",
+          "startChar": 89,
+          "endChar": 98,
+          "startMs": 8260,
+          "endMs": 8680
+        },
+        {
+          "text": "ideas",
+          "startChar": 99,
+          "endChar": 104,
+          "startMs": 8680,
+          "endMs": 9200
+        },
+        {
+          "text": "into",
+          "startChar": 105,
+          "endChar": 109,
+          "startMs": 9200,
+          "endMs": 9600
+        },
+        {
+          "text": "projects",
+          "startChar": 110,
+          "endChar": 118,
+          "startMs": 9600,
+          "endMs": 10020
+        },
+        {
+          "text": "that",
+          "startChar": 119,
+          "endChar": 123,
+          "startMs": 10020,
+          "endMs": 10380
+        },
+        {
+          "text": "people",
+          "startChar": 124,
+          "endChar": 130,
+          "startMs": 10380,
+          "endMs": 10580
+        },
+        {
+          "text": "can",
+          "startChar": 131,
+          "endChar": 134,
+          "startMs": 10580,
+          "endMs": 10880
+        },
+        {
+          "text": "actually",
+          "startChar": 135,
+          "endChar": 143,
+          "startMs": 10880,
+          "endMs": 11220
+        },
+        {
+          "text": "use.",
+          "startChar": 144,
+          "endChar": 148,
+          "startMs": 11220,
+          "endMs": 11660
+        },
+        {
+          "text": "The",
+          "startChar": 149,
+          "endChar": 152,
+          "startMs": 12140,
+          "endMs": 12320
+        },
+        {
+          "text": "avatar",
+          "startChar": 153,
+          "endChar": 159,
+          "startMs": 12320,
+          "endMs": 12680
+        },
+        {
+          "text": "you're",
+          "startChar": 160,
+          "endChar": 166,
+          "startMs": 12680,
+          "endMs": 13020
+        },
+        {
+          "text": "speaking",
+          "startChar": 167,
+          "endChar": 175,
+          "startMs": 13020,
+          "endMs": 13280
+        },
+        {
+          "text": "with",
+          "startChar": 176,
+          "endChar": 180,
+          "startMs": 13280,
+          "endMs": 13660
+        },
+        {
+          "text": "is",
+          "startChar": 181,
+          "endChar": 183,
+          "startMs": 13690,
+          "endMs": 14080
+        },
+        {
+          "text": "one",
+          "startChar": 184,
+          "endChar": 187,
+          "startMs": 14080,
+          "endMs": 14320
+        },
+        {
+          "text": "of",
+          "startChar": 188,
+          "endChar": 190,
+          "startMs": 14320,
+          "endMs": 14460
+        },
+        {
+          "text": "those",
+          "startChar": 191,
+          "endChar": 196,
+          "startMs": 14460,
+          "endMs": 14780
+        },
+        {
+          "text": "projects",
+          "startChar": 197,
+          "endChar": 205,
+          "startMs": 14780,
+          "endMs": 15220
+        },
+        {
+          "text": "that",
+          "startChar": 206,
+          "endChar": 210,
+          "startMs": 15220,
+          "endMs": 15480
+        },
+        {
+          "text": "is",
+          "startChar": 211,
+          "endChar": 213,
+          "startMs": 15480,
+          "endMs": 15720
+        },
+        {
+          "text": "inside",
+          "startChar": 214,
+          "endChar": 220,
+          "startMs": 15720,
+          "endMs": 16020
+        },
+        {
+          "text": "my",
+          "startChar": 221,
+          "endChar": 223,
+          "startMs": 16020,
+          "endMs": 16220
+        },
+        {
+          "text": "portfolio.",
+          "startChar": 224,
+          "endChar": 234,
+          "startMs": 16220,
+          "endMs": 16720
+        },
+        {
+          "text": "It",
+          "startChar": 235,
+          "endChar": 237,
+          "startMs": 17140,
+          "endMs": 17300
+        },
+        {
+          "text": "uses",
+          "startChar": 238,
+          "endChar": 242,
+          "startMs": 17300,
+          "endMs": 17580
+        },
+        {
+          "text": "real-time",
+          "startChar": 243,
+          "endChar": 252,
+          "startMs": 17900,
+          "endMs": 18160
+        },
+        {
+          "text": "face",
+          "startChar": 253,
+          "endChar": 257,
+          "startMs": 18160,
+          "endMs": 18440
+        },
+        {
+          "text": "tracking",
+          "startChar": 258,
+          "endChar": 266,
+          "startMs": 18440,
+          "endMs": 18680
+        },
+        {
+          "text": "to",
+          "startChar": 267,
+          "endChar": 269,
+          "startMs": 18680,
+          "endMs": 19000
+        },
+        {
+          "text": "mirror",
+          "startChar": 270,
+          "endChar": 276,
+          "startMs": 19000,
+          "endMs": 19180
+        },
+        {
+          "text": "my",
+          "startChar": 277,
+          "endChar": 279,
+          "startMs": 19180,
+          "endMs": 19500
+        },
+        {
+          "text": "expressions",
+          "startChar": 280,
+          "endChar": 291,
+          "startMs": 19500,
+          "endMs": 19920
+        },
+        {
+          "text": "while",
+          "startChar": 292,
+          "endChar": 297,
+          "startMs": 19920,
+          "endMs": 20240
+        },
+        {
+          "text": "answering",
+          "startChar": 298,
+          "endChar": 307,
+          "startMs": 20240,
+          "endMs": 20540
+        },
+        {
+          "text": "questions",
+          "startChar": 308,
+          "endChar": 317,
+          "startMs": 20540,
+          "endMs": 21060
+        },
+        {
+          "text": "about",
+          "startChar": 318,
+          "endChar": 323,
+          "startMs": 21060,
+          "endMs": 21440
+        },
+        {
+          "text": "my",
+          "startChar": 324,
+          "endChar": 326,
+          "startMs": 21440,
+          "endMs": 21680
+        },
+        {
+          "text": "work,",
+          "startChar": 327,
+          "endChar": 332,
+          "startMs": 21730,
+          "endMs": 22260
+        },
+        {
+          "text": "experiences,",
+          "startChar": 333,
+          "endChar": 345,
+          "startMs": 22820,
+          "endMs": 22980
+        },
+        {
+          "text": "and",
+          "startChar": 346,
+          "endChar": 349,
+          "startMs": 23180,
+          "endMs": 23560
+        },
+        {
+          "text": "interests.",
+          "startChar": 350,
+          "endChar": 360,
+          "startMs": 23560,
+          "endMs": 24040
+        },
+        {
+          "text": "You",
+          "startChar": 361,
+          "endChar": 364,
+          "startMs": 24460,
+          "endMs": 24620
+        },
+        {
+          "text": "can",
+          "startChar": 365,
+          "endChar": 368,
+          "startMs": 24620,
+          "endMs": 24840
+        },
+        {
+          "text": "start",
+          "startChar": 369,
+          "endChar": 374,
+          "startMs": 24840,
+          "endMs": 25020
+        },
+        {
+          "text": "by",
+          "startChar": 375,
+          "endChar": 377,
+          "startMs": 25020,
+          "endMs": 25240
+        },
+        {
+          "text": "choosing",
+          "startChar": 378,
+          "endChar": 386,
+          "startMs": 25240,
+          "endMs": 25580
+        },
+        {
+          "text": "any",
+          "startChar": 387,
+          "endChar": 390,
+          "startMs": 25580,
+          "endMs": 25940
+        },
+        {
+          "text": "of",
+          "startChar": 391,
+          "endChar": 393,
+          "startMs": 25940,
+          "endMs": 26100
+        },
+        {
+          "text": "the",
+          "startChar": 394,
+          "endChar": 397,
+          "startMs": 26100,
+          "endMs": 26260
+        },
+        {
+          "text": "questions",
+          "startChar": 398,
+          "endChar": 407,
+          "startMs": 26260,
+          "endMs": 26560
+        },
+        {
+          "text": "on",
+          "startChar": 408,
+          "endChar": 410,
+          "startMs": 26570,
+          "endMs": 26960
+        },
+        {
+          "text": "the",
+          "startChar": 411,
+          "endChar": 414,
+          "startMs": 26960,
+          "endMs": 27180
+        },
+        {
+          "text": "screen.",
+          "startChar": 415,
+          "endChar": 422,
+          "startMs": 27180,
+          "endMs": 27420
+        }
+      ]
     }
   }
 }

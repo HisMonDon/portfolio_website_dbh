@@ -6,7 +6,8 @@
   flex-direction: column;
   gap: 10px;
   font-size: 14px;
-  color: #4a4a4a;
+  color: #26333b;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   max-width: 46ch;
 }
 
