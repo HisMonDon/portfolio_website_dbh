@@ -21,6 +21,7 @@ interface ClipAvatarProps {
   // The complete recording frame includes raw face scores plus the calibrated body/head pose.
   activeFrame?: InternalFrame | null
   critical?: boolean
+  yellowHud?: boolean
   targetFps?: number
 }
 
@@ -144,6 +145,7 @@ function applyRecordedPose(
 export default function ClipAvatar({
   activeFrame,
   critical = false,
+  yellowHud = false,
   targetFps = 60,
 }: ClipAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -155,6 +157,7 @@ export default function ClipAvatar({
   const latestPoseRef = useRef<RecordedPose | null>(null)
   const jawOpenAmountRef = useRef(0)
   const criticalRef = useRef(critical)
+  const yellowHudRef = useRef(yellowHud)
   const activeFrameRef = useRef(activeFrame)
   const targetFpsRef = useRef(targetFps)
   const [ready, setReady] = useState(false)
@@ -164,6 +167,7 @@ export default function ClipAvatar({
 
   activeFrameRef.current = activeFrame
   criticalRef.current = critical
+  yellowHudRef.current = yellowHud
   targetFpsRef.current = Math.min(60, Math.max(15, targetFps))
 
   useEffect(() => {
@@ -351,7 +355,12 @@ export default function ClipAvatar({
         // Rendering is rate-limited by the user's HUD setting while the latest
         // prerecorded pose and blendshapes continue updating independently.
         if (avatarRoot) avatarRoot.rotation.y = rotationRef.current
-        avatarVisualController?.update(now, jawOpenAmountRef.current, criticalRef.current)
+        avatarVisualController?.update(
+          now,
+          jawOpenAmountRef.current,
+          criticalRef.current,
+          yellowHudRef.current,
+        )
         renderer_.render(renderScene, camera)
       }
 

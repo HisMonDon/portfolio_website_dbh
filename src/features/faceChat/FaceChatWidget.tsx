@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { SectionId } from '../../components/NavBar'
 import ClipAvatar from './ClipAvatar'
 import {
@@ -45,6 +45,7 @@ interface FaceChatWidgetProps {
 }
 
 type SectionPlaybackPhase = 'inactive' | 'waiting' | 'playing' | 'idle'
+type AvatarTransitionPhase = 'exiting' | 'entering' | 'steady'
 
 interface SectionPlaybackState {
   section: SectionId | null
@@ -52,10 +53,13 @@ interface SectionPlaybackState {
 }
 
 const SECTION_IDLE_DELAY_MS = 2000
+const ABOUT_HUD_EXIT_MS = 220
+const AVATAR_FADE_OUT_MS = 220
+const AVATAR_LAYOUT_TRANSITION_MS = 700
+const AVATAR_GLITCH_IN_MS = 560
 const SECTION_CLIP_IDS: Partial<Record<SectionId, string>> = {
   resume: 'resume',
   skills: 'skills',
-  credits: 'credits',
 }
 
 // Camera-free prerecorded avatar chat. Follow-up branches behave as checklists: answered prompts
@@ -80,11 +84,21 @@ export default function FaceChatWidget({
     section: null,
     phase: 'inactive',
   })
+  const [isAboutHudMounted, setIsAboutHudMounted] = useState(activeSection === 'about')
+  const [avatarTransitionPhase, setAvatarTransitionPhase] = useState<AvatarTransitionPhase>('entering')
+  const [isCenteredLayout, setIsCenteredLayout] = useState(centered)
   const promptHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const previousSectionRef = useRef<SectionId>(activeSection)
 
   const node = DIALOGUE_GRAPH[currentNodeId]
   const isAboutSection = activeSection === 'about'
+  const shouldRenderAboutHud = isAboutSection || isAboutHudMounted
+  const aboutHudState = isAboutSection
+    ? 'visible'
+    : isAboutHudMounted
+      ? 'exiting'
+      : 'hidden'
   const isDialogueIdling = isOpeningMenu || playbackPhase === 'idle' || node.type === 'loop'
   const sectionClipId = SECTION_CLIP_IDS[activeSection]
   const isSectionClipPlaying = Boolean(
@@ -161,6 +175,52 @@ export default function FaceChatWidget({
     setExpandedTranscriptNodeId(currentNodeId)
     skipActiveClip()
   }, [centered, currentNodeId, isAboutSection, isIdling, skipActiveClip])
+
+  useLayoutEffect(() => {
+    const previousSection = previousSectionRef.current
+
+    if (previousSection === activeSection) {
+      const finishInitialReveal = window.setTimeout(() => {
+        setAvatarTransitionPhase('steady')
+      }, AVATAR_GLITCH_IN_MS)
+
+      return () => window.clearTimeout(finishInitialReveal)
+    }
+
+    previousSectionRef.current = activeSection
+
+    setAvatarTransitionPhase('exiting')
+
+    const layoutIsChanging = previousSection === 'about' || activeSection === 'about'
+    const revealDelay = layoutIsChanging
+      ? AVATAR_FADE_OUT_MS + AVATAR_LAYOUT_TRANSITION_MS
+      : AVATAR_FADE_OUT_MS
+    const revealAvatar = window.setTimeout(() => {
+      setIsCenteredLayout(centered)
+      setAvatarTransitionPhase('entering')
+    }, revealDelay)
+    const finishReveal = window.setTimeout(() => {
+      setAvatarTransitionPhase('steady')
+    }, revealDelay + AVATAR_GLITCH_IN_MS)
+
+    return () => {
+      window.clearTimeout(revealAvatar)
+      window.clearTimeout(finishReveal)
+    }
+  }, [activeSection, centered])
+
+  useEffect(() => {
+    if (isAboutSection) {
+      setIsAboutHudMounted(true)
+      return
+    }
+
+    const unmountAboutHud = window.setTimeout(() => {
+      setIsAboutHudMounted(false)
+    }, ABOUT_HUD_EXIT_MS)
+
+    return () => window.clearTimeout(unmountAboutHud)
+  }, [isAboutSection])
 
   useEffect(() => {
     if (isAboutSection) {
@@ -293,10 +353,12 @@ export default function FaceChatWidget({
 
   return (
     <div
-      className={`face-chat-widget${centered ? ' is-centered-layout' : ''}`}
+      className={`face-chat-widget${isCenteredLayout ? ' is-centered-layout' : ''}${shouldRenderAboutHud ? ' has-about-hud' : ''}`}
       data-playback-phase={isIdling ? 'idle' : 'answer'}
       data-active-clip={activeClipId}
       data-active-section={activeSection}
+      data-about-hud-state={aboutHudState}
+      data-avatar-transition={avatarTransitionPhase}
       data-section-playback={isAboutSection ? 'dialogue' : sectionPlayback.phase}
       data-transcript-expanded={expandedTranscriptNodeId === currentNodeId || undefined}
     >
@@ -304,13 +366,14 @@ export default function FaceChatWidget({
         <ClipAvatar
           activeFrame={activeFrame}
           critical={Boolean(clipError)}
+          yellowHud={activeSection === 'contact'}
           targetFps={targetFps}
         />
       </div>
 
       <div className={`face-chat-top-hud${isOpeningMenu ? ' is-opening-menu' : ''}`}>
         <div className="face-chat-transcript-frame">
-          {isAboutSection && !isOpeningMenu && (
+          {shouldRenderAboutHud && !isOpeningMenu && (
             <TranscriptPanel
               nodeId={currentNodeId}
               clipId={activeClipId}
@@ -391,7 +454,7 @@ export default function FaceChatWidget({
             </button>
         </div>
 
-        {isAboutSection && isDialogueIdling && (
+        {shouldRenderAboutHud && isDialogueIdling && (
           <div className="face-chat-choice-layer" role="group" aria-label="Dialogue options">
             <div className="face-chat-options">
               {visibleTransitionIds.map((nextId, index) => (

@@ -9,7 +9,7 @@ export interface TranscriptEntry {
 export const TRANSCRIPT_SCRIPT: Record<number, TranscriptEntry> = {
   0: {
     id: 0,
-    prompt: 'Welcome',
+    prompt: 'Live Transcript',
     response:
       "Hi, I'm Chenyu Lu, but I also go by Eric. I'm a student and developer who enjoys turning technical ideas into projects that people can actually use. The avatar you're speaking with is one of those projects that is inside my portfolio. It uses real-time face tracking to mirror my expressions while answering questions about my work, experiences, and interests. You can start by choosing any of the questions on the screen.",
   },

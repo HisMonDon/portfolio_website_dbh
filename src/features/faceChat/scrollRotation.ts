@@ -10,6 +10,8 @@ const ROTATION_DIRECTION = 1
 // so this reads as "roughly 360° across the scroll distance between
 // major sections."
 const RADIANS_PER_VIEWPORT = 2 * Math.PI
+const FRONT_FACING_ROTATION = 0
+const FRONT_RESET_DELAY_MS = 500
 
 // Ignore discontinuities such as browser scroll restoration or layout corrections. Real
 // user-driven deltas arrive across animation frames and remain well below this threshold.
@@ -38,6 +40,7 @@ export function useScrollRotation() {
     if (!scrollStage) return
 
     let prevScrollTop = scrollStage.scrollTop
+    let frontResetTimer: number | null = null
 
     const handleScroll = () => {
       const nextScrollTop = scrollStage.scrollTop
@@ -48,11 +51,23 @@ export function useScrollRotation() {
         scrollStage.clientHeight,
       )
       prevScrollTop = nextScrollTop
+
+      if (frontResetTimer !== null) window.clearTimeout(frontResetTimer)
+
+      // Always restore the model's authored front-facing orientation after scrolling settles,
+      // even when the accumulated rotation already appears close to the front.
+      frontResetTimer = window.setTimeout(() => {
+        rotationRef.current = FRONT_FACING_ROTATION
+        frontResetTimer = null
+      }, FRONT_RESET_DELAY_MS)
     }
 
     scrollStage.addEventListener('scroll', handleScroll, { passive: true })
 
-    return () => scrollStage.removeEventListener('scroll', handleScroll)
+    return () => {
+      scrollStage.removeEventListener('scroll', handleScroll)
+      if (frontResetTimer !== null) window.clearTimeout(frontResetTimer)
+    }
   }, [])
 
   return rotationRef

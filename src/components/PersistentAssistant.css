@@ -1,6 +1,6 @@
 .persistent-assistant {
   position: fixed;
-  top: calc((100vh - 76px - var(--assistant-height, min(42.857vw, 600px))) / 2);
+  top: calc(100vh - 76px - var(--assistant-height, min(42.857vw, 600px)));
   left: calc(100vw - var(--assistant-gutter, 64px) - var(--assistant-width, min(50vw, 700px)));
   z-index: 10;
   width: var(--assistant-width, min(50vw, 700px));
@@ -25,7 +25,6 @@
   transform: scale(1);
   visibility: visible;
   opacity: 1;
-  pointer-events: auto;
   transition-delay: 0s;
 }
 

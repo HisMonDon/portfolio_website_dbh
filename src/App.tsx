@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import NavBar, { type SectionId } from './components/NavBar'
 import PersistentAssistant from './components/PersistentAssistant'
+import Contact from './sections/Contact'
 import Resume from './sections/Resume'
 import Skills from './sections/Skills'
-import Credits from './sections/Credits'
 import Projects from './sections/projects/Projects'
 import './App.css'
 import backgroundVideo from './assets/backgroung_portfolio.mp4'
@@ -21,14 +21,14 @@ function renderSection(
   switch (active) {
     case 'about':
       return null
+    case 'contact':
+      return <Contact />
     case 'resume':
       return <Resume />
     case 'projects':
       return <Projects selectedId={selectedProjectId} onSelect={onSelectProject} />
     case 'skills':
       return <Skills />
-    case 'credits':
-      return <Credits />
     default:
       return null
   }
@@ -36,14 +36,14 @@ function renderSection(
 
 function App() {
   const scrollStageRef = useRef<HTMLDivElement | null>(null)
-  const navScrollFrameRef = useRef<number | null>(null)
+  const navScrollEndTimeoutRef = useRef<number | null>(null)
   const isProgrammaticScrollRef = useRef(false)
   const sectionRefs = useRef<Record<SectionId, HTMLDivElement | null>>({
     about: null,
+    contact: null,
     resume: null,
     projects: null,
     skills: null,
-    credits: null,
   })
   const [activeSection, setActiveSection] = useState<SectionId>(INITIAL_SECTION)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
@@ -96,13 +96,31 @@ function App() {
   useEffect(() => {
     const scrollStage = scrollStageRef.current
 
-    const cancelProgrammaticScroll = () => {
-      if (navScrollFrameRef.current !== null) {
-        cancelAnimationFrame(navScrollFrameRef.current)
-        navScrollFrameRef.current = null
+    const cancelProgrammaticScroll = (event?: Event) => {
+      const target = event?.target
+
+      // Clicking an in-section control (such as the Resume download link) is not a scroll
+      // gesture. Let the current section transition finish so snapping cannot send the page
+      // back to About while the control is being activated.
+      if (
+        event?.type === 'pointerdown'
+        && target instanceof Element
+        && target.closest('a, button, input, select, textarea, [role="button"]')
+      ) {
+        return
+      }
+
+      if (navScrollEndTimeoutRef.current !== null) {
+        window.clearTimeout(navScrollEndTimeoutRef.current)
+        navScrollEndTimeoutRef.current = null
+      }
+
+      if (scrollStage && isProgrammaticScrollRef.current) {
+        scrollStage.scrollTo({ top: scrollStage.scrollTop, behavior: 'auto' })
       }
 
       isProgrammaticScrollRef.current = false
+      scrollStage?.classList.remove('is-programmatic-scrolling')
     }
 
     // A real gesture always wins over an in-progress navbar animation. Otherwise the animation
@@ -125,40 +143,27 @@ function App() {
 
     if (!scrollStage || !targetSection) return
 
-    if (navScrollFrameRef.current) {
-      cancelAnimationFrame(navScrollFrameRef.current)
+    if (navScrollEndTimeoutRef.current !== null) {
+      window.clearTimeout(navScrollEndTimeoutRef.current)
     }
 
-    const startTop = scrollStage.scrollTop
     const endTop = targetSection.offsetTop
-    const distance = endTop - startTop
-    const startTime = performance.now()
 
     isProgrammaticScrollRef.current = true
+    scrollStage.classList.add('is-programmatic-scrolling')
+    scrollStage.scrollTo({ top: endTop, behavior: 'smooth' })
 
-    const animate = (now: number) => {
-      const progress = Math.min((now - startTime) / NAV_SCROLL_DURATION_MS, 1)
-      const easedProgress = 1 - (1 - progress) ** 3
-
-      scrollStage.scrollTop = startTop + distance * easedProgress
-
-      if (progress < 1) {
-        navScrollFrameRef.current = requestAnimationFrame(animate)
-        return
-      }
-
+    navScrollEndTimeoutRef.current = window.setTimeout(() => {
       scrollStage.scrollTop = endTop
       isProgrammaticScrollRef.current = false
-      navScrollFrameRef.current = null
-    }
-
-    navScrollFrameRef.current = requestAnimationFrame(animate)
+      navScrollEndTimeoutRef.current = null
+      scrollStage.classList.remove('is-programmatic-scrolling')
+    }, NAV_SCROLL_DURATION_MS)
   }
 
   const handleSelect = (id: SectionId) => {
+    scrollToSection(id)
     setActiveSection(id)
-
-    requestAnimationFrame(() => scrollToSection(id))
   }
 
   return (

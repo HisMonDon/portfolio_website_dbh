@@ -1,4 +1,5 @@
 import './Section.css'
+import resumePdf from '../assets/eric-chen-resume-2026.pdf'
 
 export default function Resume() {
   return (
@@ -6,10 +7,10 @@ export default function Resume() {
       <p className="section-eyebrow">CV</p>
       <h1 className="section-title">Resume</h1>
       <p className="section-text">
-        Placeholder summary of experience and education. Link the real PDF
-        from the button below once it's ready.
+        Download my current resume for an overview of my experience, education,
+        projects, and technical skills.
       </p>
-      <a className="section-button" href="/resume.pdf" target="_blank" rel="noreferrer">
+      <a className="section-button" href={resumePdf} download="Eric-Chen-Resume-2026.pdf">
         Download resume
       </a>
     </div>

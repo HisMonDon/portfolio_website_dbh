@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { SectionId } from './NavBar'
 import './PersistentAssistant.css'
 
 const FaceChatWidget = lazy(() => import('../features/faceChat/FaceChatWidget'))
+const INTERFACE_FADE_OUT_MS = 220
 
 interface PersistentAssistantProps {
   visible: boolean
@@ -19,7 +20,16 @@ export default function PersistentAssistant({
   visible,
   activeSection,
 }: PersistentAssistantProps) {
-  const centered = activeSection === 'about'
+  const shouldCenter = activeSection === 'about'
+  const [centered, setCentered] = useState(shouldCenter)
+
+  useEffect(() => {
+    const moveAssistant = window.setTimeout(() => {
+      setCentered(shouldCenter)
+    }, INTERFACE_FADE_OUT_MS)
+
+    return () => window.clearTimeout(moveAssistant)
+  }, [shouldCenter])
 
   return (
     <div
@@ -28,7 +38,7 @@ export default function PersistentAssistant({
       aria-hidden={!visible}
     >
       <Suspense fallback={null}>
-        <FaceChatWidget centered={centered} activeSection={activeSection} />
+        <FaceChatWidget centered={shouldCenter} activeSection={activeSection} />
       </Suspense>
     </div>
   )

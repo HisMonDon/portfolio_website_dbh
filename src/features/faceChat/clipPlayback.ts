@@ -39,7 +39,6 @@ const CLIP_JSON_URLS: Record<string, string> = {
   idle_0: clipUrl('idle_0'),
   idle_1: clipUrl('idle_1'),
   intro: clipUrl('intro'),
-  credits: clipUrl('credits'),
   resume: clipUrl('resume'),
   skills: clipUrl('skills'),
 }

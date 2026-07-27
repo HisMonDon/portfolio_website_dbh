@@ -1,0 +1,318 @@
+.contact-section {
+  --contact-blue: #173f5b;
+  --contact-cyan: #71dcff;
+  --contact-yellow: #f1c84b;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: calc(100dvh - 156px);
+  min-height: 0;
+  max-width: 680px;
+  padding-right: 8px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 63, 91, 0.55) transparent;
+}
+
+.contact-heading .section-title {
+  margin-bottom: 10px;
+}
+
+.contact-intro {
+  max-width: 54ch;
+  margin: 0;
+  color: #2c3b45;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.contact-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.contact-link {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 78px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 34px 14px 15px;
+  overflow: hidden;
+  border: 1px solid rgba(113, 220, 255, 0.7);
+  background: rgba(23, 63, 91, 0.9);
+  box-shadow: 0 9px 22px rgba(12, 57, 87, 0.13);
+  color: #f4fbff;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.contact-link::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--contact-yellow);
+  content: '';
+  transform: scaleY(0.42);
+  transform-origin: center;
+  transition: transform 160ms ease;
+}
+
+.contact-link:hover,
+.contact-link:focus-visible {
+  border-color: var(--contact-yellow);
+  background: #1d4b69;
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.contact-link:hover::before,
+.contact-link:focus-visible::before {
+  transform: scaleY(1);
+}
+
+.contact-link-label {
+  font-size: 14px;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+
+.contact-link-detail {
+  margin-top: 5px;
+  overflow: hidden;
+  color: rgba(235, 247, 255, 0.72);
+  font-size: 10px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-link-arrow {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  color: var(--contact-yellow);
+  font-size: 16px;
+}
+
+.contact-compose {
+  position: relative;
+  padding: 20px 22px 18px;
+  border: 1px solid rgba(23, 63, 91, 0.25);
+  border-left: 4px solid var(--contact-yellow);
+  background: rgba(238, 249, 255, 0.76);
+  box-shadow: 0 18px 40px rgba(20, 64, 91, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.contact-compose::after {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 11px;
+  height: 11px;
+  border-top: 2px solid var(--contact-cyan);
+  border-right: 2px solid var(--contact-cyan);
+  content: '';
+}
+
+.contact-compose-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.contact-compose-kicker {
+  margin: 0 0 4px;
+  color: #527083;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.contact-compose-heading h2 {
+  margin: 0;
+  color: #142c3c;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 21px;
+  font-weight: normal;
+  letter-spacing: 0.3px;
+}
+
+.contact-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #607986;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.contact-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--contact-yellow);
+  box-shadow: 0 0 8px rgba(241, 200, 75, 0.85);
+}
+
+.contact-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px 14px;
+}
+
+.contact-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  color: #38505e;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.contact-field input,
+.contact-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid rgba(23, 63, 91, 0.27);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.78);
+  color: #152c3a;
+  font: 13px/1.4 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.contact-field input {
+  height: 42px;
+  padding: 0 12px;
+}
+
+.contact-field textarea {
+  min-height: 94px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.contact-field input::placeholder,
+.contact-field textarea::placeholder {
+  color: #7f9099;
+}
+
+.contact-field input:focus,
+.contact-field textarea:focus {
+  border-color: var(--contact-cyan);
+  box-shadow: 0 0 0 2px rgba(113, 220, 255, 0.18);
+}
+
+.contact-message-field,
+.contact-form-footer {
+  grid-column: 1 / -1;
+}
+
+.contact-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contact-form-footer p {
+  margin: 0;
+  color: #647985;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.contact-submit {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--contact-cyan);
+  border-radius: 0;
+  background: var(--contact-blue);
+  color: #f4fbff;
+  cursor: pointer;
+  font: 11px 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.contact-submit:hover,
+.contact-submit:focus-visible {
+  border-color: var(--contact-yellow);
+  background: #1d4b69;
+  outline: none;
+}
+
+.contact-submit span {
+  color: var(--contact-yellow);
+  font-size: 16px;
+}
+
+@media (max-width: 1000px) {
+  .contact-links {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-link {
+    min-height: 60px;
+  }
+}
+
+@media (max-width: 720px) {
+  .contact-section {
+    height: calc(100dvh - 138px);
+    padding-right: 4px;
+  }
+
+  .contact-form {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-field,
+  .contact-message-field,
+  .contact-form-footer {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-compose {
+    padding: 17px 16px 15px;
+  }
+
+  .contact-status {
+    display: none;
+  }
+
+  .contact-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .contact-submit {
+    width: 100%;
+  }
+}

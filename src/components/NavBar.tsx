@@ -1,6 +1,6 @@
 import './NavBar.css'
 import { useEffect, useState } from 'react'
-export type SectionId = 'about' | 'resume' | 'projects' | 'skills' | 'credits'
+export type SectionId = 'about' | 'contact' | 'resume' | 'projects' | 'skills'
 
 interface NavItem {
   id: SectionId
@@ -9,10 +9,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'about', label: 'About Me' },
+  { id: 'contact', label: 'Contact' },
   { id: 'resume', label: 'Resume' },
   { id: 'projects', label: 'Projects' },
   { id: 'skills', label: 'Skills' },
-  { id: 'credits', label: 'Credits' },
 ]
 
 interface NavBarProps {

@@ -8,6 +8,8 @@ const TEMPLE_HUD_PULSE_SPEED = 1.8
 const TEMPLE_HUD_CRITICAL_COLOR = 0xff3b30
 const TEMPLE_HUD_CRITICAL_DIM_COLOR = 0x330000
 const TEMPLE_HUD_CRITICAL_BLINK_MS = 220
+const TEMPLE_HUD_CONTACT_COLOR = 0xffc233
+const TEMPLE_HUD_CONTACT_TICK_COLOR = 0xffe38a
 
 interface SyntheticSkinUniforms {
   uRimColor: { value: THREE.Color }
@@ -27,7 +29,12 @@ interface TempleHud {
 }
 
 export interface AvatarVisualController {
-  update: (nowMs: number, jawOpenAmount: number, critical?: boolean) => void
+  update: (
+    nowMs: number,
+    jawOpenAmount: number,
+    critical?: boolean,
+    yellowHud?: boolean,
+  ) => void
 }
 
 function getSingleSurfaceMaterial(mesh: THREE.Mesh): THREE.MeshStandardMaterial | null {
@@ -398,7 +405,7 @@ export function applyAvatarVisualTreatment(root: THREE.Group): AvatarVisualContr
   }
 
   return {
-    update(nowMs, jawOpenAmount, critical = false) {
+    update(nowMs, jawOpenAmount, critical = false, yellowHud = false) {
       const elapsedSeconds = nowMs / 1000
       const deltaSeconds = templeHud.lastUpdateMs === null
         ? 0
@@ -409,7 +416,13 @@ export function applyAvatarVisualTreatment(root: THREE.Group): AvatarVisualContr
       let tickColor: number
       let speedMultiplier: number
 
-      if (critical) {
+      // Contact mode intentionally takes precedence over the error blink so the temple HUD
+      // remains yellow for the entire time that section is active.
+      if (yellowHud) {
+        ringColor = TEMPLE_HUD_CONTACT_COLOR
+        tickColor = TEMPLE_HUD_CONTACT_TICK_COLOR
+        speedMultiplier = 1 + jawOpenAmount * 1.2
+      } else if (critical) {
         const blinkOn = Math.floor(nowMs / TEMPLE_HUD_CRITICAL_BLINK_MS) % 2 === 0
         ringColor = blinkOn ? TEMPLE_HUD_CRITICAL_COLOR : TEMPLE_HUD_CRITICAL_DIM_COLOR
         tickColor = blinkOn ? 0xff9c94 : TEMPLE_HUD_CRITICAL_DIM_COLOR
@@ -422,8 +435,8 @@ export function applyAvatarVisualTreatment(root: THREE.Group): AvatarVisualContr
 
         const flickeringAmber = nowMs < templeHud.flickerUntil
           && Math.floor(nowMs / 45) % 2 === 0
-        ringColor = flickeringAmber ? 0xffc233 : 0x33e6ff
-        tickColor = flickeringAmber ? 0xffe38a : 0xd8fbff
+        ringColor = flickeringAmber ? TEMPLE_HUD_CONTACT_COLOR : 0x33e6ff
+        tickColor = flickeringAmber ? TEMPLE_HUD_CONTACT_TICK_COLOR : 0xd8fbff
         speedMultiplier = 1 + jawOpenAmount * 1.2
       }
 
@@ -443,7 +456,7 @@ export function applyAvatarVisualTreatment(root: THREE.Group): AvatarVisualContr
       })
 
       templeHud.light.color.setHex(ringColor)
-      templeHud.light.intensity = (critical ? 0.03 : 0.05) + 0.04 * pulse
+      templeHud.light.intensity = (critical && !yellowHud ? 0.03 : 0.05) + 0.04 * pulse
 
       const skinPulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 0.6 + Math.PI / 3)
       const skinRimIntensity = 0.1 + 0.08 * skinPulse

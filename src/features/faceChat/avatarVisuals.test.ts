@@ -107,6 +107,11 @@ describe('applyAvatarVisualTreatment', () => {
     const mainRingMaterial = (ring.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial
     expect(mainRingMaterial.color.getHex()).toBe(0xff3b30)
 
+    visuals.update(1400, 0, true, true)
+    expect(mainRingMaterial.color.getHex()).toBe(0xffc233)
+    visuals.update(1500, 0, false, true)
+    expect(mainRingMaterial.color.getHex()).toBe(0xffc233)
+
     disposeTestRoot(root)
   })
 })
