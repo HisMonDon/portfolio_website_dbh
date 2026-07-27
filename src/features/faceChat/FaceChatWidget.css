@@ -13,13 +13,18 @@
   right: 0;
   z-index: 4;
   cursor: pointer;
-  padding: 4px 10px;
-  font-size: 11px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   color: #81d0f8;
   background: rgba(20, 26, 32, 0.72);
   border: 1px solid rgba(129, 208, 248, 0.55);
+}
+
+.face-chat-audio-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .face-chat-mute-toggle:hover {
@@ -76,7 +81,7 @@
 
 .face-chat-options {
   position: absolute;
-  top: 58%;
+  top: 54%;
   right: 0;
   width: 47%;
   transform: translateY(-50%);

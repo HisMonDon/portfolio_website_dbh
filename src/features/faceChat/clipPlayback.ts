@@ -131,6 +131,9 @@ export interface ClipPlayerState {
   activeFrame: InternalFrame | null
   isPlaying: boolean
   error: string | null
+  playbackClipId: string | null
+  playbackTimeMs: number
+  playbackProgress: number
   play: () => void
   pause: () => void
 }
@@ -153,6 +156,22 @@ export function didClockWrap(previousElapsedMs: number, nextElapsedMs: number): 
   return nextElapsedMs < previousElapsedMs - 1
 }
 
+export function resolvePlaybackProgress(params: {
+  elapsedMs: number
+  audioDurationSec: number
+  audioHasStarted: boolean
+  fallbackDurationMs: number
+}): number {
+  const audioDurationMs = params.audioDurationSec * 1000
+  const durationMs = params.audioHasStarted && Number.isFinite(audioDurationMs) && audioDurationMs > 0
+    ? audioDurationMs
+    : params.fallbackDurationMs
+
+  if (durationMs <= 0) return 0
+
+  return Math.min(Math.max(params.elapsedMs / durationMs, 0), 1)
+}
+
 // Audio drives every spoken clip. A performance clock is used only for intentionally silent idle
 // clips or when browser autoplay rejects an answer. Before either clock begins, a short bridge
 // interpolates the currently displayed frame into the new file's first frame.
@@ -165,6 +184,9 @@ export function useClipPlayer(
   const [activeFrame, setActiveFrame] = useState<InternalFrame | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [playbackClipId, setPlaybackClipId] = useState<string | null>(clipId)
+  const [playbackTimeMs, setPlaybackTimeMs] = useState(0)
+  const [playbackProgress, setPlaybackProgress] = useState(0)
 
   const framesRef = useRef<InternalFrame[]>([])
   const cursorRef = useRef(0)
@@ -183,6 +205,22 @@ export function useClipPlayer(
   const displayFrame = useCallback((frame: InternalFrame) => {
     activeFrameRef.current = frame
     setActiveFrame(frame)
+  }, [])
+
+  const displayPlaybackProgress = useCallback((progress: number) => {
+    setPlaybackProgress((current) =>
+      Math.abs(current - progress) >= 0.002 || progress === 0 || progress === 1
+        ? progress
+        : current,
+    )
+  }, [])
+
+  const displayPlaybackTime = useCallback((elapsedMs: number) => {
+    setPlaybackTimeMs((current) =>
+      Math.abs(current - elapsedMs) >= 8 || elapsedMs === 0
+        ? elapsedMs
+        : current,
+    )
   }, [])
 
   const onCompleteRef = useRef(options.onComplete)
@@ -207,6 +245,9 @@ export function useClipPlayer(
     transitionRafRef.current = null
     setError(null)
     setIsPlaying(false)
+    setPlaybackClipId(clipId)
+    displayPlaybackTime(0)
+    displayPlaybackProgress(0)
 
     if (!clipId) {
       activeFrameRef.current = null
@@ -231,6 +272,8 @@ export function useClipPlayer(
           cursorRef.current = 0
           lastElapsedRef.current = 0
           fallbackEpochRef.current = performance.now()
+          displayPlaybackTime(0)
+          displayPlaybackProgress(0)
 
           const audioUrl = getPlaybackAudioUrl(clipId, audioEnabled)
           const audio = audioUrl ? new Audio(audioUrl) : null
@@ -291,7 +334,15 @@ export function useClipPlayer(
       audioRef.current?.pause()
       audioRef.current = null
     }
-  }, [audioEnabled, clipId, displayFrame, mode, transitionDurationMs])
+  }, [
+    audioEnabled,
+    clipId,
+    displayFrame,
+    displayPlaybackProgress,
+    displayPlaybackTime,
+    mode,
+    transitionDurationMs,
+  ])
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted
@@ -317,8 +368,15 @@ export function useClipPlayer(
 
       if (didClockWrap(lastElapsedRef.current, elapsedMs)) cursorRef.current = 0
       lastElapsedRef.current = elapsedMs
+      displayPlaybackTime(elapsedMs)
 
       const lastFrameTime = frames[frames.length - 1].t
+      displayPlaybackProgress(resolvePlaybackProgress({
+        elapsedMs,
+        audioDurationSec: audio?.duration ?? Number.NaN,
+        audioHasStarted: audioHasStartedRef.current,
+        fallbackDurationMs: lastFrameTime,
+      }))
 
       // Hold the final tracked expression until the answer audio ends, so the last syllable is
       // never cut off when the widget switches back to idle.
@@ -329,6 +387,12 @@ export function useClipPlayer(
           lastFrameTime,
           displayFrame,
         )
+        displayPlaybackTime(
+          Number.isFinite(audio.duration) && audio.duration > 0
+            ? audio.duration * 1000
+            : lastFrameTime,
+        )
+        displayPlaybackProgress(1)
         setIsPlaying(false)
         onCompleteRef.current?.()
         return
@@ -344,6 +408,8 @@ export function useClipPlayer(
 
         if (mode === 'once' && !audioHasStartedRef.current) {
           audio?.pause()
+          displayPlaybackTime(lastFrameTime)
+          displayPlaybackProgress(1)
           setIsPlaying(false)
           onCompleteRef.current?.()
           return
@@ -372,7 +438,7 @@ export function useClipPlayer(
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
-  }, [displayFrame, isPlaying, mode])
+  }, [displayFrame, displayPlaybackProgress, displayPlaybackTime, isPlaying, mode])
 
   const play = () => {
     if (framesRef.current.length === 0) return
@@ -385,5 +451,14 @@ export function useClipPlayer(
     setIsPlaying(false)
   }
 
-  return { activeFrame, isPlaying, error, play, pause }
+  return {
+    activeFrame,
+    isPlaying,
+    error,
+    playbackClipId,
+    playbackTimeMs,
+    playbackProgress,
+    play,
+    pause,
+  }
 }

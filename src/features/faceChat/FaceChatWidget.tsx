@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ClipAvatar from './ClipAvatar'
+import { VolumeOffIcon, VolumeOnIcon } from './HudIcons'
 import TranscriptPanel from './TranscriptPanel'
 import { DIALOGUE_GRAPH, IDLE_CLIP_IDS, OPENING_NODE_IDS } from './dialogueGraph'
 import {
@@ -51,7 +52,13 @@ export default function FaceChatWidget() {
   }, [playbackPhase])
 
   const activeClipId = isIdling ? IDLE_CLIP_IDS[idleClipIndex] : node.clipId
-  const { activeFrame, error: clipError } = useClipPlayer(
+  const {
+    activeFrame,
+    error: clipError,
+    playbackClipId,
+    playbackTimeMs,
+    playbackProgress,
+  } = useClipPlayer(
     activeClipId,
     'once',
     isMuted,
@@ -65,7 +72,7 @@ export default function FaceChatWidget() {
     promptHeadingRef.current?.focus()
   }, [currentNodeId])
 
-  function navigateTo(nextId: number) {
+  const navigateTo = useCallback((nextId: number) => {
     const nextNode = DIALOGUE_GRAPH[nextId]
 
     if (!nextNode) return
@@ -85,9 +92,9 @@ export default function FaceChatWidget() {
 
     setCurrentNodeId(nextId)
     setPlaybackPhase(nextNode.type === 'loop' ? 'idle' : 'answer')
-  }
+  }, [activeOpeningId, currentNodeId])
 
-  function goBack() {
+  const goBack = useCallback(() => {
     const previous = dialogueHistory[dialogueHistory.length - 1]
 
     if (!previous) return
@@ -97,7 +104,7 @@ export default function FaceChatWidget() {
     setActiveOpeningId(previous.openingId)
     // Back navigates silently; it does not replay an already completed answer.
     setPlaybackPhase('idle')
-  }
+  }, [dialogueHistory])
 
   function handleOptionKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
     if (optionCount === 0) return
@@ -120,6 +127,15 @@ export default function FaceChatWidget() {
     }
   }
 
+  const transcriptProgress = isIdling
+    ? 1
+    : playbackClipId === activeClipId
+      ? playbackProgress
+      : 0
+  const transcriptPlaybackTimeMs = playbackClipId === activeClipId
+    ? playbackTimeMs
+    : 0
+
   return (
     <div
       className="face-chat-widget"
@@ -131,8 +147,12 @@ export default function FaceChatWidget() {
         className="face-chat-mute-toggle"
         onClick={() => setIsMuted((muted) => !muted)}
         aria-pressed={isMuted}
+        aria-label={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
+        title={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
       >
-        {isMuted ? 'Unmute' : 'Mute'}
+        {isMuted
+          ? <VolumeOffIcon className="face-chat-audio-icon" />
+          : <VolumeOnIcon className="face-chat-audio-icon" />}
       </button>
 
       <div className="face-chat-stage">
@@ -154,7 +174,13 @@ export default function FaceChatWidget() {
           {TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}
         </h2>
 
-        <TranscriptPanel nodeId={currentNodeId} />
+        <TranscriptPanel
+          nodeId={currentNodeId}
+          clipId={activeClipId}
+          isSpeaking={!isIdling}
+          playbackTimeMs={transcriptPlaybackTimeMs}
+          playbackProgress={transcriptProgress}
+        />
 
         {isIdling && (
           <div className="face-chat-options" role="group" aria-label="Dialogue options">

@@ -3,11 +3,11 @@
   top: max(-120px, calc((100% - 100vh) / 2 + 16px));
   left: 2%;
   width: 56%;
-  font-size: 13px;
   padding: clamp(10px, 1.2vw, 16px) clamp(12px, 1.5vw, 20px);
   border: 1px solid rgba(129, 208, 248, 0.4);
   background: linear-gradient(90deg, rgba(15, 35, 48, 0.76), rgba(23, 56, 76, 0.34));
   backdrop-filter: blur(3px);
+  font-size: 13px;
 }
 
 .transcript-eyebrow {
@@ -19,20 +19,56 @@
 }
 
 .transcript-prompt {
-  font-weight: 600;
   margin: 0 0 6px;
   color: #f2f5f7;
+  font-weight: 600;
 }
 
 .transcript-response {
+  position: relative;
   margin: 0;
-  line-height: 1.4;
   color: #c7d0d8;
+  line-height: 1.4;
+}
+
+/* Reserve the paragraph's final height so typing never pushes the HUD or avatar around. */
+.transcript-response-reserve {
+  display: block;
+  visibility: hidden;
+}
+
+.transcript-response-visible {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.transcript-response.is-typing .transcript-response-visible::after {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: #81d0f8;
+  animation: transcript-caret 700ms steps(1, end) infinite;
+}
+
+@keyframes transcript-caret {
+  50% {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 1000px) {
   .transcript-panel {
     width: 53%;
     font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transcript-response.is-typing .transcript-response-visible::after {
+    animation: none;
   }
 }

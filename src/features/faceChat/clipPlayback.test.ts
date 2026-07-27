@@ -6,6 +6,7 @@ import {
   getPlaybackAudioUrl,
   loadClip,
   resolveElapsedMs,
+  resolvePlaybackProgress,
   type BlendshapeFrame,
 } from './clipPlayback'
 
@@ -88,6 +89,35 @@ describe('didClockWrap (detects a loop restart between two ticks)', () => {
 
   it('tolerates a tiny backward jitter (not a real wrap) via its 1ms margin', () => {
     expect(didClockWrap(100, 99.5)).toBe(false)
+  })
+})
+
+describe('resolvePlaybackProgress', () => {
+  it('uses the spoken audio duration when audio is driving playback', () => {
+    expect(resolvePlaybackProgress({
+      elapsedMs: 1500,
+      audioDurationSec: 3,
+      audioHasStarted: true,
+      fallbackDurationMs: 2000,
+    })).toBe(0.5)
+  })
+
+  it('uses the animation duration for silent or unavailable audio', () => {
+    expect(resolvePlaybackProgress({
+      elapsedMs: 500,
+      audioDurationSec: Number.NaN,
+      audioHasStarted: false,
+      fallbackDurationMs: 2000,
+    })).toBe(0.25)
+  })
+
+  it('clamps progress to the playback range', () => {
+    expect(resolvePlaybackProgress({
+      elapsedMs: 5000,
+      audioDurationSec: 2,
+      audioHasStarted: true,
+      fallbackDurationMs: 2000,
+    })).toBe(1)
   })
 })
 
