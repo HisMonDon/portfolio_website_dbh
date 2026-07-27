@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ClipAvatar from './ClipAvatar'
-import { VolumeOffIcon, VolumeOnIcon } from './HudIcons'
+import {
+  ChoiceMarkerIcon,
+  VolumeOffIcon,
+  VolumeOnIcon,
+  type ChoiceMarkerKind,
+} from './HudIcons'
 import TranscriptPanel from './TranscriptPanel'
 import { DIALOGUE_GRAPH, IDLE_CLIP_IDS, OPENING_NODE_IDS } from './dialogueGraph'
 import {
@@ -17,6 +22,13 @@ interface DialogueHistoryEntry {
   nodeId: number | null
   openingId: number
 }
+
+const CHOICE_MARKERS: readonly ChoiceMarkerKind[] = [
+  'triangle',
+  'square',
+  'circle',
+  'cross',
+]
 
 // Camera-free prerecorded avatar chat. Follow-up branches behave as checklists: answered prompts
 // stay completed, the remaining prompts continue to be offered, and the closing prompts unlock
@@ -218,7 +230,12 @@ export default function FaceChatWidget() {
               >
                 <span className="face-chat-option-label">{TRANSCRIPT_SCRIPT[nextId]?.prompt}</span>
                 <span className="face-chat-option-connector" aria-hidden="true" />
-                <span className="face-chat-option-number">{index + 1}</span>
+                <span className="face-chat-option-number" aria-hidden="true">
+                  <ChoiceMarkerIcon
+                    kind={CHOICE_MARKERS[index % CHOICE_MARKERS.length]}
+                    className={`face-chat-option-glyph is-${CHOICE_MARKERS[index % CHOICE_MARKERS.length]}`}
+                  />
+                </span>
               </button>
             ))}
 
@@ -236,7 +253,9 @@ export default function FaceChatWidget() {
               >
                 <span className="face-chat-option-label">Back</span>
                 <span className="face-chat-option-connector" aria-hidden="true" />
-                <span className="face-chat-option-number" aria-hidden="true">←</span>
+                <span className="face-chat-option-number" aria-hidden="true">
+                  <ChoiceMarkerIcon kind="back" className="face-chat-option-glyph is-back" />
+                </span>
               </button>
             )}
           </div>
