@@ -81,9 +81,9 @@
 
 .face-chat-options {
   position: absolute;
-  top: 54%;
-  right: 0;
-  width: 47%;
+  top: 46%;
+  right: -4%;
+  width: 43%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
@@ -175,6 +175,7 @@
   }
 
   .face-chat-options {
-    width: 51%;
+    top: 44%;
+    width: 43%;
   }
 }

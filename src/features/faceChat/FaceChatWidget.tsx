@@ -13,7 +13,8 @@ import { useClipPlayer } from './clipPlayback'
 import './FaceChatWidget.css'
 
 interface DialogueHistoryEntry {
-  nodeId: number
+  // null represents the untouched opening menu before any answer has been selected.
+  nodeId: number | null
   openingId: number
 }
 
@@ -23,6 +24,7 @@ interface DialogueHistoryEntry {
 export default function FaceChatWidget() {
   const [currentNodeId, setCurrentNodeId] = useState<number>(OPENING_NODE_IDS[0])
   const [activeOpeningId, setActiveOpeningId] = useState<number>(OPENING_NODE_IDS[0])
+  const [isOpeningMenu, setIsOpeningMenu] = useState(true)
   const [completedFollowups, setCompletedFollowups] = useState<CompletedFollowups>({})
   const [dialogueHistory, setDialogueHistory] = useState<DialogueHistoryEntry[]>([])
   const [playbackPhase, setPlaybackPhase] = useState<'idle' | 'answer'>('idle')
@@ -32,13 +34,15 @@ export default function FaceChatWidget() {
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
   const node = DIALOGUE_GRAPH[currentNodeId]
-  const isIdling = playbackPhase === 'idle' || node.type === 'loop'
-  const visibleTransitionIds = getVisibleDialogueChoices(
-    currentNodeId,
-    activeOpeningId,
-    completedFollowups,
-  )
-  const canGoBack = dialogueHistory.length > 0
+  const isIdling = isOpeningMenu || playbackPhase === 'idle' || node.type === 'loop'
+  const visibleTransitionIds = isOpeningMenu
+    ? [...OPENING_NODE_IDS]
+    : getVisibleDialogueChoices(
+        currentNodeId,
+        activeOpeningId,
+        completedFollowups,
+      )
+  const canGoBack = !isOpeningMenu && dialogueHistory.length > 0
   const optionCount = visibleTransitionIds.length + (canGoBack ? 1 : 0)
 
   const handleClipComplete = useCallback(() => {
@@ -70,7 +74,7 @@ export default function FaceChatWidget() {
 
   useEffect(() => {
     promptHeadingRef.current?.focus()
-  }, [currentNodeId])
+  }, [currentNodeId, isOpeningMenu])
 
   const navigateTo = useCallback((nextId: number) => {
     const nextNode = DIALOGUE_GRAPH[nextId]
@@ -79,7 +83,10 @@ export default function FaceChatWidget() {
 
     setDialogueHistory((history) => [
       ...history,
-      { nodeId: currentNodeId, openingId: activeOpeningId },
+      {
+        nodeId: isOpeningMenu ? null : currentNodeId,
+        openingId: activeOpeningId,
+      },
     ])
 
     if (nextNode.type === 'opening') {
@@ -91,8 +98,9 @@ export default function FaceChatWidget() {
     }
 
     setCurrentNodeId(nextId)
+    setIsOpeningMenu(false)
     setPlaybackPhase(nextNode.type === 'loop' ? 'idle' : 'answer')
-  }, [activeOpeningId, currentNodeId])
+  }, [activeOpeningId, currentNodeId, isOpeningMenu])
 
   const goBack = useCallback(() => {
     const previous = dialogueHistory[dialogueHistory.length - 1]
@@ -100,6 +108,14 @@ export default function FaceChatWidget() {
     if (!previous) return
 
     setDialogueHistory((history) => history.slice(0, -1))
+
+    if (previous.nodeId === null) {
+      setIsOpeningMenu(true)
+      setActiveOpeningId(previous.openingId)
+      setPlaybackPhase('idle')
+      return
+    }
+
     setCurrentNodeId(previous.nodeId)
     setActiveOpeningId(previous.openingId)
     // Back navigates silently; it does not replay an already completed answer.
@@ -171,16 +187,20 @@ export default function FaceChatWidget() {
           ref={promptHeadingRef}
           tabIndex={-1}
         >
-          {TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}
+          {isOpeningMenu
+            ? 'Choose an opening question'
+            : TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}
         </h2>
 
-        <TranscriptPanel
-          nodeId={currentNodeId}
-          clipId={activeClipId}
-          isSpeaking={!isIdling}
-          playbackTimeMs={transcriptPlaybackTimeMs}
-          playbackProgress={transcriptProgress}
-        />
+        {!isOpeningMenu && (
+          <TranscriptPanel
+            nodeId={currentNodeId}
+            clipId={activeClipId}
+            isSpeaking={!isIdling}
+            playbackTimeMs={transcriptPlaybackTimeMs}
+            playbackProgress={transcriptProgress}
+          />
+        )}
 
         {isIdling && (
           <div className="face-chat-options" role="group" aria-label="Dialogue options">
