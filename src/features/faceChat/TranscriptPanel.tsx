@@ -55,6 +55,8 @@ export default function TranscriptPanel({
       aria-label="Avatar transcript"
       aria-busy={isSpeaking}
     >
+      <span className="transcript-corner is-top-right" aria-hidden="true" />
+      <span className="transcript-corner is-bottom-left" aria-hidden="true" />
       <div className="transcript-heading">
         <span
           className={`transcript-activity${isSpeaking ? ' is-active' : ''}`}
@@ -78,6 +80,7 @@ export default function TranscriptPanel({
           <span className="transcript-skip-mark" aria-hidden="true">{'>>'}</span>
         </button>
       )}
+      <span className="transcript-divider" aria-hidden="true" />
       <p
         className={`transcript-response${isSpeaking ? ' is-typing' : ''}`}
         aria-live={isSpeaking ? 'polite' : 'off'}

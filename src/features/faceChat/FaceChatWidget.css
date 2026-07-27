@@ -69,10 +69,12 @@
   width: 32px;
   height: 32px;
   color: var(--option-accent);
+  overflow: hidden;
   border: 1px solid rgba(159, 174, 183, 0.42);
   border-radius: 2px;
-  background: rgba(8, 25, 38, 0.68);
-  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+  background: rgba(8, 25, 38, 0.74);
+  box-shadow: 0 3px 10px rgba(5, 18, 28, 0.2);
+  transition: color 160ms ease, border-color 160ms ease, filter 160ms ease;
 }
 
 .face-chat-control-button::before,
@@ -91,6 +93,8 @@
 }
 
 .face-chat-control-icon {
+  position: relative;
+  z-index: 2;
   width: 18px;
   height: 18px;
 }
@@ -100,6 +104,7 @@
   color: #69cfff;
   border-color: rgba(105, 207, 255, 0.86);
   background: rgba(13, 49, 69, 0.9);
+  filter: brightness(1.08);
 }
 
 .face-chat-control-button:focus-visible {
@@ -243,8 +248,10 @@
   min-height: 52px;
   border-top: 1px solid rgba(113, 175, 207, 0.62);
   border-bottom: 1px solid rgba(193, 205, 212, 0.68);
-  background: var(--face-chat-panel-background);
-  box-shadow: var(--face-chat-panel-shadow);
+  background: rgba(18, 55, 86, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 12px rgba(5, 18, 28, 0.2);
   transition:
     border-color 160ms ease,
     background 160ms ease,
@@ -323,91 +330,63 @@
   color: var(--option-accent);
 }
 
-.face-chat-option-triangle-layer {
-  --option-triangle-size: clamp(42px, 15%, 56px);
+.hud-triangle-mesh-piece {
+  stroke: none;
+  opacity: 0;
+}
+
+.hud-triangle-mesh-piece.is-1,
+.hud-triangle-mesh-piece.is-8 {
+  fill: rgba(143, 197, 225, 0.5);
+}
+
+.hud-triangle-mesh-piece.is-2,
+.hud-triangle-mesh-piece.is-7 {
+  fill: rgba(11, 51, 80, 0.52);
+}
+
+.hud-triangle-mesh-piece.is-3,
+.hud-triangle-mesh-piece.is-6 {
+  fill: rgba(166, 211, 235, 0.56);
+}
+
+.hud-triangle-mesh-piece.is-4,
+.hud-triangle-mesh-piece.is-5 {
+  fill: rgba(132, 190, 222, 0.5);
+}
+
+.face-chat-option-triangle-mesh {
   position: absolute;
   inset: 0;
   z-index: 1;
-  overflow: hidden;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-.face-chat-option-triangle {
-  position: absolute;
-  top: 0;
-  width: var(--option-triangle-size);
-  height: 100%;
-  opacity: 0;
-  background: linear-gradient(180deg, rgba(166, 211, 235, 0.62), rgba(12, 54, 86, 0.48));
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-}
-
-.face-chat-option-triangle.one {
-  left: 8%;
-}
-
-.face-chat-option-triangle.two {
-  left: 20%;
-  background: linear-gradient(180deg, rgba(9, 48, 78, 0.5), rgba(143, 197, 225, 0.58));
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.face-chat-option-triangle.three {
-  left: 32%;
-  background: linear-gradient(180deg, rgba(150, 204, 232, 0.58), rgba(8, 46, 76, 0.5));
-}
-
-.face-chat-option-triangle.four {
-  left: 44%;
-  background: linear-gradient(180deg, rgba(8, 45, 74, 0.46), rgba(132, 190, 222, 0.54));
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.face-chat-option-triangle.five {
-  left: 56%;
-  background: linear-gradient(180deg, rgba(166, 211, 235, 0.58), rgba(12, 54, 86, 0.48));
-}
-
-.face-chat-option-triangle.six {
-  left: 68%;
-  background: linear-gradient(180deg, rgba(9, 48, 78, 0.48), rgba(143, 197, 225, 0.54));
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.face-chat-option-triangle.seven {
-  left: 80%;
-  background: linear-gradient(180deg, rgba(150, 204, 232, 0.54), rgba(8, 46, 76, 0.46));
-}
-
-.face-chat-option-triangle.eight {
-  left: 92%;
-  background: linear-gradient(180deg, rgba(8, 45, 74, 0.44), rgba(132, 190, 222, 0.5));
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.face-chat-option-bar:hover .face-chat-option-triangle,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle {
+.face-chat-option-bar:hover .hud-triangle-mesh-piece,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece {
   animation: face-chat-option-triangle-glitch 0.55s steps(1, end) both;
 }
 
-.face-chat-option-bar:hover .face-chat-option-triangle.two,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle.two,
-.face-chat-option-bar:hover .face-chat-option-triangle.seven,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle.seven {
+.face-chat-option-bar:hover .hud-triangle-mesh-piece.is-2,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece.is-2,
+.face-chat-option-bar:hover .hud-triangle-mesh-piece.is-7,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece.is-7 {
   animation-delay: 0.13s;
 }
 
-.face-chat-option-bar:hover .face-chat-option-triangle.three,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle.three,
-.face-chat-option-bar:hover .face-chat-option-triangle.six,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle.six {
+.face-chat-option-bar:hover .hud-triangle-mesh-piece.is-3,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece.is-3,
+.face-chat-option-bar:hover .hud-triangle-mesh-piece.is-6,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece.is-6 {
   animation-delay: 0.27s;
 }
 
-.face-chat-option-bar:hover .face-chat-option-triangle.four,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle.four,
-.face-chat-option-bar:hover .face-chat-option-triangle.five,
-.face-chat-option-bar:focus-visible .face-chat-option-triangle.five {
+.face-chat-option-bar:hover .hud-triangle-mesh-piece.is-4,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece.is-4,
+.face-chat-option-bar:hover .hud-triangle-mesh-piece.is-5,
+.face-chat-option-bar:focus-visible .hud-triangle-mesh-piece.is-5 {
   animation-delay: 0.4s;
 }
 
@@ -415,7 +394,7 @@
 .face-chat-option-bar:focus-visible {
   --option-accent: #69cfff;
   border-color: rgba(242, 248, 251, 0.94);
-  background: var(--face-chat-panel-background);
+  background: rgba(25, 69, 105, 0.96);
   filter: brightness(1.1);
 }
 
@@ -468,9 +447,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .face-chat-option-bar:hover .face-chat-option-triangle,
-  .face-chat-option-bar:focus-visible .face-chat-option-triangle {
+  .face-chat-option-bar:hover .hud-triangle-mesh-piece,
+  .face-chat-option-bar:focus-visible .hud-triangle-mesh-piece {
     animation: none;
+    opacity: 0.45;
   }
 }
 
@@ -546,14 +526,14 @@
 .face-chat-widget.is-centered-layout .face-chat-control-button {
   width: 34px;
   height: 34px;
-  border-color: transparent;
-  background: transparent;
+  border-color: rgba(159, 174, 183, 0.36);
+  background: rgba(8, 25, 38, 0.74);
 }
 
 .face-chat-widget.is-centered-layout .face-chat-control-button:hover,
 .face-chat-widget.is-centered-layout .face-chat-control-button[aria-expanded='true'] {
   border-color: rgba(105, 207, 255, 0.52);
-  background: rgba(13, 49, 69, 0.72);
+  background: rgba(13, 49, 69, 0.86);
 }
 
 .face-chat-widget.is-centered-layout .face-chat-choice-layer,

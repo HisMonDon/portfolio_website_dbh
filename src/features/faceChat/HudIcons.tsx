@@ -4,6 +4,36 @@ interface IconProps {
 
 export type ChoiceMarkerKind = 'triangle' | 'square' | 'circle' | 'cross' | 'back'
 
+const HUD_TRIANGLE_POINTS = [
+  '0,0 100,100 0,100',
+  '0,0 200,0 100,100',
+  '100,100 300,100 200,0',
+  '200,0 400,0 300,100',
+  '300,100 500,100 400,0',
+  '400,0 600,0 500,100',
+  '500,100 700,100 600,0',
+  '600,0 700,0 700,100',
+] as const
+
+export function HudTriangleMesh({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 700 100"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      {HUD_TRIANGLE_POINTS.map((points, index) => (
+        <polygon
+          key={points}
+          className={`hud-triangle-mesh-piece is-${index + 1}`}
+          points={points}
+        />
+      ))}
+    </svg>
+  )
+}
+
 export function ChoiceMarkerIcon({
   kind,
   className,

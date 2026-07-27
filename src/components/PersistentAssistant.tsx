@@ -1,11 +1,12 @@
 import { lazy, Suspense } from 'react'
+import type { SectionId } from './NavBar'
 import './PersistentAssistant.css'
 
 const FaceChatWidget = lazy(() => import('../features/faceChat/FaceChatWidget'))
 
 interface PersistentAssistantProps {
   visible: boolean
-  centered: boolean
+  activeSection: SectionId
 }
 
 // Site-wide dock for the face-chat assistant (desktop only — see useIsMobile
@@ -16,15 +17,18 @@ interface PersistentAssistantProps {
 // .project-preview aside.
 export default function PersistentAssistant({
   visible,
-  centered,
+  activeSection,
 }: PersistentAssistantProps) {
+  const centered = activeSection === 'about'
+
   return (
     <div
       className={`persistent-assistant${visible ? ' is-visible' : ''}${centered ? ' is-centered' : ''}`}
+      data-active-section={activeSection}
       aria-hidden={!visible}
     >
       <Suspense fallback={null}>
-        <FaceChatWidget centered={centered} />
+        <FaceChatWidget centered={centered} activeSection={activeSection} />
       </Suspense>
     </div>
   )

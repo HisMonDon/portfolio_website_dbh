@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { SectionId } from '../../components/NavBar'
 import ClipAvatar from './ClipAvatar'
 import {
   ChoiceMarkerIcon,
+  HudTriangleMesh,
   QuestionIcon,
   SettingsIcon,
   VolumeOffIcon,
@@ -37,38 +39,32 @@ const CHOICE_MARKERS: readonly ChoiceMarkerKind[] = [
   'cross',
 ]
 
-const OPTION_TRIANGLES = [
-  'one',
-  'two',
-  'three',
-  'four',
-  'five',
-  'six',
-  'seven',
-  'eight',
-] as const
-
-function OptionTriangleAnimation() {
-  return (
-    <span className="face-chat-option-triangle-layer" aria-hidden="true">
-      {OPTION_TRIANGLES.map((triangle) => (
-        <span
-          key={triangle}
-          className={`face-chat-option-triangle ${triangle}`}
-        />
-      ))}
-    </span>
-  )
-}
-
 interface FaceChatWidgetProps {
   centered?: boolean
+  activeSection?: SectionId
+}
+
+type SectionPlaybackPhase = 'inactive' | 'waiting' | 'playing' | 'idle'
+
+interface SectionPlaybackState {
+  section: SectionId | null
+  phase: SectionPlaybackPhase
+}
+
+const SECTION_IDLE_DELAY_MS = 2000
+const SECTION_CLIP_IDS: Partial<Record<SectionId, string>> = {
+  resume: 'resume',
+  skills: 'skills',
+  credits: 'credits',
 }
 
 // Camera-free prerecorded avatar chat. Follow-up branches behave as checklists: answered prompts
 // stay completed, the remaining prompts continue to be offered, and the closing prompts unlock
 // only after the active opening's follow-ups are exhausted.
-export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps) {
+export default function FaceChatWidget({
+  centered = false,
+  activeSection = 'about',
+}: FaceChatWidgetProps) {
   const [currentNodeId, setCurrentNodeId] = useState<number>(INTRO_NODE_ID)
   const [activeOpeningId, setActiveOpeningId] = useState<number>(OPENING_NODE_IDS[0])
   const [isOpeningMenu, setIsOpeningMenu] = useState(false)
@@ -80,11 +76,24 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [targetFps, setTargetFps] = useState(60)
   const [expandedTranscriptNodeId, setExpandedTranscriptNodeId] = useState<number | null>(null)
+  const [sectionPlayback, setSectionPlayback] = useState<SectionPlaybackState>({
+    section: null,
+    phase: 'inactive',
+  })
   const promptHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
   const node = DIALOGUE_GRAPH[currentNodeId]
-  const isIdling = isOpeningMenu || playbackPhase === 'idle' || node.type === 'loop'
+  const isAboutSection = activeSection === 'about'
+  const isDialogueIdling = isOpeningMenu || playbackPhase === 'idle' || node.type === 'loop'
+  const sectionClipId = SECTION_CLIP_IDS[activeSection]
+  const isSectionClipPlaying = Boolean(
+    !isAboutSection
+      && sectionClipId
+      && sectionPlayback.section === activeSection
+      && sectionPlayback.phase === 'playing',
+  )
+  const isIdling = isAboutSection ? isDialogueIdling : !isSectionClipPlaying
   const visibleTransitionIds = isOpeningMenu
     ? [...OPENING_NODE_IDS]
     : getVisibleDialogueChoices(
@@ -92,10 +101,24 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
         activeOpeningId,
         completedFollowups,
       )
-  const canGoBack = !isOpeningMenu && dialogueHistory.length > 0
+  const canGoBack = isAboutSection
+    && !isOpeningMenu
+    && node.type !== 'loop'
+    && dialogueHistory.length > 0
   const optionCount = visibleTransitionIds.length + (canGoBack ? 1 : 0)
 
   const handleClipComplete = useCallback((reason: ClipCompletionReason) => {
+    if (!isAboutSection) {
+      if (isSectionClipPlaying) {
+        setSectionPlayback((current) => current.section === activeSection
+          ? { ...current, phase: 'idle' }
+          : current)
+      } else {
+        setIdleClipIndex((index) => (index + 1) % IDLE_CLIP_IDS.length)
+      }
+      return
+    }
+
     if (playbackPhase === 'answer') {
       if (currentNodeId === INTRO_NODE_ID && reason === 'ended') {
         setCurrentNodeId(OPENING_NODE_IDS[0])
@@ -108,9 +131,13 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
 
     // Run both silent recorded idle performances continuously.
     setIdleClipIndex((index) => (index + 1) % IDLE_CLIP_IDS.length)
-  }, [currentNodeId, playbackPhase])
+  }, [activeSection, currentNodeId, isAboutSection, isSectionClipPlaying, playbackPhase])
 
-  const activeClipId = isIdling ? IDLE_CLIP_IDS[idleClipIndex] : node.clipId
+  const activeClipId = isSectionClipPlaying && sectionClipId
+    ? sectionClipId
+    : isIdling
+      ? IDLE_CLIP_IDS[idleClipIndex]
+      : node.clipId
   const {
     activeFrame,
     error: clipError,
@@ -129,11 +156,38 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
   )
 
   const handleSkip = useCallback(() => {
-    if (!centered || isIdling) return
+    if (!isAboutSection || !centered || isIdling) return
 
     setExpandedTranscriptNodeId(currentNodeId)
     skipActiveClip()
-  }, [centered, currentNodeId, isIdling, skipActiveClip])
+  }, [centered, currentNodeId, isAboutSection, isIdling, skipActiveClip])
+
+  useEffect(() => {
+    if (isAboutSection) {
+      setSectionPlayback({ section: null, phase: 'inactive' })
+      return
+    }
+
+    // Leaving About always interrupts the current response. Returning later resumes the
+    // conversation at its current choices instead of restarting a partially heard answer.
+    setPlaybackPhase('idle')
+    setExpandedTranscriptNodeId(null)
+
+    if (!sectionClipId) {
+      setSectionPlayback({ section: activeSection, phase: 'idle' })
+      return
+    }
+
+    setSectionPlayback({ section: activeSection, phase: 'waiting' })
+
+    const startSectionClip = window.setTimeout(() => {
+      setSectionPlayback((current) => current.section === activeSection
+        ? { ...current, phase: 'playing' }
+        : current)
+    }, SECTION_IDLE_DELAY_MS)
+
+    return () => window.clearTimeout(startSectionClip)
+  }, [activeSection, isAboutSection, sectionClipId])
 
   useEffect(() => {
     promptHeadingRef.current?.focus()
@@ -229,7 +283,6 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
       onKeyDown={(event) => handleOptionKeyDown(event, visibleTransitionIds.length)}
       aria-label="Back to previous choices"
     >
-      <OptionTriangleAnimation />
       <span className="face-chat-option-label">Back</span>
       <span className="face-chat-option-connector" aria-hidden="true" />
       <span className="face-chat-option-number" aria-hidden="true">
@@ -243,6 +296,8 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
       className={`face-chat-widget${centered ? ' is-centered-layout' : ''}`}
       data-playback-phase={isIdling ? 'idle' : 'answer'}
       data-active-clip={activeClipId}
+      data-active-section={activeSection}
+      data-section-playback={isAboutSection ? 'dialogue' : sectionPlayback.phase}
       data-transcript-expanded={expandedTranscriptNodeId === currentNodeId || undefined}
     >
       <div className="face-chat-stage">
@@ -255,7 +310,7 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
 
       <div className={`face-chat-top-hud${isOpeningMenu ? ' is-opening-menu' : ''}`}>
         <div className="face-chat-transcript-frame">
-          {!isOpeningMenu && (
+          {isAboutSection && !isOpeningMenu && (
             <TranscriptPanel
               nodeId={currentNodeId}
               clipId={activeClipId}
@@ -266,7 +321,7 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
               onSkip={centered && !isIdling ? handleSkip : undefined}
             />
           )}
-          {centered && isIdling && backButton}
+          {isAboutSection && centered && isIdling && backButton}
         </div>
 
         <div className="face-chat-control-stack">
@@ -336,7 +391,7 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
             </button>
         </div>
 
-        {isIdling && (
+        {isAboutSection && isDialogueIdling && (
           <div className="face-chat-choice-layer" role="group" aria-label="Dialogue options">
             <div className="face-chat-options">
               {visibleTransitionIds.map((nextId, index) => (
@@ -351,7 +406,7 @@ export default function FaceChatWidget({ centered = false }: FaceChatWidgetProps
                   onClick={() => navigateTo(nextId)}
                   onKeyDown={(event) => handleOptionKeyDown(event, index)}
                 >
-                  <OptionTriangleAnimation />
+                  <HudTriangleMesh className="face-chat-option-triangle-mesh" />
                   <span className="face-chat-option-label">{TRANSCRIPT_SCRIPT[nextId]?.prompt}</span>
                   <span className="face-chat-option-connector" aria-hidden="true" />
                   <span className="face-chat-option-number" aria-hidden="true">

@@ -1,6 +1,7 @@
 .app {
   --assistant-gutter: clamp(24px, 3.35vw, 64px);
   --assistant-width: min(50vw, 700px);
+  --assistant-height: min(42.857vw, 600px);
   min-height: 100vh;
   position: relative;
   isolation: isolate;

@@ -194,7 +194,7 @@ function App() {
       {!isMobile && (
         <PersistentAssistant
           visible={isAssistantVisible}
-          centered={activeSection === 'about'}
+          activeSection={activeSection}
         />
       )}
 
