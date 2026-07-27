@@ -126,6 +126,7 @@ export function applyBlendshapesToMeshes(
 }
 
 export type ClipPlayMode = 'loop' | 'once'
+export type ClipCompletionReason = 'ended' | 'skipped'
 
 export interface ClipPlayerState {
   activeFrame: InternalFrame | null
@@ -136,11 +137,12 @@ export interface ClipPlayerState {
   playbackProgress: number
   play: () => void
   pause: () => void
+  skip: () => void
 }
 
 export interface ClipPlayerOptions {
   audioEnabled?: boolean
-  onComplete?: () => void
+  onComplete?: (reason: ClipCompletionReason) => void
   transitionDurationMs?: number
 }
 
@@ -198,6 +200,7 @@ export function useClipPlayer(
   const transitionRafRef = useRef<number | null>(null)
   const activeFrameRef = useRef<InternalFrame | null>(null)
   const requestIdRef = useRef(0)
+  const completionFiredRef = useRef(false)
 
   const audioEnabled = options.audioEnabled ?? true
   const transitionDurationMs = options.transitionDurationMs ?? CLIP_TRANSITION_DURATION_MS
@@ -229,6 +232,40 @@ export function useClipPlayer(
   const isMutedRef = useRef(isMuted)
   isMutedRef.current = isMuted
 
+  const completePlayback = useCallback((reason: ClipCompletionReason) => {
+    if (mode !== 'once' || completionFiredRef.current) return
+
+    completionFiredRef.current = true
+
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    if (transitionRafRef.current !== null) cancelAnimationFrame(transitionRafRef.current)
+    rafRef.current = null
+    transitionRafRef.current = null
+
+    const audio = audioRef.current
+    const frames = framesRef.current
+    const lastFrame = frames[frames.length - 1]
+    const lastFrameTime = lastFrame?.t ?? 0
+
+    audio?.pause()
+    audioRef.current = null
+    audioHasStartedRef.current = false
+
+    if (lastFrame) {
+      cursorRef.current = frames.length
+      displayFrame(lastFrame)
+    }
+
+    displayPlaybackTime(
+      audio && Number.isFinite(audio.duration) && audio.duration > 0
+        ? audio.duration * 1000
+        : lastFrameTime,
+    )
+    displayPlaybackProgress(1)
+    setIsPlaying(false)
+    onCompleteRef.current?.(reason)
+  }, [displayFrame, displayPlaybackProgress, displayPlaybackTime, mode])
+
   useEffect(() => {
     const requestId = ++requestIdRef.current
     const outgoingFrame = activeFrameRef.current
@@ -239,6 +276,7 @@ export function useClipPlayer(
     audioHasStartedRef.current = false
     fallbackEpochRef.current = 0
     lastElapsedRef.current = 0
+    completionFiredRef.current = false
     audioRef.current?.pause()
     audioRef.current = null
     if (transitionRafRef.current !== null) cancelAnimationFrame(transitionRafRef.current)
@@ -381,20 +419,7 @@ export function useClipPlayer(
       // Hold the final tracked expression until the answer audio ends, so the last syllable is
       // never cut off when the widget switches back to idle.
       if (mode === 'once' && audioHasStartedRef.current && audio?.ended) {
-        cursorRef.current = advanceFrameCursor(
-          frames,
-          cursorRef.current,
-          lastFrameTime,
-          displayFrame,
-        )
-        displayPlaybackTime(
-          Number.isFinite(audio.duration) && audio.duration > 0
-            ? audio.duration * 1000
-            : lastFrameTime,
-        )
-        displayPlaybackProgress(1)
-        setIsPlaying(false)
-        onCompleteRef.current?.()
+        completePlayback('ended')
         return
       }
 
@@ -407,11 +432,7 @@ export function useClipPlayer(
         )
 
         if (mode === 'once' && !audioHasStartedRef.current) {
-          audio?.pause()
-          displayPlaybackTime(lastFrameTime)
-          displayPlaybackProgress(1)
-          setIsPlaying(false)
-          onCompleteRef.current?.()
+          completePlayback('ended')
           return
         }
 
@@ -438,7 +459,7 @@ export function useClipPlayer(
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
-  }, [displayFrame, displayPlaybackProgress, displayPlaybackTime, isPlaying, mode])
+  }, [completePlayback, displayFrame, displayPlaybackProgress, displayPlaybackTime, isPlaying, mode])
 
   const play = () => {
     if (framesRef.current.length === 0) return
@@ -451,6 +472,10 @@ export function useClipPlayer(
     setIsPlaying(false)
   }
 
+  const skip = useCallback(() => {
+    completePlayback('skipped')
+  }, [completePlayback])
+
   return {
     activeFrame,
     isPlaying,
@@ -460,5 +485,6 @@ export function useClipPlayer(
     playbackProgress,
     play,
     pause,
+    skip,
   }
 }

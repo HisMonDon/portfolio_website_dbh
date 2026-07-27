@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import NavBar, { type SectionId } from './components/NavBar'
 import PersistentAssistant from './components/PersistentAssistant'
-import AboutMe from './sections/AboutMe'
 import Resume from './sections/Resume'
 import Skills from './sections/Skills'
 import Credits from './sections/Credits'
@@ -21,7 +20,7 @@ function renderSection(
 ) {
   switch (active) {
     case 'about':
-      return <AboutMe />
+      return null
     case 'resume':
       return <Resume />
     case 'projects':
@@ -192,7 +191,12 @@ function App() {
         ))}
       </div>
 
-      {!isMobile && <PersistentAssistant visible={isAssistantVisible} />}
+      {!isMobile && (
+        <PersistentAssistant
+          visible={isAssistantVisible}
+          centered={activeSection === 'about'}
+        />
+      )}
 
       <NavBar
         active={activeSection}

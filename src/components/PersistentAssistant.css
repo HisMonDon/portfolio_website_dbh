@@ -23,6 +23,16 @@
   transition-delay: 0s;
 }
 
+.persistent-assistant.is-centered {
+  inset: 0 0 76px;
+  width: auto;
+  transform: scale(0.96);
+}
+
+.persistent-assistant.is-centered.is-visible {
+  transform: scale(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .persistent-assistant {
     transition-duration: 1ms;

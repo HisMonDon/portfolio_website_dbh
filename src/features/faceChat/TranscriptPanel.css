@@ -6,9 +6,12 @@
   width: 100%;
   min-width: 0;
   padding: clamp(18px, 1.8vw, 24px) clamp(18px, 2vw, 26px);
-  border: 1px solid rgba(55, 74, 86, 0.72);
-  background: linear-gradient(105deg, rgba(5, 19, 29, 0.94), rgba(12, 35, 49, 0.88));
-  box-shadow: 0 12px 28px rgba(5, 18, 28, 0.18);
+  border: 1px solid rgba(55, 90, 113, 0.82);
+  border-top-color: rgba(113, 175, 207, 0.72);
+  background: var(--face-chat-panel-background);
+  box-shadow:
+    var(--face-chat-panel-shadow),
+    0 12px 28px rgba(5, 18, 28, 0.18);
   backdrop-filter: blur(6px);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: clamp(12px, 0.95vw, 14px);
@@ -59,24 +62,64 @@
   line-height: 1.35;
 }
 
+.transcript-skip-button {
+  all: unset;
+  position: absolute;
+  top: 15px;
+  right: 16px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 8px;
+  color: #c3cdd3;
+  border: 1px solid rgba(159, 174, 183, 0.42);
+  background: rgba(8, 25, 38, 0.46);
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.transcript-skip-mark {
+  color: #69cfff;
+  font-size: 7px;
+  letter-spacing: -2px;
+}
+
+.transcript-skip-button:hover {
+  color: #ffffff;
+  border-color: rgba(105, 207, 255, 0.86);
+  background: rgba(13, 49, 69, 0.82);
+}
+
+.transcript-skip-button:focus-visible {
+  outline: 2px solid #69cfff;
+  outline-offset: 3px;
+}
+
 .transcript-response {
+  display: grid;
   margin: 0;
-  height: 4.8em;
-  overflow: hidden;
   color: #eef3f6;
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-weight: normal;
   line-height: 1.6;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
 }
 
-.transcript-response::-webkit-scrollbar {
-  display: none;
-}
-
-.transcript-response-visible {
+.transcript-response-visible,
+.transcript-response-sizer {
+  grid-area: 1 / 1;
   display: block;
+}
+
+.transcript-response-sizer {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .transcript-full-response {

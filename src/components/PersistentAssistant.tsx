@@ -5,6 +5,7 @@ const FaceChatWidget = lazy(() => import('../features/faceChat/FaceChatWidget'))
 
 interface PersistentAssistantProps {
   visible: boolean
+  centered: boolean
 }
 
 // Site-wide dock for the face-chat assistant (desktop only — see useIsMobile
@@ -13,14 +14,17 @@ interface PersistentAssistantProps {
 // section changes; only opacity/visibility/pointer-events toggle, following
 // the same fixed-dock + .is-visible fade pattern as Projects.css's
 // .project-preview aside.
-export default function PersistentAssistant({ visible }: PersistentAssistantProps) {
+export default function PersistentAssistant({
+  visible,
+  centered,
+}: PersistentAssistantProps) {
   return (
     <div
-      className={`persistent-assistant${visible ? ' is-visible' : ''}`}
+      className={`persistent-assistant${visible ? ' is-visible' : ''}${centered ? ' is-centered' : ''}`}
       aria-hidden={!visible}
     >
       <Suspense fallback={null}>
-        <FaceChatWidget />
+        <FaceChatWidget centered={centered} />
       </Suspense>
     </div>
   )

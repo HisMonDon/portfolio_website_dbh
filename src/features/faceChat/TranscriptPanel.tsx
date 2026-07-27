@@ -1,4 +1,3 @@
-import { useLayoutEffect, useRef } from 'react'
 import {
   revealTimedTranscriptText,
   revealTranscriptText,
@@ -14,6 +13,8 @@ interface TranscriptPanelProps {
   isSpeaking: boolean
   playbackTimeMs: number
   playbackProgress: number
+  isExpanded?: boolean
+  onSkip?: () => void
 }
 
 interface TranscriptTimingEntry {
@@ -32,10 +33,9 @@ export default function TranscriptPanel({
   isSpeaking,
   playbackTimeMs,
   playbackProgress,
+  isExpanded = false,
+  onSkip,
 }: TranscriptPanelProps) {
-  const responseRef = useRef<HTMLParagraphElement | null>(null)
-  const measuredClipIdRef = useRef(clipId)
-  const previousScrollHeightRef = useRef(0)
   const entry = TRANSCRIPT_SCRIPT[nodeId]
   const timing = TRANSCRIPT_TIMINGS[clipId]
   const revealedResponse = !entry
@@ -46,34 +46,11 @@ export default function TranscriptPanel({
         ? revealTimedTranscriptText(entry.response, timing.words, playbackTimeMs)
         : revealTranscriptText(entry.response, playbackProgress)
 
-  useLayoutEffect(() => {
-    const response = responseRef.current
-
-    if (!response) return
-
-    if (measuredClipIdRef.current !== clipId) {
-      measuredClipIdRef.current = clipId
-      previousScrollHeightRef.current = 0
-      response.scrollTop = 0
-    }
-
-    const nextScrollHeight = response.scrollHeight
-
-    // scrollHeight changes only when wrapping creates another rendered line. Keeping the
-    // scroll position fixed between those changes prevents the transcript from crawling with
-    // every newly revealed word.
-    if (nextScrollHeight > previousScrollHeightRef.current + 1) {
-      response.scrollTop = Math.max(0, nextScrollHeight - response.clientHeight)
-    }
-
-    previousScrollHeightRef.current = nextScrollHeight
-  }, [clipId, revealedResponse])
-
   if (!entry) return null
 
   return (
     <div
-      className="transcript-panel"
+      className={`transcript-panel${isExpanded ? ' is-expanded' : ''}`}
       role="region"
       aria-label="Avatar transcript"
       aria-busy={isSpeaking}
@@ -89,13 +66,27 @@ export default function TranscriptPanel({
         </span>
         <p className="transcript-prompt">{entry.prompt}</p>
       </div>
+      {onSkip && (
+        <button
+          type="button"
+          className="transcript-skip-button"
+          onClick={onSkip}
+          aria-label="Skip to the end of this response"
+          title="Skip to the end of this response"
+        >
+          <span>Skip</span>
+          <span className="transcript-skip-mark" aria-hidden="true">{'>>'}</span>
+        </button>
+      )}
       <p
-        ref={responseRef}
         className={`transcript-response${isSpeaking ? ' is-typing' : ''}`}
         aria-live={isSpeaking ? 'polite' : 'off'}
       >
         <span className="transcript-response-visible">
           {revealedResponse}
+        </span>
+        <span className="transcript-response-sizer" aria-hidden="true">
+          {entry.response}
         </span>
       </p>
       <span className="transcript-full-response">
