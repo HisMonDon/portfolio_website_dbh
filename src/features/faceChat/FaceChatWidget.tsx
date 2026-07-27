@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ClipAvatar from './ClipAvatar'
 import {
   ChoiceMarkerIcon,
+  QuestionIcon,
+  SettingsIcon,
   VolumeOffIcon,
   VolumeOnIcon,
   type ChoiceMarkerKind,
@@ -42,6 +44,8 @@ export default function FaceChatWidget() {
   const [playbackPhase, setPlaybackPhase] = useState<'idle' | 'answer'>('idle')
   const [idleClipIndex, setIdleClipIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [targetFps, setTargetFps] = useState(60)
   const promptHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
@@ -170,40 +174,15 @@ export default function FaceChatWidget() {
       data-playback-phase={isIdling ? 'idle' : 'answer'}
       data-active-clip={activeClipId}
     >
-      <button
-        type="button"
-        className="face-chat-mute-toggle"
-        onClick={() => setIsMuted((muted) => !muted)}
-        aria-pressed={isMuted}
-        aria-label={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
-        title={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
-      >
-        {isMuted
-          ? <VolumeOffIcon className="face-chat-audio-icon" />
-          : <VolumeOnIcon className="face-chat-audio-icon" />}
-      </button>
-
       <div className="face-chat-stage">
-        <ClipAvatar activeFrame={activeFrame} critical={Boolean(clipError)} />
+        <ClipAvatar
+          activeFrame={activeFrame}
+          critical={Boolean(clipError)}
+          targetFps={targetFps}
+        />
       </div>
 
-      <div className="face-chat-dialogue">
-        {clipError && (
-          <p className="face-chat-clip-error" role="status">
-            Avatar clip unavailable right now — showing text only.
-          </p>
-        )}
-
-        <h2
-          className="face-chat-node-prompt face-chat-visually-hidden"
-          ref={promptHeadingRef}
-          tabIndex={-1}
-        >
-          {isOpeningMenu
-            ? 'Choose an opening question'
-            : TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}
-        </h2>
-
+      <div className="face-chat-top-hud">
         {!isOpeningMenu && (
           <TranscriptPanel
             nodeId={currentNodeId}
@@ -214,30 +193,99 @@ export default function FaceChatWidget() {
           />
         )}
 
-        {isIdling && (
-          <div className="face-chat-options" role="group" aria-label="Dialogue options">
-            {visibleTransitionIds.map((nextId, index) => (
-              <button
-                key={nextId}
-                ref={(element) => {
-                  optionRefs.current[index] = element
-                }}
-                type="button"
-                className="face-chat-option-bar"
-                tabIndex={index === 0 ? 0 : -1}
-                onClick={() => navigateTo(nextId)}
-                onKeyDown={(event) => handleOptionKeyDown(event, index)}
+        <div className="face-chat-control-stack">
+          <button
+            type="button"
+            className="face-chat-control-button"
+            onClick={() => setIsMuted((muted) => !muted)}
+            aria-pressed={isMuted}
+            aria-label={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
+            title={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
+          >
+            {isMuted
+              ? <VolumeOffIcon className="face-chat-control-icon" />
+              : <VolumeOnIcon className="face-chat-control-icon" />}
+          </button>
+
+          <div className="face-chat-settings-control">
+            <button
+              type="button"
+              className="face-chat-control-button"
+              onClick={() => setIsSettingsOpen((open) => !open)}
+              aria-expanded={isSettingsOpen}
+              aria-controls="face-chat-fps-settings"
+              aria-label="Avatar performance settings"
+              title="Avatar performance settings"
+            >
+              <SettingsIcon className="face-chat-control-icon" />
+            </button>
+
+            {isSettingsOpen && (
+              <div
+                id="face-chat-fps-settings"
+                className="face-chat-fps-settings"
+                role="group"
+                aria-label="Avatar frame rate"
               >
-                <span className="face-chat-option-label">{TRANSCRIPT_SCRIPT[nextId]?.prompt}</span>
-                <span className="face-chat-option-connector" aria-hidden="true" />
-                <span className="face-chat-option-number" aria-hidden="true">
-                  <ChoiceMarkerIcon
-                    kind={CHOICE_MARKERS[index % CHOICE_MARKERS.length]}
-                    className={`face-chat-option-glyph is-${CHOICE_MARKERS[index % CHOICE_MARKERS.length]}`}
-                  />
-                </span>
-              </button>
-            ))}
+                <div className="face-chat-fps-heading">
+                  <span>Render rate</span>
+                  <output>{targetFps} FPS</output>
+                </div>
+                <input
+                  type="range"
+                  min="15"
+                  max="60"
+                  step="15"
+                  value={targetFps}
+                  onChange={(event) => setTargetFps(Number(event.target.value))}
+                  aria-label="Avatar frames per second"
+                />
+                <div className="face-chat-fps-scale" aria-hidden="true">
+                  <span>15</span>
+                  <span>30</span>
+                  <span>45</span>
+                  <span>60</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="face-chat-control-button"
+            aria-label="Help (coming soon)"
+            title="Help (coming soon)"
+          >
+            <QuestionIcon className="face-chat-control-icon" />
+          </button>
+        </div>
+
+        {isIdling && (
+          <div className="face-chat-choice-layer" role="group" aria-label="Dialogue options">
+            <div className="face-chat-options">
+              {visibleTransitionIds.map((nextId, index) => (
+                <button
+                  key={nextId}
+                  ref={(element) => {
+                    optionRefs.current[index] = element
+                  }}
+                  type="button"
+                  className="face-chat-option-bar"
+                  tabIndex={index === 0 ? 0 : -1}
+                  onClick={() => navigateTo(nextId)}
+                  onKeyDown={(event) => handleOptionKeyDown(event, index)}
+                >
+                  <span className="face-chat-option-label">{TRANSCRIPT_SCRIPT[nextId]?.prompt}</span>
+                  <span className="face-chat-option-connector" aria-hidden="true" />
+                  <span className="face-chat-option-number" aria-hidden="true">
+                    <ChoiceMarkerIcon
+                      kind={CHOICE_MARKERS[index % CHOICE_MARKERS.length]}
+                      className={`face-chat-option-glyph is-${CHOICE_MARKERS[index % CHOICE_MARKERS.length]}`}
+                    />
+                  </span>
+                </button>
+              ))}
+            </div>
 
             {canGoBack && (
               <button
@@ -260,6 +308,25 @@ export default function FaceChatWidget() {
             )}
           </div>
         )}
+      </div>
+
+      <div className="face-chat-dialogue">
+        {clipError && (
+          <p className="face-chat-clip-error" role="status">
+            Avatar clip unavailable right now — showing text only.
+          </p>
+        )}
+
+        <h2
+          className="face-chat-node-prompt face-chat-visually-hidden"
+          ref={promptHeadingRef}
+          tabIndex={-1}
+        >
+          {isOpeningMenu
+            ? 'Choose an opening question'
+            : TRANSCRIPT_SCRIPT[currentNodeId]?.prompt}
+        </h2>
+
       </div>
     </div>
   )

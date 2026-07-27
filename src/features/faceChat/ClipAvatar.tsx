@@ -21,6 +21,7 @@ interface ClipAvatarProps {
   // The complete recording frame includes raw face scores plus the calibrated body/head pose.
   activeFrame?: InternalFrame | null
   critical?: boolean
+  targetFps?: number
 }
 
 const RENDERER_RETRY_LIMIT = 2
@@ -140,7 +141,11 @@ function applyRecordedPose(
 // clipPlayback.ts). Unlike FaceTrackingAvatar (the live webcam-tracking component), this never
 // calls getUserMedia and never needs camera permission — it only renders whatever blendshape
 // frames a clip player hands it.
-export default function ClipAvatar({ activeFrame, critical = false }: ClipAvatarProps) {
+export default function ClipAvatar({
+  activeFrame,
+  critical = false,
+  targetFps = 60,
+}: ClipAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const morphMeshesRef = useRef<THREE.Mesh[]>([])
   const avatarRootRef = useRef<THREE.Group | null>(null)
@@ -151,6 +156,7 @@ export default function ClipAvatar({ activeFrame, critical = false }: ClipAvatar
   const jawOpenAmountRef = useRef(0)
   const criticalRef = useRef(critical)
   const activeFrameRef = useRef(activeFrame)
+  const targetFpsRef = useRef(targetFps)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rendererAttempt, setRendererAttempt] = useState(0)
@@ -158,6 +164,7 @@ export default function ClipAvatar({ activeFrame, critical = false }: ClipAvatar
 
   activeFrameRef.current = activeFrame
   criticalRef.current = critical
+  targetFpsRef.current = Math.min(60, Math.max(15, targetFps))
 
   useEffect(() => {
     let cancelled = false
@@ -325,19 +332,28 @@ export default function ClipAvatar({ activeFrame, critical = false }: ClipAvatar
       const renderScene = scene
       const renderer_ = renderer
 
-      const animate = () => {
+      let lastRenderTime = 0
+
+      const animate = (now: number) => {
         if (cancelled) return
+        frameId = requestAnimationFrame(animate)
+
+        const frameInterval = 1000 / targetFpsRef.current
+        const elapsed = now - lastRenderTime
+
+        if (lastRenderTime > 0 && elapsed + 0.5 < frameInterval) return
+
+        lastRenderTime = now - (elapsed % frameInterval)
         // Rotation is driven entirely by scroll (scrollRotation.ts) — this
         // loop just samples whatever the ref currently holds every frame.
-        // It stays unconditional so the (separate) blendshape idle-clip
-        // animation keeps rendering smoothly regardless of scroll/rotation.
+        // Rendering is rate-limited by the user's HUD setting while the latest
+        // prerecorded pose and blendshapes continue updating independently.
         if (avatarRoot) avatarRoot.rotation.y = rotationRef.current
-        avatarVisualController?.update(performance.now(), jawOpenAmountRef.current, criticalRef.current)
+        avatarVisualController?.update(now, jawOpenAmountRef.current, criticalRef.current)
         renderer_.render(renderScene, camera)
-        frameId = requestAnimationFrame(animate)
       }
 
-      animate()
+      frameId = requestAnimationFrame(animate)
     } catch (err) {
       // WebGL isn't guaranteed to be available (context limits, a denylisted GPU, a headless
       // test environment) — fail into a visible placeholder instead of throwing during render,

@@ -1,9 +1,10 @@
 .transcript-panel {
   box-sizing: border-box;
-  position: absolute;
-  top: max(-104px, calc((100% - 100vh) / 2 + 24px));
-  left: 2%;
-  width: 70%;
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
   padding: clamp(10px, 1.2vw, 16px) clamp(12px, 1.5vw, 20px);
   border: 1px solid rgba(129, 208, 248, 0.4);
   background: linear-gradient(90deg, rgba(15, 35, 48, 0.76), rgba(23, 56, 76, 0.34));
@@ -69,7 +70,6 @@
 
 @media (max-width: 1000px) {
   .transcript-panel {
-    width: 70%;
     font-size: 11px;
   }
 }

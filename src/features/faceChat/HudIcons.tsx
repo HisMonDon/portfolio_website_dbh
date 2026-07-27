@@ -47,3 +47,33 @@ export function VolumeOffIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function SettingsIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M9.6 3.4h4.8l.7 2.2 2 .8 2.1-1.1 3.4 3.4-1.1 2.1.8 2 .3.1-2.5.8-.8 2-2.1 1.1-3.4-3.4 1.1-2.1-.8-2-2.2-.7V3.4Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="miter"
+        strokeWidth="1.7"
+      />
+      <circle cx="12" cy="12" r="3.1" fill="none" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
+export function QuestionIcon({ className }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M9.5 9.2a2.7 2.7 0 0 1 5.2 1c0 2.1-2.7 2.4-2.7 4.2m0 2.7v.2"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="square"
+        strokeWidth="1.9"
+      />
+    </svg>
+  )
+}
