@@ -27,7 +27,8 @@ export const LOOP_NODE_ID = 19 as const
 
 // The avatar idles on this clip (looped) until the user makes their first selection — see
 // FaceChatWidget.tsx.
-export const IDLE_CLIP_ID = 'idle_0'
+export const IDLE_CLIP_IDS = ['idle_0', 'idle_1'] as const
+export const IDLE_CLIP_ID = IDLE_CLIP_IDS[0]
 
 const CLOSING_TRANSITIONS = [...CLOSING_NODE_IDS]
 

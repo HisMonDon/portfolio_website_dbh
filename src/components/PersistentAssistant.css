@@ -1,12 +1,11 @@
 .persistent-assistant {
   position: fixed;
   top: 50%;
-  right: 64px;
+  right: var(--assistant-gutter, 64px);
   z-index: 10;
   transform: translateY(-50%) scale(0.96);
-  width: min(38vw, 480px);
-  max-height: min(80vh, 720px);
-  overflow-y: auto;
+  width: var(--assistant-width, min(50vw, 700px));
+  overflow: visible;
   opacity: 0;
   pointer-events: none;
   visibility: hidden;

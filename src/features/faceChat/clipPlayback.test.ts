@@ -1,5 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { __clearClipCacheForTests, findFrameAt, loadClip, type BlendshapeFrame } from './clipPlayback'
+import {
+  __clearClipCacheForTests,
+  didClockWrap,
+  findFrameAt,
+  getPlaybackAudioUrl,
+  loadClip,
+  resolveElapsedMs,
+  type BlendshapeFrame,
+} from './clipPlayback'
+
+describe('getPlaybackAudioUrl', () => {
+  it('does not expose or create an audio source for silent idle playback', () => {
+    expect(getPlaybackAudioUrl('idle_0', false)).toBeNull()
+    expect(getPlaybackAudioUrl('idle_1', false)).toBeNull()
+  })
+
+  it('keeps the paired recording available for spoken answer playback', () => {
+    expect(getPlaybackAudioUrl('0_1', true)).toMatch(/0_1\.webm/)
+  })
+})
 
 describe('findFrameAt (latest CLIP_FORMAT frame at-or-before a given time)', () => {
   const frames: BlendshapeFrame[] = [
@@ -29,6 +48,46 @@ describe('findFrameAt (latest CLIP_FORMAT frame at-or-before a given time)', () 
 
   it('returns the last frame once playback time passes the final sample', () => {
     expect(findFrameAt(frames, 100)).toBe(frames[2])
+  })
+})
+
+describe('resolveElapsedMs (CLIP_FORMAT.md: audio.currentTime drives playback when available)', () => {
+  it('uses audio.currentTime (converted to ms) once audio has started', () => {
+    const elapsed = resolveElapsedMs({
+      audioCurrentTimeSec: 1.5,
+      audioHasStarted: true,
+      fallbackElapsedMs: 999,
+    })
+
+    expect(elapsed).toBe(1500)
+  })
+
+  it('falls back to the performance.now()-based clock when audio has not started', () => {
+    const elapsed = resolveElapsedMs({
+      audioCurrentTimeSec: 1.5,
+      audioHasStarted: false,
+      fallbackElapsedMs: 250,
+    })
+
+    expect(elapsed).toBe(250)
+  })
+})
+
+describe('didClockWrap (detects a loop restart between two ticks)', () => {
+  it('returns false when elapsed time is moving forward', () => {
+    expect(didClockWrap(100, 150)).toBe(false)
+  })
+
+  it('returns false for the same elapsed time', () => {
+    expect(didClockWrap(100, 100)).toBe(false)
+  })
+
+  it('returns true when elapsed time moves backward (a loop wrap)', () => {
+    expect(didClockWrap(4000, 5)).toBe(true)
+  })
+
+  it('tolerates a tiny backward jitter (not a real wrap) via its 1ms margin', () => {
+    expect(didClockWrap(100, 99.5)).toBe(false)
   })
 })
 

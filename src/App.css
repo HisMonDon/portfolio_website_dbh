@@ -1,4 +1,6 @@
 .app {
+  --assistant-gutter: clamp(24px, 3.35vw, 64px);
+  --assistant-width: min(50vw, 700px);
   min-height: 100vh;
   position: relative;
   isolation: isolate;
@@ -59,8 +61,8 @@
 
 .app-panel {
   flex: 1;
-  width: calc(100vw - min(38vw, 480px) - 178px);
-  max-width: calc(100vw - min(38vw, 480px) - 178px);
+  width: calc(100vw - var(--assistant-width) - var(--assistant-gutter) - 72px);
+  max-width: calc(100vw - var(--assistant-width) - var(--assistant-gutter) - 72px);
 }
 
 @media (max-width: 720px) {

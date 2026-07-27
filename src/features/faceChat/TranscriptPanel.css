@@ -1,32 +1,38 @@
 .transcript-panel {
-  width: 100%;
+  position: absolute;
+  top: max(-120px, calc((100% - 100vh) / 2 + 16px));
+  left: 2%;
+  width: 56%;
   font-size: 13px;
+  padding: clamp(10px, 1.2vw, 16px) clamp(12px, 1.5vw, 20px);
+  border: 1px solid rgba(129, 208, 248, 0.4);
+  background: linear-gradient(90deg, rgba(15, 35, 48, 0.76), rgba(23, 56, 76, 0.34));
+  backdrop-filter: blur(3px);
 }
 
-.transcript-toggle {
-  background: none;
-  border: 1px solid #d8d8d8;
-  color: inherit;
-  padding: 4px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.transcript-body {
-  margin-top: 8px;
-  padding: 10px 12px;
-  border: 1px dashed #d8d8d8;
-  border-radius: 4px;
+.transcript-eyebrow {
+  margin: 0 0 8px;
+  color: #81d0f8;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .transcript-prompt {
   font-weight: 600;
   margin: 0 0 6px;
+  color: #f2f5f7;
 }
 
 .transcript-response {
   margin: 0;
   line-height: 1.4;
+  color: #c7d0d8;
+}
+
+@media (max-width: 1000px) {
+  .transcript-panel {
+    width: 53%;
+    font-size: 11px;
+  }
 }

@@ -21,6 +21,17 @@ describe('fromClipFormat (CLIP_FORMAT.md contract -> internal ms/categoryName sh
   it('preserves a frame with an empty blendshapes array', () => {
     expect(fromClipFormat([{ t: 2, blendshapes: [] }])).toEqual([{ t: 2000, categories: [] }])
   })
+
+  it('retains the recorded body pose used by answer and idle performances', () => {
+    const pose = {
+      bones: { head: [0, 0.1, 0, 0.99] as [number, number, number, number] },
+      rootPosition: [0.01, 0, -0.02] as [number, number, number],
+    }
+
+    expect(fromClipFormat([{ t: 0.25, blendshapes: [], pose }])).toEqual([
+      { t: 250, categories: [], pose },
+    ])
+  })
 })
 
 describe('toClipFormat (internal ms/categoryName shape -> CLIP_FORMAT.md contract)', () => {

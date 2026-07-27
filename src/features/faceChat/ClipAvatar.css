@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .clip-avatar-canvas {
@@ -20,11 +20,47 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed #d8d8d8;
   color: #c4c4c4;
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   text-align: center;
   padding: 12px;
+}
+
+.clip-avatar-placeholder.is-fallback {
+  padding: 0;
+}
+
+.clip-avatar-fallback-model {
+  position: relative;
+  display: block;
+  width: min(70%, 300px);
+  height: 75%;
+}
+
+.clip-avatar-fallback-model::before,
+.clip-avatar-fallback-model::after {
+  content: '';
+  position: absolute;
+  display: block;
+}
+
+.clip-avatar-fallback-model::before {
+  top: 0;
+  left: 32%;
+  width: 36%;
+  height: 42%;
+  border-radius: 48% 48% 44% 44%;
+  background: radial-gradient(circle at 65% 26%, #487bbd, #172d50 58%, #050a12 100%);
+}
+
+.clip-avatar-fallback-model::after {
+  right: 4%;
+  bottom: 0;
+  left: 4%;
+  height: 65%;
+  clip-path: polygon(32% 0, 68% 0, 76% 16%, 100% 38%, 91% 100%, 9% 100%, 0 38%, 24% 16%);
+  background: linear-gradient(115deg, #172d50 0, #0b172b 48%, #020408 100%);
+  box-shadow: 0 20px 40px rgba(4, 14, 28, 0.26);
 }
