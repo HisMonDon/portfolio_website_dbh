@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { HudTriangleMesh } from '../features/faceChat/HudIcons'
 import './Section.css'
 import './Contact.css'
 import {
@@ -58,6 +59,7 @@ export default function Contact() {
             key={label}
             {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
           >
+            <HudTriangleMesh className="contact-link-triangle-mesh" />
             <span className="contact-link-label">{label}</span>
             <span className="contact-link-detail">{detail}</span>
             <span className="contact-link-arrow" aria-hidden="true">↗</span>
@@ -66,6 +68,16 @@ export default function Contact() {
       </div>
 
       <div className="contact-compose">
+        <div className="contact-compose-edge" aria-hidden="true">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <span
+              key={index}
+              className="contact-compose-tick"
+              style={{ animationDelay: `${index * 90}ms` }}
+            />
+          ))}
+        </div>
+
         <div className="contact-compose-heading">
           <div>
             <p className="contact-compose-kicker">Direct message</p>

@@ -1,0 +1,221 @@
+.help-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 48px);
+  background: rgba(4, 12, 20, 0.82);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+  animation: help-modal-fade-in 160ms ease-out both;
+}
+
+.help-modal {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: 1240px;
+  overflow-y: auto;
+  padding: clamp(24px, 3.4vw, 44px) clamp(24px, 4vw, 56px) clamp(28px, 4vw, 44px);
+  border: 1px solid rgba(105, 207, 255, 0.62);
+  border-top-color: rgba(159, 221, 255, 0.86);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18, 55, 86, 0.98) 0%,
+      rgba(11, 34, 53, 0.98) 100%
+    ),
+    rgba(8, 25, 38, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 24px 60px rgba(3, 10, 17, 0.55);
+  color: #f2f5f7;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+}
+
+.help-modal-corner {
+  position: absolute;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.help-modal-corner.is-top-right {
+  top: 10px;
+  right: 10px;
+  border-top: 1px solid rgba(105, 207, 255, 0.86);
+  border-right: 1px solid rgba(105, 207, 255, 0.86);
+}
+
+.help-modal-corner.is-bottom-left {
+  bottom: 10px;
+  left: 10px;
+  border-bottom: 1px solid rgba(105, 207, 255, 0.62);
+  border-left: 1px solid rgba(105, 207, 255, 0.62);
+}
+
+.help-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(20px, 2.6vw, 32px);
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(105, 207, 255, 0.28);
+}
+
+.help-modal-kicker {
+  margin: 0 0 6px;
+  color: #69cfff;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.help-modal-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: normal;
+  letter-spacing: 0.3px;
+}
+
+.help-modal-close {
+  all: unset;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: #c3cdd3;
+  border: 1px solid rgba(159, 174, 183, 0.42);
+  background: rgba(8, 25, 38, 0.74);
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.help-modal-close:hover,
+.help-modal-close:focus-visible {
+  color: #ffffff;
+  border-color: rgba(105, 207, 255, 0.86);
+  background: rgba(13, 49, 69, 0.9);
+}
+
+.help-modal-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+}
+
+.help-modal-steps {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.6vw, 32px);
+}
+
+.help-step {
+  display: grid;
+  grid-template-columns: clamp(120px, 14vw, 170px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.help-step-image {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border: 1px dashed rgba(105, 207, 255, 0.5);
+  background: rgba(105, 207, 255, 0.06);
+  color: rgba(195, 224, 240, 0.7);
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.help-step-text h3 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: normal;
+  letter-spacing: 0.3px;
+}
+
+.help-step-text p {
+  margin: 0;
+  color: #d3dde3;
+  font-size: clamp(12.5px, 1vw, 14px);
+  line-height: 1.6;
+}
+
+.help-demo {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.help-demo-kicker {
+  margin: 0;
+  color: #69cfff;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.help-demo-video {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  border: 1px dashed rgba(105, 207, 255, 0.5);
+  background: rgba(105, 207, 255, 0.06);
+  color: rgba(195, 224, 240, 0.7);
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@keyframes help-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-modal-backdrop {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .help-modal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .help-demo {
+    position: static;
+  }
+}
+
+@media (max-width: 520px) {
+  .help-step {
+    grid-template-columns: 1fr;
+  }
+
+  .help-step-image {
+    aspect-ratio: 16 / 9;
+  }
+}

@@ -55,9 +55,10 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 2;
   width: 3px;
   height: 100%;
-  background: var(--contact-yellow);
+  background: var(--contact-cyan);
   content: '';
   transform: scaleY(0.42);
   transform-origin: center;
@@ -66,7 +67,7 @@
 
 .contact-link:hover,
 .contact-link:focus-visible {
-  border-color: var(--contact-yellow);
+  border-color: var(--contact-cyan);
   background: #1d4b69;
   transform: translateY(-2px);
   outline: none;
@@ -78,12 +79,16 @@
 }
 
 .contact-link-label {
+  position: relative;
+  z-index: 2;
   font-size: 14px;
   letter-spacing: 1.25px;
   text-transform: uppercase;
 }
 
 .contact-link-detail {
+  position: relative;
+  z-index: 2;
   margin-top: 5px;
   overflow: hidden;
   color: rgba(235, 247, 255, 0.72);
@@ -95,20 +100,160 @@
 
 .contact-link-arrow {
   position: absolute;
+  z-index: 2;
   top: 14px;
   right: 14px;
-  color: var(--contact-yellow);
+  color: var(--contact-cyan);
   font-size: 16px;
+}
+
+.contact-link-triangle-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.contact-link-triangle-mesh .hud-triangle-mesh-piece {
+  stroke: none;
+  opacity: 0;
+}
+
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-1,
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-8 {
+  fill: rgba(143, 220, 255, 0.32);
+}
+
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-2,
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-7 {
+  fill: rgba(11, 51, 80, 0.4);
+}
+
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-3,
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-6 {
+  fill: rgba(166, 231, 255, 0.36);
+}
+
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-4,
+.contact-link-triangle-mesh .hud-triangle-mesh-piece.is-5 {
+  fill: rgba(113, 220, 255, 0.32);
+}
+
+.contact-link:hover .hud-triangle-mesh-piece,
+.contact-link:focus-visible .hud-triangle-mesh-piece {
+  animation: contact-link-triangle-glitch 0.55s steps(1, end) both;
+}
+
+.contact-link:hover .hud-triangle-mesh-piece.is-2,
+.contact-link:focus-visible .hud-triangle-mesh-piece.is-2,
+.contact-link:hover .hud-triangle-mesh-piece.is-7,
+.contact-link:focus-visible .hud-triangle-mesh-piece.is-7 {
+  animation-delay: 0.13s;
+}
+
+.contact-link:hover .hud-triangle-mesh-piece.is-3,
+.contact-link:focus-visible .hud-triangle-mesh-piece.is-3,
+.contact-link:hover .hud-triangle-mesh-piece.is-6,
+.contact-link:focus-visible .hud-triangle-mesh-piece.is-6 {
+  animation-delay: 0.27s;
+}
+
+.contact-link:hover .hud-triangle-mesh-piece.is-4,
+.contact-link:focus-visible .hud-triangle-mesh-piece.is-4,
+.contact-link:hover .hud-triangle-mesh-piece.is-5,
+.contact-link:focus-visible .hud-triangle-mesh-piece.is-5 {
+  animation-delay: 0.4s;
+}
+
+@keyframes contact-link-triangle-glitch {
+  0% {
+    opacity: 0;
+  }
+
+  14% {
+    opacity: 0.72;
+  }
+
+  28% {
+    opacity: 0.18;
+  }
+
+  44% {
+    opacity: 0.64;
+  }
+
+  58% {
+    opacity: 0;
+  }
+
+  74% {
+    opacity: 0.42;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-link:hover .hud-triangle-mesh-piece,
+  .contact-link:focus-visible .hud-triangle-mesh-piece {
+    animation: none;
+    opacity: 0.4;
+  }
 }
 
 .contact-compose {
   position: relative;
   padding: 20px 22px 18px;
   border: 1px solid rgba(23, 63, 91, 0.25);
-  border-left: 4px solid var(--contact-yellow);
+  border-left: 4px solid var(--contact-cyan);
   background: rgba(238, 249, 255, 0.76);
   box-shadow: 0 18px 40px rgba(20, 64, 91, 0.12);
   backdrop-filter: blur(10px);
+}
+
+.contact-compose-edge {
+  position: absolute;
+  inset: 0 auto 0 -1px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  width: 8px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.contact-compose-tick {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 7px;
+  border-color: transparent transparent transparent var(--contact-cyan);
+  opacity: 0.2;
+  animation: contact-compose-tick-flash 1.7s ease-in-out infinite;
+}
+
+@keyframes contact-compose-tick-flash {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-compose-tick {
+    animation: none;
+    opacity: 0.75;
+  }
 }
 
 .contact-compose::after {
@@ -163,8 +308,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--contact-yellow);
-  box-shadow: 0 0 8px rgba(241, 200, 75, 0.85);
+  background: var(--contact-cyan);
+  box-shadow: 0 0 8px rgba(113, 220, 255, 0.85);
 }
 
 .contact-form {
@@ -267,7 +412,7 @@
 }
 
 .contact-submit span {
-  color: var(--contact-yellow);
+  color: #ffffff;
   font-size: 16px;
 }
 

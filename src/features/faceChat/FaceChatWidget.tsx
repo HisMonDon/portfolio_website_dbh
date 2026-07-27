@@ -11,6 +11,7 @@ import {
   type ChoiceMarkerKind,
 } from './HudIcons'
 import TranscriptPanel from './TranscriptPanel'
+import HelpModal from './HelpModal'
 import {
   DIALOGUE_GRAPH,
   IDLE_CLIP_IDS,
@@ -78,6 +79,7 @@ export default function FaceChatWidget({
   const [idleClipIndex, setIdleClipIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [targetFps, setTargetFps] = useState(60)
   const [expandedTranscriptNodeId, setExpandedTranscriptNodeId] = useState<number | null>(null)
   const [sectionPlayback, setSectionPlayback] = useState<SectionPlaybackState>({
@@ -208,6 +210,12 @@ export default function FaceChatWidget({
       window.clearTimeout(finishReveal)
     }
   }, [activeSection, centered])
+
+  useEffect(() => {
+    if (!isAboutSection) {
+      setIsHelpOpen(false)
+    }
+  }, [isAboutSection])
 
   useEffect(() => {
     if (isAboutSection) {
@@ -444,15 +452,22 @@ export default function FaceChatWidget({
               )}
             </div>
 
-            <button
-              type="button"
-              className="face-chat-control-button"
-              aria-label="Help (coming soon)"
-              title="Help (coming soon)"
-            >
-              <QuestionIcon className="face-chat-control-icon" />
-            </button>
+            {isAboutSection && (
+              <button
+                type="button"
+                className="face-chat-control-button"
+                onClick={() => setIsHelpOpen(true)}
+                aria-haspopup="dialog"
+                aria-expanded={isHelpOpen}
+                aria-label="How this avatar works"
+                title="How this avatar works"
+              >
+                <QuestionIcon className="face-chat-control-icon" />
+              </button>
+            )}
         </div>
+
+        {isAboutSection && isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
 
         {shouldRenderAboutHud && isDialogueIdling && (
           <div className="face-chat-choice-layer" role="group" aria-label="Dialogue options">

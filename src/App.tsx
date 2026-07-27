@@ -203,6 +203,13 @@ function App() {
         />
       )}
 
+      <p
+        className={`app-inspired-by${activeSection === 'about' ? ' is-visible' : ''}`}
+        aria-hidden={activeSection !== 'about'}
+      >
+        Interface inspired by <em>Detroit: Become Human</em>
+      </p>
+
       <NavBar
         active={activeSection}
         onSelect={handleSelect}
