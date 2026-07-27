@@ -26,7 +26,7 @@ export const PROJECTS: Project[] = [
   {
     id: 'vera',
     title: 'Vera',
-    description: "A cross-platform (Online and Windows) physics platform built for my school's official Physics club with student-taught tutorial videos, login authentication and a video storage feature to save progress.",
+    description: "A cross-platform learning platform for my school's Physics Club, with student-made tutorials, authentication, and saved video progress.",
     technologies: ['Flutter', 'Firebase', 'Rest API', 'Cloudflare'],
     githubUrl: 'https://github.com/HisMonDon/Vera',
     liveUrl: 'https://veraphysics.com/about',

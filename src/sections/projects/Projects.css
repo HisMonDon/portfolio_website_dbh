@@ -2,9 +2,11 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
   max-height: 500px;
   overflow-y: auto;
-  padding-left: 16px;
+  overflow-x: hidden;
+  padding: 0 6px 0 16px;
   border-left: 1px solid #d4cccc;
 }
 
@@ -178,11 +180,16 @@
 
 .project-panel {
   all: unset;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
   gap: 4px;
-  padding: 16px 48px 16px 20px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px clamp(72px, 12%, 110px) 16px 20px;
+  overflow: hidden;
   background-image: url('../../assets/project_nameplate.png');
   background-size: cover;
   background-position: center;
@@ -205,6 +212,10 @@
 }
 
 .project-panel-title {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   font-size: 15px;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -216,11 +227,13 @@
   font-size: 13px;
   color: #C7D0D8;
   line-height: 1.5;
+  min-width: 0;
+  max-width: 100%;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  max-width: 80ch;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .project-detail-header {
