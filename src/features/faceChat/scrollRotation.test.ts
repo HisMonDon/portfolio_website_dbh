@@ -18,7 +18,7 @@ describe('computeRotationDelta', () => {
     expect(delta).toBeLessThan(0)
   })
 
-  it('returns exactly one full turn for a delta equal to the viewport height', () => {
+  it('returns a proportional partial turn for a viewport-relative delta', () => {
     const delta = computeRotationDelta(0, viewportHeight * 0.4, viewportHeight)
 
     expect(delta).toBeCloseTo(2 * Math.PI * 0.4)
@@ -28,7 +28,7 @@ describe('computeRotationDelta', () => {
     expect(computeRotationDelta(200, 200, viewportHeight)).toBe(0)
   })
 
-  it('rejects a delta at or above the maxJumpFraction threshold (simulated scroll-anchoring reset)', () => {
+  it('rejects a discontinuity at or above the maxJumpFraction threshold', () => {
     const delta = computeRotationDelta(500, 500 - viewportHeight, viewportHeight)
 
     expect(delta).toBe(0)

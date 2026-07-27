@@ -8,7 +8,7 @@ import Credits from './sections/Credits'
 import Projects from './sections/projects/Projects'
 import './App.css'
 import backgroundVideo from './assets/backgroung_portfolio.mp4'
-import { getActiveSectionList, type ActiveSection } from './sections/sectionConfig'
+import { SECTION_ORDER } from './sections/sectionConfig'
 import { useIsMobile } from './hooks/useIsMobile'
 
 const INITIAL_SECTION: SectionId = 'about'
@@ -46,18 +46,17 @@ function App() {
     skills: null,
     credits: null,
   })
-  const [activeSection, setActiveSection] = useState<ActiveSection>(
-    getActiveSectionList(INITIAL_SECTION),
-  )
+  const [activeSection, setActiveSection] = useState<SectionId>(INITIAL_SECTION)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const isMobile = useIsMobile()
-  const isAssistantVisible = activeSection.second !== 'projects' || selectedProjectId !== null
+  const isAssistantVisible = activeSection !== 'projects' || selectedProjectId !== null
 
   useEffect(() => {
     const scrollStage = scrollStageRef.current
+    const initialSection = sectionRefs.current[INITIAL_SECTION]
 
-    if (scrollStage) {
-      scrollStage.scrollTop = scrollStage.clientHeight
+    if (scrollStage && initialSection) {
+      scrollStage.scrollTop = initialSection.offsetTop
     }
   }, [])
 
@@ -79,9 +78,7 @@ function App() {
         if (isProgrammaticScrollRef.current) return
 
         if (id) {
-          setActiveSection((current) =>
-            current.second === id ? current : getActiveSectionList(id),
-          )
+          setActiveSection((current) => current === id ? current : id)
         }
       },
       {
@@ -95,33 +92,50 @@ function App() {
     })
 
     return () => observer.disconnect()
-  }, [activeSection.first, activeSection.second, activeSection.third])
+  }, [])
 
   useEffect(() => {
-    return () => {
-      if (navScrollFrameRef.current) {
+    const scrollStage = scrollStageRef.current
+
+    const cancelProgrammaticScroll = () => {
+      if (navScrollFrameRef.current !== null) {
         cancelAnimationFrame(navScrollFrameRef.current)
+        navScrollFrameRef.current = null
       }
+
+      isProgrammaticScrollRef.current = false
+    }
+
+    // A real gesture always wins over an in-progress navbar animation. Otherwise the animation
+    // and the browser can alternately write scrollTop and create another apparent jump.
+    scrollStage?.addEventListener('wheel', cancelProgrammaticScroll, { passive: true })
+    scrollStage?.addEventListener('touchstart', cancelProgrammaticScroll, { passive: true })
+    scrollStage?.addEventListener('pointerdown', cancelProgrammaticScroll, { passive: true })
+
+    return () => {
+      scrollStage?.removeEventListener('wheel', cancelProgrammaticScroll)
+      scrollStage?.removeEventListener('touchstart', cancelProgrammaticScroll)
+      scrollStage?.removeEventListener('pointerdown', cancelProgrammaticScroll)
+      cancelProgrammaticScroll()
     }
   }, [])
 
-  const scrollToMiddleSection = () => {
+  const scrollToSection = (id: SectionId) => {
     const scrollStage = scrollStageRef.current
+    const targetSection = sectionRefs.current[id]
 
-    if (!scrollStage) return
+    if (!scrollStage || !targetSection) return
 
     if (navScrollFrameRef.current) {
       cancelAnimationFrame(navScrollFrameRef.current)
     }
 
     const startTop = scrollStage.scrollTop
-    const endTop = scrollStage.clientHeight
+    const endTop = targetSection.offsetTop
     const distance = endTop - startTop
     const startTime = performance.now()
-    const originalSnapType = scrollStage.style.scrollSnapType
 
     isProgrammaticScrollRef.current = true
-    scrollStage.style.scrollSnapType = 'none'
 
     const animate = (now: number) => {
       const progress = Math.min((now - startTime) / NAV_SCROLL_DURATION_MS, 1)
@@ -135,7 +149,6 @@ function App() {
       }
 
       scrollStage.scrollTop = endTop
-      scrollStage.style.scrollSnapType = originalSnapType
       isProgrammaticScrollRef.current = false
       navScrollFrameRef.current = null
     }
@@ -144,9 +157,9 @@ function App() {
   }
 
   const handleSelect = (id: SectionId) => {
-    setActiveSection(getActiveSectionList(id))
+    setActiveSection(id)
 
-    requestAnimationFrame(scrollToMiddleSection)
+    requestAnimationFrame(() => scrollToSection(id))
   }
 
   return (
@@ -163,7 +176,7 @@ function App() {
       </video>
 
       <div className="scroll-stage" ref={scrollStageRef}>
-        {[activeSection.first, activeSection.second, activeSection.third].map((id) => (
+        {SECTION_ORDER.map((id) => (
           <div
             key={id}
             ref={(el) => {
@@ -182,7 +195,7 @@ function App() {
       {!isMobile && <PersistentAssistant visible={isAssistantVisible} />}
 
       <NavBar
-        active={activeSection.second}
+        active={activeSection}
         onSelect={handleSelect}
       />
     </div>

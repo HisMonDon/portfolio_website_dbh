@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { advanceFrameCursor } from './frameCursor'
 import { fromClipFormat, type ClipFormatFrame, type InternalFrame } from './clipFormat'
+import {
+  CLIP_TRANSITION_DURATION_MS,
+  interpolateInternalFrames,
+} from './frameTransition'
 
 export type BlendshapeFrame = ClipFormatFrame
-
-// Per CLIP_FORMAT.md, clipNN.json on disk is a bare JSON array of frames — no wrapping object,
-// no clipId field in the file.
 export type ClipData = ClipFormatFrame[]
 
 const clipCache = new Map<string, Promise<ClipData>>()
@@ -18,9 +19,6 @@ function clipAudioUrl(name: string) {
   return new URL(`./clips/${name}.webm`, import.meta.url).href
 }
 
-// Recorded per-node dialogue clips (see dialogueGraph.ts) plus the idle loop and clips reserved
-// for other portfolio sections (intro/credits/resume/skills) not yet wired up outside this
-// project card.
 const CLIP_JSON_URLS: Record<string, string> = {
   '0_1': clipUrl('0_1'),
   '0_2': clipUrl('0_2'),
@@ -46,8 +44,6 @@ const CLIP_JSON_URLS: Record<string, string> = {
   skills: clipUrl('skills'),
 }
 
-// Per CLIP_FORMAT.md: every clipNN.json has a paired clipNN.webm recorded at the same time,
-// same base name, `t` in the JSON aligned to this audio file's audio.currentTime.
 const CLIP_AUDIO_URLS: Record<string, string> = Object.fromEntries(
   Object.keys(CLIP_JSON_URLS).map((clipId) => [clipId, clipAudioUrl(clipId)]),
 )
@@ -56,15 +52,11 @@ export function getClipAudioUrl(clipId: string): string | null {
   return CLIP_AUDIO_URLS[clipId] ?? null
 }
 
-// Idle clips intentionally run on the visual fallback clock with no audio element at all. This
-// is separate from `muted`: mute controls answer audio, while idle stays silent even when the
-// visitor has unmuted answers.
+// Idle is visual-only. Returning null here prevents an Audio element from being created at all.
 export function getPlaybackAudioUrl(clipId: string, audioEnabled: boolean): string | null {
   return audioEnabled ? getClipAudioUrl(clipId) : null
 }
 
-// Test-only escape hatch so unit tests can exercise loadClip's error/retry paths against the
-// same clip id without cross-test cache pollution.
 export function __clearClipCacheForTests(): void {
   clipCache.clear()
 }
@@ -75,19 +67,16 @@ export function loadClip(clipId: string): Promise<ClipData> {
   if (cached) return cached
 
   const url = CLIP_JSON_URLS[clipId]
-
   const promise = (async () => {
-    if (!url) {
-      throw new Error(`No clip JSON is registered for clip id "${clipId}".`)
+    if (!url) throw new Error(`No clip JSON is registered for clip id "${clipId}".`)
+
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      throw new Error(`Clip "${clipId}" failed to load (HTTP ${response.status}).`)
     }
 
-    const res = await fetch(url)
-
-    if (!res.ok) {
-      throw new Error(`Clip "${clipId}" failed to load (HTTP ${res.status}).`)
-    }
-
-    const data = (await res.json()) as ClipData
+    const data = (await response.json()) as ClipData
 
     if (!Array.isArray(data)) {
       throw new Error(`Clip "${clipId}" JSON is malformed (expected an array of frames).`)
@@ -97,53 +86,40 @@ export function loadClip(clipId: string): Promise<ClipData> {
   })()
 
   clipCache.set(clipId, promise)
-
-  // A failed load shouldn't be permanently cached — let a later attempt (e.g. after a network
-  // hiccup, or once the real asset exists) retry.
   promise.catch(() => clipCache.delete(clipId))
-
   return promise
 }
 
-// Finds the latest CLIP_FORMAT-shaped frame at-or-before a given time (seconds). Kept for
-// callers that want a one-off lookup against the raw seconds/name contract; the live playback
-// loop below walks the internal ms/categoryName frames via advanceFrameCursor instead.
-export function findFrameAt(frames: ClipFormatFrame[], t: number): ClipFormatFrame | null {
+export function findFrameAt(frames: ClipFormatFrame[], timeSeconds: number): ClipFormatFrame | null {
   if (frames.length === 0) return null
 
   let match = frames[0]
 
   for (const frame of frames) {
-    if (frame.t > t) break
+    if (frame.t > timeSeconds) break
     match = frame
   }
 
   return match
 }
 
-// Duck-typed rather than importing three.js here, so this file (and its round-trip/edge-case
-// tests) stay usable outside a WebGL context.
 interface MorphableMesh {
   morphTargetDictionary?: Record<string, number>
   morphTargetInfluences?: number[]
 }
 
-// Mirrors face_mapping_sandbox's applyBlendshapes(categories, meshes): sets each named morph
-// target's influence to its frame score. Meshes without morph targets (such as the outfit or
-// hair in the avatar GLB) are silently skipped.
 export function applyBlendshapesToMeshes(
   categories: { categoryName: string; score: number }[],
   meshes: MorphableMesh[],
 ): void {
   meshes.forEach((mesh) => {
-    const dict = mesh.morphTargetDictionary
+    const dictionary = mesh.morphTargetDictionary
     const influences = mesh.morphTargetInfluences
 
-    if (!dict || !influences) return
+    if (!dictionary || !influences) return
 
     categories.forEach(({ categoryName, score }) => {
-      const index = dict[categoryName]
-
+      const index = dictionary[categoryName]
       if (index !== undefined) influences[index] = score
     })
   })
@@ -162,12 +138,9 @@ export interface ClipPlayerState {
 export interface ClipPlayerOptions {
   audioEnabled?: boolean
   onComplete?: () => void
+  transitionDurationMs?: number
 }
 
-// Per CLIP_FORMAT.md: "Playback MUST be driven by the audio element's audio.currentTime, not
-// performance.now() or Date.now()." Picks which elapsed-time source is authoritative right now.
-// Exported as a pure function (rather than inlined in the tick loop) so the decision itself is
-// unit-testable without a real HTMLAudioElement/rAF.
 export function resolveElapsedMs(params: {
   audioCurrentTimeSec: number
   audioHasStarted: boolean
@@ -176,24 +149,13 @@ export function resolveElapsedMs(params: {
   return params.audioHasStarted ? params.audioCurrentTimeSec * 1000 : params.fallbackElapsedMs
 }
 
-// A clip's elapsed time moving backward between two ticks means playback wrapped (a looping
-// audio element's currentTime resetting to ~0, or our own fallback-clock restart below) rather
-// than time continuing forward — the frame cursor must be re-derived from 0 in that case, not
-// assumed to still be walking forward from wherever it was.
 export function didClockWrap(previousElapsedMs: number, nextElapsedMs: number): boolean {
   return nextElapsedMs < previousElapsedMs - 1
 }
 
-// Blendshapes + synced audio clip player. Loads clipId's JSON (CLIP_FORMAT.md contract) and its
-// paired audio file, and walks the frame array using audio.currentTime as the clock (per the
-// contract) so a stalled/throttled rAF can never drift the mouth out of sync with the sound.
-// Falls back to a performance.now()-based clock only when audio.play() is rejected (typically
-// the very first idle clip on page load, before any user gesture has granted autoplay — see
-// browser autoplay policies) so the idle animation still runs visually even without sound; once
-// any later clip's audio successfully starts (e.g. after the visitor's first click), playback is
-// fully audio-driven again, matching the contract.
-// 'loop' mode uses the audio element's native `loop` so the audio and the frame cursor wrap
-// together; 'once' mode holds the final frame and stops (for a dialogue answer clip).
+// Audio drives every spoken clip. A performance clock is used only for intentionally silent idle
+// clips or when browser autoplay rejects an answer. Before either clock begins, a short bridge
+// interpolates the currently displayed frame into the new file's first frame.
 export function useClipPlayer(
   clipId: string | null,
   mode: ClipPlayMode,
@@ -211,21 +173,27 @@ export function useClipPlayer(
   const fallbackEpochRef = useRef(0)
   const lastElapsedRef = useRef(0)
   const rafRef = useRef<number | null>(null)
+  const transitionRafRef = useRef<number | null>(null)
+  const activeFrameRef = useRef<InternalFrame | null>(null)
   const requestIdRef = useRef(0)
-  const audioEnabled = options.audioEnabled ?? true
 
-  // Completion changes UI state in the caller. Keep the latest callback in a ref so a new inline
-  // callback does not restart the current clip on every render.
+  const audioEnabled = options.audioEnabled ?? true
+  const transitionDurationMs = options.transitionDurationMs ?? CLIP_TRANSITION_DURATION_MS
+
+  const displayFrame = useCallback((frame: InternalFrame) => {
+    activeFrameRef.current = frame
+    setActiveFrame(frame)
+  }, [])
+
   const onCompleteRef = useRef(options.onComplete)
   onCompleteRef.current = options.onComplete
 
-  // Read via a ref inside the load effect below so toggling mute never re-triggers a clip
-  // reload (that effect intentionally only depends on [clipId, mode]).
   const isMutedRef = useRef(isMuted)
   isMutedRef.current = isMuted
 
   useEffect(() => {
     const requestId = ++requestIdRef.current
+    const outgoingFrame = activeFrameRef.current
     let cancelled = false
 
     framesRef.current = []
@@ -235,55 +203,96 @@ export function useClipPlayer(
     lastElapsedRef.current = 0
     audioRef.current?.pause()
     audioRef.current = null
-    setActiveFrame(null)
+    if (transitionRafRef.current !== null) cancelAnimationFrame(transitionRafRef.current)
+    transitionRafRef.current = null
     setError(null)
     setIsPlaying(false)
 
-    if (!clipId) return
+    if (!clipId) {
+      activeFrameRef.current = null
+      setActiveFrame(null)
+      return
+    }
 
     loadClip(clipId)
       .then((data) => {
         if (cancelled || requestIdRef.current !== requestId) return
 
-        framesRef.current = fromClipFormat(data)
-        fallbackEpochRef.current = performance.now()
+        const frames = fromClipFormat(data)
+        const firstFrame = frames[0]
 
-        const audioUrl = getPlaybackAudioUrl(clipId, audioEnabled)
-        const audio = audioUrl ? new Audio(audioUrl) : null
+        if (!firstFrame) throw new Error(`Clip "${clipId}" has no animation frames.`)
 
-        if (audio) {
-          audio.loop = mode === 'loop'
-          audio.muted = isMutedRef.current
-          audioRef.current = audio
+        framesRef.current = frames
 
-          audio
-            .play()
-            .then(() => {
-              if (cancelled || requestIdRef.current !== requestId) return
-              audioHasStartedRef.current = true
-            })
-            .catch(() => {
-              // Autoplay blocked (no user gesture yet) — fall back to the performance.now()
-              // clock below so the visible animation still plays; audioHasStartedRef stays
-              // false, so this clip simply plays silently.
-            })
+        const beginPlayback = () => {
+          if (cancelled || requestIdRef.current !== requestId) return
+
+          cursorRef.current = 0
+          lastElapsedRef.current = 0
+          fallbackEpochRef.current = performance.now()
+
+          const audioUrl = getPlaybackAudioUrl(clipId, audioEnabled)
+          const audio = audioUrl ? new Audio(audioUrl) : null
+
+          if (audio) {
+            audio.loop = mode === 'loop'
+            audio.muted = isMutedRef.current
+            audioRef.current = audio
+
+            audio
+              .play()
+              .then(() => {
+                if (cancelled || requestIdRef.current !== requestId) return
+                audioHasStartedRef.current = true
+              })
+              .catch(() => {
+                // Keep visuals moving on the fallback clock if autoplay is unavailable.
+              })
+          }
+
+          setIsPlaying(true)
         }
 
-        setIsPlaying(true)
+        if (!outgoingFrame || transitionDurationMs <= 0) {
+          displayFrame(firstFrame)
+          beginPlayback()
+          return
+        }
+
+        const transitionStartedAt = performance.now()
+        const tickTransition = (nowMs: number) => {
+          if (cancelled || requestIdRef.current !== requestId) return
+
+          const progress = (nowMs - transitionStartedAt) / transitionDurationMs
+          displayFrame(interpolateInternalFrames(outgoingFrame, firstFrame, progress))
+
+          if (progress < 1) {
+            transitionRafRef.current = requestAnimationFrame(tickTransition)
+            return
+          }
+
+          transitionRafRef.current = null
+          displayFrame(firstFrame)
+          beginPlayback()
+        }
+
+        transitionRafRef.current = requestAnimationFrame(tickTransition)
       })
-      .catch((err) => {
+      .catch((loadError) => {
         if (cancelled || requestIdRef.current !== requestId) return
-        setError(err instanceof Error ? err.message : `Clip "${clipId}" failed to load.`)
+        setError(loadError instanceof Error ? loadError.message : `Clip "${clipId}" failed to load.`)
       })
 
     return () => {
       cancelled = true
+      if (transitionRafRef.current !== null) cancelAnimationFrame(transitionRafRef.current)
+      transitionRafRef.current = null
       audioRef.current?.pause()
       audioRef.current = null
     }
-  }, [audioEnabled, clipId, mode])
+  }, [audioEnabled, clipId, displayFrame, mode, transitionDurationMs])
 
-  // Applied to whatever audio element is current, independent of the clip-load effect above.
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted
   }, [isMuted])
@@ -306,29 +315,32 @@ export function useClipPlayer(
         fallbackElapsedMs: performance.now() - fallbackEpochRef.current,
       })
 
-      if (didClockWrap(lastElapsedRef.current, elapsedMs)) {
-        cursorRef.current = 0
-      }
+      if (didClockWrap(lastElapsedRef.current, elapsedMs)) cursorRef.current = 0
       lastElapsedRef.current = elapsedMs
 
-      const lastFrameT = frames[frames.length - 1].t
+      const lastFrameTime = frames[frames.length - 1].t
 
-      // Answer audio can be a little longer than the final tracking sample. Hold the final face
-      // until the audio itself ends so entering idle never clips the last syllable. If a malformed
-      // audio file ends early, also finish cleanly instead of waiting on a stopped clock forever.
+      // Hold the final tracked expression until the answer audio ends, so the last syllable is
+      // never cut off when the widget switches back to idle.
       if (mode === 'once' && audioHasStartedRef.current && audio?.ended) {
-        cursorRef.current = advanceFrameCursor(frames, cursorRef.current, lastFrameT, (frame) => {
-          setActiveFrame(frame)
-        })
+        cursorRef.current = advanceFrameCursor(
+          frames,
+          cursorRef.current,
+          lastFrameTime,
+          displayFrame,
+        )
         setIsPlaying(false)
         onCompleteRef.current?.()
         return
       }
 
-      if (elapsedMs >= lastFrameT) {
-        cursorRef.current = advanceFrameCursor(frames, cursorRef.current, lastFrameT, (frame) => {
-          setActiveFrame(frame)
-        })
+      if (elapsedMs >= lastFrameTime) {
+        cursorRef.current = advanceFrameCursor(
+          frames,
+          cursorRef.current,
+          lastFrameTime,
+          displayFrame,
+        )
 
         if (mode === 'once' && !audioHasStartedRef.current) {
           audio?.pause()
@@ -337,18 +349,18 @@ export function useClipPlayer(
           return
         }
 
-        // Loop mode: a native-looping audio element wraps currentTime on its own (the next
-        // tick's didClockWrap check picks that up); the fallback clock has no such mechanism
-        // and must be restarted by hand.
         if (!audioHasStartedRef.current) {
           fallbackEpochRef.current = performance.now()
           lastElapsedRef.current = 0
           cursorRef.current = 0
         }
       } else {
-        cursorRef.current = advanceFrameCursor(frames, cursorRef.current, elapsedMs, (frame) => {
-          setActiveFrame(frame)
-        })
+        cursorRef.current = advanceFrameCursor(
+          frames,
+          cursorRef.current,
+          elapsedMs,
+          displayFrame,
+        )
       }
 
       rafRef.current = requestAnimationFrame(tick)
@@ -360,11 +372,10 @@ export function useClipPlayer(
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
-  }, [isPlaying, mode])
+  }, [displayFrame, isPlaying, mode])
 
   const play = () => {
     if (framesRef.current.length === 0) return
-
     audioRef.current?.play().catch(() => {})
     setIsPlaying(true)
   }

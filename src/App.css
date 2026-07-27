@@ -36,7 +36,9 @@
 .scroll-stage {
   height: 100vh;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
+  /* Keep wheel and trackpad movement native. Section navigation is animated explicitly in
+     App.tsx; native scroll snapping can promote a tiny gesture into a viewport-sized jump. */
+  overscroll-behavior-y: contain;
   scrollbar-width: none;
 }
 
@@ -46,8 +48,6 @@
 
 .section-page {
   min-height: 100vh;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   padding: 80px 64px;
 }
 

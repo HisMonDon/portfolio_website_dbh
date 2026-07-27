@@ -11,15 +11,8 @@ const ROTATION_DIRECTION = 1
 // major sections."
 const RADIANS_PER_VIEWPORT = 2 * Math.PI
 
-// The 3-wide section-window virtualization in App.tsx means scrollTop isn't
-// a simple ever-increasing value: sliding the window drops a full
-// viewport-height section from above the viewport, and the browser's scroll
-// anchoring silently re-adjusts scrollTop by ~one clientHeight to keep the
-// view visually stable. That anchoring correction lands in a single scroll
-// event as a jump of ~100% of viewportHeight; real user-driven deltas (even
-// fast flings, since 'scroll' fires on essentially every frame of a
-// gesture) stay well under that. maxJumpFraction rejects the former while
-// passing the latter.
+// Ignore discontinuities such as browser scroll restoration or layout corrections. Real
+// user-driven deltas arrive across animation frames and remain well below this threshold.
 export function computeRotationDelta(
   prevScrollTop: number,
   nextScrollTop: number,
@@ -34,12 +27,8 @@ export function computeRotationDelta(
   return ROTATION_DIRECTION * rawDelta * (RADIANS_PER_VIEWPORT / viewportHeight)
 }
 
-// Unbounded, never-modulo'd running total in radians, driven by real scroll
-// movement on .scroll-stage (App.tsx's single scrollable container). Never
-// wrapping the value is what makes the About<->Credits loop feel continuous
-// with no snap: section order is already cyclic (sectionConfig.ts), and
-// Three.js's rotation.y is periodic by nature, so the visual result loops on
-// its own without this hook doing anything special at the boundary.
+// Unbounded, never-modulo'd running total in radians, driven by real movement on App.tsx's
+// single scrollable container. Three.js rotation is periodic, so it does not need manual wraps.
 export function useScrollRotation() {
   const rotationRef = useRef(0)
 
