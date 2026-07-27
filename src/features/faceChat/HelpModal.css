@@ -128,10 +128,16 @@
 }
 
 .help-step-image {
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  object-fit: cover;
+  border: 1px solid rgba(105, 207, 255, 0.5);
+}
+
+.help-step-image.is-placeholder {
   display: grid;
   place-items: center;
-  aspect-ratio: 4 / 3;
-  border: 1px dashed rgba(105, 207, 255, 0.5);
+  border-style: dashed;
   background: rgba(105, 207, 255, 0.06);
   color: rgba(195, 224, 240, 0.7);
   font-size: 9px;
@@ -172,10 +178,16 @@
 }
 
 .help-demo-video {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border: 1px solid rgba(105, 207, 255, 0.5);
+  background: #000;
+}
+
+.help-demo-video.is-placeholder {
   display: grid;
   place-items: center;
-  aspect-ratio: 16 / 9;
-  border: 1px dashed rgba(105, 207, 255, 0.5);
+  border-style: dashed;
   background: rgba(105, 207, 255, 0.06);
   color: rgba(195, 224, 240, 0.7);
   font-size: 11px;

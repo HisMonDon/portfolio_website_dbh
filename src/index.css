@@ -1,5 +1,28 @@
 :root {
   color-scheme: light;
+
+  /* Shared Detroit: Become Human HUD tokens — one accent family instead of
+     each component reinventing its own cyan/navy. */
+  --dbh-cyan: #69cfff;
+  --dbh-cyan-bright: #8fd6ff;
+  --dbh-cyan-line: rgba(105, 207, 255, 0.5);
+  --dbh-navy-deep: #0b2235;
+  --dbh-navy: #173f5b;
+  --dbh-slate: #3f5d6e;
+  --dbh-panel-gradient:
+    linear-gradient(
+      90deg,
+      rgba(18, 55, 86, 0.98) 0%,
+      rgba(42, 84, 113, 0.95) 22%,
+      rgba(78, 120, 145, 0.84) 50%,
+      rgba(42, 84, 113, 0.95) 78%,
+      rgba(18, 55, 86, 0.98) 100%
+    ),
+    rgba(25, 69, 105, 0.88);
+  --dbh-panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(12, 35, 54, 0.45),
+    0 0 20px rgba(87, 150, 190, 0.2);
 }
 
 *,

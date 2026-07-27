@@ -335,19 +335,19 @@
 
 
   clip-path: polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%);
-  transition: background 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
 .project-panel:hover {
-  background: #efefef;
+  filter: brightness(1.12);
 }
 
 .project-panel:hover .project-panel-title {
-  color: #1a1a1a;
+  color: #ffffff;
 }
 
 .project-panel:hover .project-panel-desc {
-  color: #7a7a7a;
+  color: #e4edf3;
 }
 
 .project-panel-title {
@@ -382,15 +382,16 @@
   gap: 10px;
   margin-bottom: 24px;
   cursor: pointer;
-  color: #3f4c54;
+  color: var(--dbh-slate);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
+  transition: color 160ms ease;
 }
 
 .project-detail-header:hover {
-  color: #1a1a1a;
+  color: var(--dbh-navy);
 }
 
 .project-carousel {
@@ -408,22 +409,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #d8d8d8;
-  color: #6b6b6b;
+  border: 1px solid rgba(23, 63, 91, 0.28);
+  color: var(--dbh-slate);
   flex-shrink: 0;
   font-size: 18px;
+  transition: border-color 160ms ease, color 160ms ease;
 }
 
 .project-carousel-arrow:hover {
-  border-color: #1a1a1a;
-  color: #1a1a1a;
+  border-color: var(--dbh-cyan);
+  color: var(--dbh-navy);
 }
 
 .project-carousel-frame {
   flex: 1;
   aspect-ratio: 16 / 9;
-  background: #f0f0f0;
-  border: 1px solid #e4e4e4;
+  background: rgba(18, 55, 86, 0.05);
+  border: 1px solid rgba(23, 63, 91, 0.16);
   overflow: hidden;
 }
 
@@ -447,11 +449,13 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #d8d8d8;
+  background: rgba(23, 63, 91, 0.25);
+  transition: background-color 160ms ease, box-shadow 160ms ease;
 }
 
 .project-carousel-dot.active {
-  background: #1a1a1a;
+  background: var(--dbh-cyan);
+  box-shadow: 0 0 6px rgba(105, 207, 255, 0.85);
 }
 
 .project-technologies {
@@ -462,8 +466,8 @@
 }
 
 .project-technologies span {
-  border: 1px solid #d8d8d8;
-  color: #303d45;
+  border: 1px solid rgba(23, 63, 91, 0.28);
+  color: var(--dbh-navy);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: 12px;
   padding: 6px 10px;
@@ -476,13 +480,16 @@
 }
 
 .project-links a {
-  color: #0c598c;
+  color: var(--dbh-navy);
   font-size: 13px;
   text-decoration: none;
+  border-bottom: 1px solid var(--dbh-cyan-line);
+  transition: border-color 160ms ease, color 160ms ease;
 }
 
 .project-links a:hover {
-  text-decoration: underline;
+  color: var(--dbh-cyan);
+  border-bottom-color: var(--dbh-cyan);
 }
 
 @media (max-width: 720px) {

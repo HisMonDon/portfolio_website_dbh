@@ -9,10 +9,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'about', label: 'About Me' },
-  { id: 'contact', label: 'Contact' },
-  { id: 'resume', label: 'Resume' },
   { id: 'projects', label: 'Projects' },
+  { id: 'resume', label: 'Resume' },
   { id: 'skills', label: 'Skills' },
+  { id: 'contact', label: 'Contact' },
 ]
 
 interface NavBarProps {

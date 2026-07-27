@@ -1,10 +1,22 @@
 .section-eyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: #4f5b63;
+  color: var(--dbh-slate);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   margin: 0 0 8px;
+}
+
+.section-eyebrow::before {
+  content: '';
+  width: 14px;
+  height: 1px;
+  background: var(--dbh-cyan);
+  box-shadow: 0 0 6px rgba(105, 207, 255, 0.7);
 }
 
 .section-title {
@@ -37,20 +49,40 @@
 }
 
 .section-button {
-  display: inline-block;
-  padding: 12px 28px;
-  border: 1px solid #1a1a1a;
-  color: #1a1a1a;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  border: 1px solid rgba(23, 63, 91, 0.4);
+  color: var(--dbh-navy);
   text-decoration: none;
+  font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
   transition:
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.section-button::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid var(--dbh-cyan);
+  border-right: 1px solid var(--dbh-cyan);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
 }
 
 .section-button:hover {
-  background: #1a1a1a;
+  background: var(--dbh-navy);
   color: #ffffff;
+  border-color: var(--dbh-cyan);
+}
+
+.section-button:hover::after {
+  transform: rotate(45deg) translate(2px, -2px);
 }

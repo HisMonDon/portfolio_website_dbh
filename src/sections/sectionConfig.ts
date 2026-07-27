@@ -2,10 +2,10 @@ import type { SectionId } from '../components/NavBar';
 
 export const SECTION_ORDER: SectionId[] = [
     'about',
-    'contact',
-    'resume',
     'projects',
+    'resume',
     'skills',
+    'contact',
 ];
 
 export type ActiveSection = {

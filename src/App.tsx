@@ -40,10 +40,10 @@ function App() {
   const isProgrammaticScrollRef = useRef(false)
   const sectionRefs = useRef<Record<SectionId, HTMLDivElement | null>>({
     about: null,
-    contact: null,
-    resume: null,
     projects: null,
+    resume: null,
     skills: null,
+    contact: null,
   })
   const [activeSection, setActiveSection] = useState<SectionId>(INITIAL_SECTION)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)

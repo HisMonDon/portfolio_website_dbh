@@ -366,17 +366,11 @@ export default function ClipAvatar({
 
       frameId = requestAnimationFrame(animate)
     } catch (err) {
-      // WebGL isn't guaranteed to be available (context limits, a denylisted GPU, a headless
-      // test environment) — fail into a visible placeholder instead of throwing during render,
-      // which would otherwise take the whole widget tree down with no error boundary.
       const message = err instanceof Error ? err.message : 'The 3D avatar failed to start.'
 
       setError(message)
       console.error('ClipAvatar renderer failed to initialize:', err)
 
-      // Context creation can fail transiently while a browser is reclaiming an older WebGL
-      // context (especially after Fast Refresh). Give it two fresh-canvas setup passes before
-      // using the visual fallback below instead of leaving a permanent error label on screen.
       if (rendererAttempt < RENDERER_RETRY_LIMIT) {
         retryTimer = window.setTimeout(() => {
           setRendererAttempt((attempt) => attempt + 1)

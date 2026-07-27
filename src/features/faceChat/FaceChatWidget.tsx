@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { SectionId } from '../../components/NavBar'
+import NodeField from '../../components/NodeField'
 import ClipAvatar from './ClipAvatar'
 import {
   ChoiceMarkerIcon,
@@ -370,6 +371,8 @@ export default function FaceChatWidget({
       data-section-playback={isAboutSection ? 'dialogue' : sectionPlayback.phase}
       data-transcript-expanded={expandedTranscriptNodeId === currentNodeId || undefined}
     >
+      {isCenteredLayout && <NodeField className="face-chat-node-field" />}
+
       <div className="face-chat-stage">
         <ClipAvatar
           activeFrame={activeFrame}
