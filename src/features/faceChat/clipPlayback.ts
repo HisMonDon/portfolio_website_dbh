@@ -181,10 +181,9 @@ export function resolvePlaybackProgress(params: {
   return Math.min(Math.max(params.elapsedMs / durationMs, 0), 1)
 }
 
-// Audio drives every spoken clip. A performance clock is used for intentionally silent idle clips
-// or when the media itself is unavailable. If audible autoplay is blocked, playback waits at the
-// first frame for a user gesture so voice and animation still begin together. Before either clock
-// begins, a short bridge interpolates the displayed frame into the new file's first frame.
+// Audio drives every spoken clip. A performance clock is used for intentionally silent idle clips,
+// unavailable media, or autoplay-blocked first visits so the interface never appears frozen.
+// Before either clock begins, a short bridge interpolates into the new file's first frame.
 export function useClipPlayer(
   clipId: string | null,
   mode: ClipPlayMode,
@@ -343,12 +342,19 @@ export function useClipPlayer(
                 if (cancelled || requestIdRef.current !== requestId) return
 
                 if (isAutoplayBlocked(playError)) {
-                  // Audible autoplay is commonly blocked on a first visit. Hold the spoken clip
-                  // at its opening frame until a real user gesture can start audio and animation
-                  // together, instead of silently completing the introduction.
+                  // Keep the avatar and transcript moving silently. The sound button can still
+                  // restart the clip with audio after the visitor provides a user gesture.
                   setIsAudioBlocked(true)
-                  setIsPlaying(false)
+                  fallbackEpochRef.current = performance.now()
+                  setIsPlaying(true)
+                  return
                 }
+
+                // A non-policy media failure should use the same visual fallback instead of
+                // leaving the transcript empty while the clip is unable to play.
+                setIsAudioBlocked(false)
+                fallbackEpochRef.current = performance.now()
+                setIsPlaying(true)
               })
           }
 
