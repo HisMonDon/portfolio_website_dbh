@@ -77,9 +77,9 @@
   max-width: none;
 }
 
+.app-portfolio-name,
 .app-inspired-by {
   position: fixed;
-  left: 64px;
   top: 40px;
   z-index: 5;
   margin: 0;
@@ -95,12 +95,22 @@
   transition: opacity 260ms ease-out;
 }
 
+.app-portfolio-name {
+  left: 64px;
+}
+
+.app-inspired-by {
+  right: 64px;
+  text-align: right;
+}
+
 .app-inspired-by em {
   color: #8fd6ff;
   font-style: normal;
   letter-spacing: 3px;
 }
 
+.app-portfolio-name.is-visible,
 .app-inspired-by.is-visible {
   opacity: 1;
 }
@@ -115,8 +125,30 @@
     max-width: none;
   }
 
+  .app-portfolio-name,
   .app-inspired-by {
-    left: 24px;
     top: 24px;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+
+  .app-portfolio-name {
+    left: 24px;
+  }
+
+  .app-inspired-by {
+    right: 24px;
+  }
+
+  .app-inspired-by em {
+    letter-spacing: 1.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-inspired-by {
+    max-width: 48vw;
+    line-height: 1.45;
+    white-space: normal;
   }
 }

@@ -15,6 +15,7 @@ interface TranscriptPanelProps {
   playbackProgress: number
   isExpanded?: boolean
   onSkip?: () => void
+  onStartAudio?: () => void
 }
 
 interface TranscriptTimingEntry {
@@ -35,6 +36,7 @@ export default function TranscriptPanel({
   playbackProgress,
   isExpanded = false,
   onSkip,
+  onStartAudio,
 }: TranscriptPanelProps) {
   const entry = TRANSCRIPT_SCRIPT[nodeId]
   const timing = TRANSCRIPT_TIMINGS[clipId]
@@ -50,7 +52,7 @@ export default function TranscriptPanel({
 
   return (
     <div
-      className={`transcript-panel${isExpanded ? ' is-expanded' : ''}`}
+      className={`transcript-panel${isExpanded ? ' is-expanded' : ''}${onStartAudio ? ' needs-audio-start' : ''}`}
       role="region"
       aria-label="Avatar transcript"
       aria-busy={isSpeaking}
@@ -68,7 +70,18 @@ export default function TranscriptPanel({
         </span>
         <p className="transcript-prompt">{entry.prompt}</p>
       </div>
-      {onSkip && (
+      {onStartAudio ? (
+        <button
+          type="button"
+          className="transcript-skip-button transcript-audio-button"
+          onClick={onStartAudio}
+          aria-label="Play avatar voice"
+          title="Play avatar voice"
+        >
+          <span>Play sound</span>
+          <span className="transcript-audio-mark" aria-hidden="true">▶</span>
+        </button>
+      ) : onSkip ? (
         <button
           type="button"
           className="transcript-skip-button"
@@ -79,7 +92,7 @@ export default function TranscriptPanel({
           <span>Skip</span>
           <span className="transcript-skip-mark" aria-hidden="true">{'>>'}</span>
         </button>
-      )}
+      ) : null}
       <span className="transcript-divider" aria-hidden="true" />
       <p
         className={`transcript-response${isSpeaking ? ' is-typing' : ''}`}

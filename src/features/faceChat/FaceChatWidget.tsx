@@ -157,10 +157,12 @@ export default function FaceChatWidget({
       : node.clipId
   const {
     activeFrame,
+    isAudioBlocked,
     error: clipError,
     playbackClipId,
     playbackTimeMs,
     playbackProgress,
+    play: playActiveClip,
     skip: skipActiveClip,
   } = useClipPlayer(
     activeClipId,
@@ -392,6 +394,7 @@ export default function FaceChatWidget({
               playbackTimeMs={transcriptPlaybackTimeMs}
               playbackProgress={transcriptProgress}
               isExpanded={expandedTranscriptNodeId === currentNodeId}
+              onStartAudio={isAudioBlocked ? playActiveClip : undefined}
               onSkip={centered && !isIdling ? handleSkip : undefined}
             />
           )}

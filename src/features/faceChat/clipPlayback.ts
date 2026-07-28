@@ -130,6 +130,7 @@ export type ClipCompletionReason = 'ended' | 'skipped'
 export interface ClipPlayerState {
   activeFrame: InternalFrame | null
   isPlaying: boolean
+  isAudioBlocked: boolean
   error: string | null
   playbackClipId: string | null
   playbackTimeMs: number
@@ -157,6 +158,13 @@ export function didClockWrap(previousElapsedMs: number, nextElapsedMs: number): 
   return nextElapsedMs < previousElapsedMs - 1
 }
 
+export function isAutoplayBlocked(error: unknown): boolean {
+  return typeof error === 'object'
+    && error !== null
+    && 'name' in error
+    && error.name === 'NotAllowedError'
+}
+
 export function resolvePlaybackProgress(params: {
   elapsedMs: number
   audioDurationSec: number
@@ -173,9 +181,10 @@ export function resolvePlaybackProgress(params: {
   return Math.min(Math.max(params.elapsedMs / durationMs, 0), 1)
 }
 
-// Audio drives every spoken clip. A performance clock is used only for intentionally silent idle
-// clips or when browser autoplay rejects an answer. Before either clock begins, a short bridge
-// interpolates the currently displayed frame into the new file's first frame.
+// Audio drives every spoken clip. A performance clock is used for intentionally silent idle clips
+// or when the media itself is unavailable. If audible autoplay is blocked, playback waits at the
+// first frame for a user gesture so voice and animation still begin together. Before either clock
+// begins, a short bridge interpolates the displayed frame into the new file's first frame.
 export function useClipPlayer(
   clipId: string | null,
   mode: ClipPlayMode,
@@ -184,6 +193,7 @@ export function useClipPlayer(
 ): ClipPlayerState {
   const [activeFrame, setActiveFrame] = useState<InternalFrame | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isAudioBlocked, setIsAudioBlocked] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [playbackClipId, setPlaybackClipId] = useState<string | null>(clipId)
   const [playbackTimeMs, setPlaybackTimeMs] = useState(0)
@@ -249,6 +259,7 @@ export function useClipPlayer(
     audio?.pause()
     audioRef.current = null
     audioHasStartedRef.current = false
+    setIsAudioBlocked(false)
 
     if (lastFrame) {
       cursorRef.current = frames.length
@@ -282,6 +293,7 @@ export function useClipPlayer(
     transitionRafRef.current = null
     setError(null)
     setIsPlaying(false)
+    setIsAudioBlocked(false)
     setPlaybackClipId(clipId)
     displayPlaybackTime(0)
     displayPlaybackProgress(0)
@@ -325,9 +337,18 @@ export function useClipPlayer(
               .then(() => {
                 if (cancelled || requestIdRef.current !== requestId) return
                 audioHasStartedRef.current = true
+                setIsAudioBlocked(false)
               })
-              .catch(() => {
-                // Keep visuals moving on the fallback clock if autoplay is unavailable.
+              .catch((playError: unknown) => {
+                if (cancelled || requestIdRef.current !== requestId) return
+
+                if (isAutoplayBlocked(playError)) {
+                  // Audible autoplay is commonly blocked on a first visit. Hold the spoken clip
+                  // at its opening frame until a real user gesture can start audio and animation
+                  // together, instead of silently completing the introduction.
+                  setIsAudioBlocked(true)
+                  setIsPlaying(false)
+                }
               })
           }
 
@@ -462,8 +483,47 @@ export function useClipPlayer(
 
   const play = () => {
     if (framesRef.current.length === 0) return
-    audioRef.current?.play().catch(() => {})
-    setIsPlaying(true)
+
+    const audio = audioRef.current
+
+    if (!audio) {
+      fallbackEpochRef.current = performance.now() - lastElapsedRef.current
+      setIsPlaying(true)
+      return
+    }
+
+    if (!audioHasStartedRef.current) {
+      const firstFrame = framesRef.current[0]
+
+      audio.currentTime = 0
+      cursorRef.current = 0
+      lastElapsedRef.current = 0
+      fallbackEpochRef.current = performance.now()
+      if (firstFrame) displayFrame(firstFrame)
+      displayPlaybackTime(0)
+      displayPlaybackProgress(0)
+    }
+
+    audio
+      .play()
+      .then(() => {
+        audioHasStartedRef.current = true
+        setIsAudioBlocked(false)
+        setIsPlaying(true)
+      })
+      .catch((playError: unknown) => {
+        if (isAutoplayBlocked(playError)) {
+          setIsAudioBlocked(true)
+          setIsPlaying(false)
+          return
+        }
+
+        // If audio itself is unavailable, continue with the established visual fallback rather
+        // than trapping the visitor behind an action that can never succeed.
+        setIsAudioBlocked(false)
+        fallbackEpochRef.current = performance.now()
+        setIsPlaying(true)
+      })
   }
 
   const pause = () => {
@@ -478,6 +538,7 @@ export function useClipPlayer(
   return {
     activeFrame,
     isPlaying,
+    isAudioBlocked,
     error,
     playbackClipId,
     playbackTimeMs,

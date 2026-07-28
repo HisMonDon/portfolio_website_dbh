@@ -4,6 +4,7 @@ import {
   didClockWrap,
   findFrameAt,
   getPlaybackAudioUrl,
+  isAutoplayBlocked,
   loadClip,
   resolveElapsedMs,
   resolvePlaybackProgress,
@@ -18,6 +19,18 @@ describe('getPlaybackAudioUrl', () => {
 
   it('keeps the paired recording available for spoken answer playback', () => {
     expect(getPlaybackAudioUrl('0_1', true)).toMatch(/0_1\.webm/)
+    expect(getPlaybackAudioUrl('intro', true)).toMatch(/intro\.webm/)
+  })
+})
+
+describe('isAutoplayBlocked', () => {
+  it('recognizes the browser error used for blocked audible autoplay', () => {
+    expect(isAutoplayBlocked({ name: 'NotAllowedError' })).toBe(true)
+  })
+
+  it('does not treat media and network failures as autoplay restrictions', () => {
+    expect(isAutoplayBlocked({ name: 'NotSupportedError' })).toBe(false)
+    expect(isAutoplayBlocked(new Error('network failed'))).toBe(false)
   })
 })
 

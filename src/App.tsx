@@ -204,6 +204,13 @@ function App() {
       )}
 
       <p
+        className={`app-portfolio-name${activeSection === 'about' ? ' is-visible' : ''}`}
+        aria-hidden={activeSection !== 'about'}
+      >
+        Chenyu Portfolio
+      </p>
+
+      <p
         className={`app-inspired-by${activeSection === 'about' ? ' is-visible' : ''}`}
         aria-hidden={activeSection !== 'about'}
       >
