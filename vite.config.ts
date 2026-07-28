@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
-export default defineConfig({
-  base: '/portfolio_website_dbh/',
+// Use relative asset URLs in production so the site works from GitHub Pages,
+// a custom domain, or any other static host without path-specific rewrites.
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? './' : '/',
   plugins: [react()],
-})
+}))
