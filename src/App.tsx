@@ -48,7 +48,7 @@ function App() {
   const [activeSection, setActiveSection] = useState<SectionId>(INITIAL_SECTION)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const isMobile = useIsMobile()
-  const isAssistantVisible = activeSection !== 'projects' || selectedProjectId !== null
+  const isAssistantVisible = activeSection !== 'projects'
 
   useEffect(() => {
     const scrollStage = scrollStageRef.current
@@ -187,7 +187,7 @@ function App() {
               sectionRefs.current[id] = el;
             }}
             data-section={id}
-            className="section-page"
+            className={`section-page${id === 'projects' && selectedProjectId ? ' is-project-detail' : ''}`}
           >
             <div className="app-panel">
               {renderSection(id, selectedProjectId, setSelectedProjectId)}

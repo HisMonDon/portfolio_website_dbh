@@ -72,6 +72,11 @@
   max-width: calc(100vw - var(--assistant-width) - var(--assistant-gutter) - 72px);
 }
 
+.section-page.is-project-detail .app-panel {
+  width: 100%;
+  max-width: none;
+}
+
 .app-inspired-by {
   position: fixed;
   left: 64px;
