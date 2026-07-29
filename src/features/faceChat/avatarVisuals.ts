@@ -180,6 +180,44 @@ function addLipGloss(mesh: THREE.Mesh) {
   mesh.material = [original, lipMaterial]
 }
 
+// Re-renders the original diffuse texture through a soft blur, which wipes out pore-level
+// high-frequency detail while leaving the larger features the texture already painted in
+// (eyebrows, lips, broad shading) intact. Falls back to null if the texture can't be read (e.g. a
+// tainted canvas), in which case the caller keeps the original, unblurred texture.
+function buildSmoothedSkinTexture(originalMap: THREE.Texture | null | undefined): THREE.CanvasTexture | null {
+  const image = originalMap?.image as (CanvasImageSource & { width?: number; height?: number }) | undefined
+
+  if (!image || !image.width || !image.height) return null
+
+  const maxSize = 1024
+  const scale = Math.min(1, maxSize / Math.max(image.width, image.height))
+  const width = Math.max(1, Math.round(image.width * scale))
+  const height = Math.max(1, Math.round(image.height * scale))
+
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+
+  if (!context) return null
+
+  try {
+    context.filter = 'blur(4px)'
+    context.drawImage(image, 0, 0, width, height)
+  } catch {
+    return null
+  }
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = originalMap?.colorSpace ?? THREE.SRGBColorSpace
+  texture.flipY = originalMap?.flipY ?? false
+  texture.wrapS = originalMap?.wrapS ?? THREE.ClampToEdgeWrapping
+  texture.wrapT = originalMap?.wrapT ?? THREE.ClampToEdgeWrapping
+  texture.needsUpdate = true
+
+  return texture
+}
+
 function makeGlossy(
   mesh: THREE.Mesh,
   options: Pick<
@@ -195,21 +233,28 @@ function makeGlossy(
   original.dispose()
 }
 
-// Converts the baked skin to a physical clearcoat material and injects the source file's
-// view-dependent cyan Fresnel term into the compiled fragment shader.
+// Converts the baked skin to a physical clearcoat material, keeping the original diffuse texture
+// (real skin tone, eyebrows, lips, and shading all stay) but running it through a soft blur to
+// smooth out pore-level detail, and stripping the normal/roughness maps that encoded surface
+// bumps, so scene lighting still carves out shadow/shading across the now-smooth geometry. Also
+// injects the source file's view-dependent cyan Fresnel term into the compiled fragment shader.
 function applySyntheticSkin(
   mesh: THREE.Mesh,
   syntheticSkinUniforms: SyntheticSkinUniforms[],
-  roughness?: number,
 ) {
   const original = getSingleSurfaceMaterial(mesh)
 
   if (!original) return
 
+  const smoothedMap = buildSmoothedSkinTexture(original.map)
+
   const material = physicalMaterialFrom(original, {
-    roughness: roughness ?? original.roughness,
-    clearcoat: 0.18,
-    clearcoatRoughness: 0.45,
+    map: smoothedMap ?? original.map,
+    normalMap: null,
+    roughnessMap: null,
+    roughness: 0.4,
+    clearcoat: 0.15,
+    clearcoatRoughness: 0.2,
   })
   const uniforms: SyntheticSkinUniforms = {
     uRimColor: { value: new THREE.Color(SYNTH_SKIN_RIM_COLOR) },
@@ -367,7 +412,7 @@ export function applyAvatarVisualTreatment(root: THREE.Group): AvatarVisualContr
   const avatarHead = root.getObjectByName('AvatarHead') as THREE.Mesh | undefined
 
   if (avatarHead?.isMesh) {
-    applySyntheticSkin(avatarHead, syntheticSkinUniforms, 0.6)
+    applySyntheticSkin(avatarHead, syntheticSkinUniforms)
     addLipGloss(avatarHead)
   }
 
