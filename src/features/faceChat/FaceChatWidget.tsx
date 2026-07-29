@@ -413,7 +413,6 @@ export default function FaceChatWidget({
               playbackTimeMs={transcriptPlaybackTimeMs}
               playbackProgress={transcriptProgress}
               isExpanded={expandedTranscriptNodeId === currentNodeId}
-              onStartAudio={isAudioBlocked ? playActiveClip : undefined}
               onSkip={centered && !isIdling ? handleSkip : undefined}
             />
           )}
