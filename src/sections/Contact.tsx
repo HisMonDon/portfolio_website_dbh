@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from 'react'
+import emailjs from '@emailjs/browser'
 import { HudTriangleMesh } from '../features/faceChat/HudIcons'
 import './Section.css'
 import './Contact.css'
 import {
-  buildContactMailto,
   CONTACT_EMAIL,
   CONTACT_GITHUB_URL,
   CONTACT_LINKEDIN_URL,
+  EMAILJS_PUBLIC_KEY,
+  EMAILJS_SERVICE_ID,
+  EMAILJS_TEMPLATE_ID,
 } from './contactConfig'
 
 const CONTACT_LINKS = [
@@ -30,14 +33,44 @@ const CONTACT_LINKS = [
   },
 ] as const
 
+type SendStatus = 'idle' | 'sending' | 'sent' | 'error'
+
 export default function Contact() {
   const [senderEmail, setSenderEmail] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [status, setStatus] = useState<SendStatus>('idle')
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    window.location.href = buildContactMailto({ senderEmail, subject, message })
+
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      console.error('Missing EmailJS configuration. Check your .env file.')
+      setStatus('error')
+      return
+    }
+
+    setStatus('sending')
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          name: senderEmail.trim(),
+          email: senderEmail.trim(),
+          title: subject.trim(),
+          message: message.trim(),
+        },
+        { publicKey: EMAILJS_PUBLIC_KEY },
+      )
+      setStatus('sent')
+      setSenderEmail('')
+      setSubject('')
+      setMessage('')
+    } catch (error) {
+      console.error('Failed to send contact email', error)
+      setStatus('error')
+    }
   }
 
   return (
@@ -123,9 +156,15 @@ export default function Contact() {
           </label>
 
           <div className="contact-form-footer">
-            <p>Opens your email app with everything filled in.</p>
-            <button className="contact-submit" type="submit">
-              Compose email <span aria-hidden="true">→</span>
+            <p>
+              {status === 'sent'
+                ? 'Message sent — thanks for reaching out!'
+                : status === 'error'
+                  ? 'Something went wrong sending that. Please try again.'
+                  : 'Sends directly to my inbox.'}
+            </p>
+            <button className="contact-submit" type="submit" disabled={status === 'sending'}>
+              {status === 'sending' ? 'Sending…' : 'Send message'} <span aria-hidden="true">→</span>
             </button>
           </div>
         </form>
