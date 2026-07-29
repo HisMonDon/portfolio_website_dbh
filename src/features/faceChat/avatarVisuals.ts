@@ -252,8 +252,8 @@ function applySyntheticSkin(
     map: smoothedMap ?? original.map,
     normalMap: null,
     roughnessMap: null,
-    roughness: 0.4,
-    clearcoat: 0.15,
+    roughness: 0.5,
+    clearcoat: 0.1,
     clearcoatRoughness: 0.2,
   })
   const uniforms: SyntheticSkinUniforms = {
