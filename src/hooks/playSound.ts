@@ -4,6 +4,7 @@ import hoverSoundUrl from '../assets/hover_audio.mp3'
 import selectSoundUrl from '../assets/select_audio.mp3'
 
 const INTERACTIVE_SELECTOR = 'a, button, input, select, textarea, [role="button"]'
+const SOUND_TOGGLE_SELECTOR = '[data-interface-sound-toggle="true"]'
 
 function getInteractiveTarget(target: EventTarget | null) {
     if (!(target instanceof Element)) return null
@@ -31,7 +32,7 @@ function playSound(audio: HTMLAudioElement) {
     })
 }
 
-export function useInterfaceSounds() {
+export function useInterfaceSounds(isMuted = false) {
     const sounds = useMemo(() => {
         const hover = new Audio(hoverSoundUrl)
         const select = new Audio(selectSoundUrl)
@@ -43,6 +44,8 @@ export function useInterfaceSounds() {
     }, [])
 
     const handleInterfaceHover = useCallback((event: PointerEvent<HTMLElement>) => {
+        if (isMuted) return
+
         const interactiveTarget = getInteractiveTarget(event.target)
 
         if (!interactiveTarget) return
@@ -52,13 +55,17 @@ export function useInterfaceSounds() {
         if (relatedTarget instanceof Node && interactiveTarget.contains(relatedTarget)) return
 
         playSound(sounds.hover)
-    }, [sounds.hover])
+    }, [isMuted, sounds.hover])
 
     const handleInterfaceSelect = useCallback((event: MouseEvent<HTMLElement>) => {
-        if (!getInteractiveTarget(event.target)) return
+        if (isMuted) return
+
+        const interactiveTarget = getInteractiveTarget(event.target)
+
+        if (!interactiveTarget || interactiveTarget.closest(SOUND_TOGGLE_SELECTOR)) return
 
         playSound(sounds.select)
-    }, [sounds.select])
+    }, [isMuted, sounds.select])
 
     return { handleInterfaceHover, handleInterfaceSelect }
 }
