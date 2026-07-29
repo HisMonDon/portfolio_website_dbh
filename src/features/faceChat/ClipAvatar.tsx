@@ -23,10 +23,25 @@ interface ClipAvatarProps {
   critical?: boolean
   yellowHud?: boolean
   targetFps?: number
+  // True while a personal (non-technical) answer is playing — see FaceChatWidget.tsx. Pushes the
+  // camera into a tighter, more intimate framing for the duration of that answer.
+  personalMoment?: boolean
 }
 
 const RENDERER_RETRY_LIMIT = 2
 const AVATAR_URL = new URL('./assets/avatar.glb', import.meta.url).href
+
+const BASE_CAMERA_FOV = 30
+const BASE_CAMERA_POSITION = new THREE.Vector3(0, 1.63, 1)
+const BASE_CAMERA_LOOKAT = new THREE.Vector3(0, 1.6, 0)
+// How much closer/tighter the shot gets during a personal-moment answer.
+const PERSONAL_MOMENT_DOLLY = 0.16
+const PERSONAL_MOMENT_FOV_DELTA = 3
+// Kept deliberately small so the idle sway reads as "alive and restless," not shaky or distracting.
+const IDLE_DRIFT_POSITION = 0.025
+const IDLE_DRIFT_LOOK = 0.02
+// Approach rate (per millisecond) for easing toward the personal-moment dolly target.
+const CLOSENESS_EASE_PER_MS = 0.0035
 
 function disposeAvatar(root: THREE.Object3D) {
   const materials = new Set<THREE.Material>()
@@ -147,6 +162,7 @@ export default function ClipAvatar({
   critical = false,
   yellowHud = false,
   targetFps = 60,
+  personalMoment = false,
 }: ClipAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const morphMeshesRef = useRef<THREE.Mesh[]>([])
@@ -160,6 +176,8 @@ export default function ClipAvatar({
   const yellowHudRef = useRef(yellowHud)
   const activeFrameRef = useRef(activeFrame)
   const targetFpsRef = useRef(targetFps)
+  const personalMomentRef = useRef(personalMoment)
+  const closenessRef = useRef(0)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rendererAttempt, setRendererAttempt] = useState(0)
@@ -169,6 +187,7 @@ export default function ClipAvatar({
   criticalRef.current = critical
   yellowHudRef.current = yellowHud
   targetFpsRef.current = Math.min(60, Math.max(15, targetFps))
+  personalMomentRef.current = personalMoment
 
   useEffect(() => {
     let cancelled = false
@@ -230,11 +249,11 @@ export default function ClipAvatar({
       // Treat the face as the main subject. The intentionally tight head-and-shoulders framing
       // leaves the lower torso outside the shot, while the extra-wide canvas preserves useful
       // horizontal room without pulling the camera away from the avatar.
-      const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
+      const camera = new THREE.PerspectiveCamera(BASE_CAMERA_FOV, 1, 0.1, 100)
       // Pan the framing downward without changing the camera distance or FOV. This shifts the
       // avatar upward in the finished shot and leaves room for low hand gestures at the bottom.
-      camera.position.set(0, 1.63, 1)
-      camera.lookAt(0, 1.6, 0)
+      camera.position.copy(BASE_CAMERA_POSITION)
+      camera.lookAt(BASE_CAMERA_LOOKAT)
       camera.layers.enable(1)
 
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
@@ -349,12 +368,40 @@ export default function ClipAvatar({
 
         if (lastRenderTime > 0 && elapsed + 0.5 < frameInterval) return
 
+        const dt = lastRenderTime > 0 ? elapsed : 16
         lastRenderTime = now - (elapsed % frameInterval)
         // Rotation is driven entirely by scroll (scrollRotation.ts) — this
         // loop just samples whatever the ref currently holds every frame.
         // Rendering is rate-limited by the user's HUD setting while the latest
         // prerecorded pose and blendshapes continue updating independently.
         if (avatarRoot) avatarRoot.rotation.y = rotationRef.current
+
+        // Ease toward a closer, tighter framing while a personal-moment answer plays, and back
+        // out to the base shot otherwise — smoothed so the dolly never snaps.
+        const targetCloseness = personalMomentRef.current ? 1 : 0
+        closenessRef.current += (targetCloseness - closenessRef.current)
+          * Math.min(1, CLOSENESS_EASE_PER_MS * dt)
+
+        // Small always-on sway independent of scroll/dolly, so the avatar reads as alive and
+        // restless rather than perfectly locked-off even when idling.
+        const t = now / 1000
+        const idleSwayX = Math.sin(t * 0.35) * IDLE_DRIFT_POSITION
+        const idleSwayY = Math.sin(t * 0.5 + 1.3) * IDLE_DRIFT_POSITION * 0.6
+        const idleLookX = Math.sin(t * 0.22 + 0.7) * IDLE_DRIFT_LOOK
+        const idleLookY = Math.cos(t * 0.31) * IDLE_DRIFT_LOOK * 0.5
+
+        camera.position.set(
+          BASE_CAMERA_POSITION.x + idleSwayX,
+          BASE_CAMERA_POSITION.y + idleSwayY,
+          BASE_CAMERA_POSITION.z - closenessRef.current * PERSONAL_MOMENT_DOLLY,
+        )
+        camera.fov = BASE_CAMERA_FOV - closenessRef.current * PERSONAL_MOMENT_FOV_DELTA
+        camera.updateProjectionMatrix()
+        camera.lookAt(
+          BASE_CAMERA_LOOKAT.x + idleLookX,
+          BASE_CAMERA_LOOKAT.y + idleLookY,
+          BASE_CAMERA_LOOKAT.z,
+        )
         avatarVisualController?.update(
           now,
           jawOpenAmountRef.current,

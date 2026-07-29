@@ -381,6 +381,7 @@ export default function FaceChatWidget({
           critical={Boolean(clipError)}
           yellowHud={activeSection === 'contact'}
           targetFps={targetFps}
+          personalMoment={!isIdling && (node.type === 'followup' || node.type === 'closing')}
         />
       </div>
 
