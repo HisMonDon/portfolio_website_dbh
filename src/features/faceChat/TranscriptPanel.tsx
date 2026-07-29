@@ -3,7 +3,6 @@ import {
   revealTranscriptText,
   type TranscriptWordTiming,
 } from './liveTranscript'
-import { VolumeOnIcon } from './HudIcons'
 import { TRANSCRIPT_SCRIPT } from './transcriptScript'
 import transcriptTimingsJson from './transcriptTimings.json'
 import './TranscriptPanel.css'
@@ -16,7 +15,6 @@ interface TranscriptPanelProps {
   playbackProgress: number
   isExpanded?: boolean
   onSkip?: () => void
-  onStartAudio?: () => void
 }
 
 interface TranscriptTimingEntry {
@@ -37,7 +35,6 @@ export default function TranscriptPanel({
   playbackProgress,
   isExpanded = false,
   onSkip,
-  onStartAudio,
 }: TranscriptPanelProps) {
   const entry = TRANSCRIPT_SCRIPT[nodeId]
   const timing = TRANSCRIPT_TIMINGS[clipId]
@@ -53,7 +50,7 @@ export default function TranscriptPanel({
 
   return (
     <div
-      className={`transcript-panel${isExpanded ? ' is-expanded' : ''}${onStartAudio ? ' needs-audio-start' : ''}`}
+      className={`transcript-panel${isExpanded ? ' is-expanded' : ''}`}
       role="region"
       aria-label="Avatar transcript"
       aria-busy={isSpeaking}
@@ -71,20 +68,8 @@ export default function TranscriptPanel({
         </span>
         <p className="transcript-prompt">{entry.prompt}</p>
       </div>
-      {(onSkip || onStartAudio) && (
+      {onSkip && (
         <div className="transcript-top-actions">
-          {onStartAudio ? (
-            <button
-              type="button"
-              className="transcript-audio-start-button"
-              onClick={onStartAudio}
-              aria-label="Tap to turn on the avatar's voice"
-              title="Tap to turn on the avatar's voice"
-            >
-              <VolumeOnIcon className="transcript-audio-mark" />
-              <span>Tap for sound</span>
-            </button>
-          ) : null}
           {onSkip ? (
             <button
               type="button"

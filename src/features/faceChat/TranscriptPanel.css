@@ -98,8 +98,7 @@
   gap: 6px;
 }
 
-.transcript-skip-button,
-.transcript-audio-start-button {
+.transcript-skip-button {
   all: unset;
   box-sizing: border-box;
   display: inline-flex;
@@ -119,41 +118,19 @@
   transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
-.transcript-audio-start-button {
-  color: #d8f0ff;
-  border-color: rgba(105, 207, 255, 0.62);
-  background: rgba(13, 49, 69, 0.62);
-}
-
-.transcript-audio-start-button .transcript-audio-mark {
-  width: 12px;
-  height: 12px;
-}
-
 .transcript-skip-mark {
   color: #69cfff;
   font-size: 7px;
   letter-spacing: -2px;
 }
 
-.transcript-audio-mark {
-  color: #69cfff;
-  font-size: 8px;
-}
-
-.transcript-panel.needs-audio-start .transcript-heading {
-  max-width: calc(100% - 112px);
-}
-
-.transcript-skip-button:hover,
-.transcript-audio-start-button:hover {
+.transcript-skip-button:hover {
   color: #ffffff;
   border-color: rgba(105, 207, 255, 0.86);
   background: rgba(13, 49, 69, 0.82);
 }
 
-.transcript-skip-button:focus-visible,
-.transcript-audio-start-button:focus-visible {
+.transcript-skip-button:focus-visible {
   outline: 2px solid #69cfff;
   outline-offset: 3px;
 }

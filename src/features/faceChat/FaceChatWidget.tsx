@@ -174,6 +174,24 @@ export default function FaceChatWidget({
     },
   )
 
+  // Browsers block audio autoplay until the visitor has interacted with the page at all — this
+  // only ever bites the very first clip (the intro, which plays on mount with no prior click).
+  // Rather than showing a "tap for sound" prompt, silently retry with sound on the visitor's
+  // first interaction anywhere on the page.
+  useEffect(() => {
+    if (!isAudioBlocked) return
+
+    const resumeWithSound = () => playActiveClip()
+
+    window.addEventListener('pointerdown', resumeWithSound, { once: true })
+    window.addEventListener('keydown', resumeWithSound, { once: true })
+
+    return () => {
+      window.removeEventListener('pointerdown', resumeWithSound)
+      window.removeEventListener('keydown', resumeWithSound)
+    }
+  }, [isAudioBlocked, playActiveClip])
+
   const handleSkip = useCallback(() => {
     if (!isAboutSection || !centered || isIdling) return
 
