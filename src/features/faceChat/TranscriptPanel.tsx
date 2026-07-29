@@ -3,6 +3,7 @@ import {
   revealTranscriptText,
   type TranscriptWordTiming,
 } from './liveTranscript'
+import { VolumeOnIcon } from './HudIcons'
 import { TRANSCRIPT_SCRIPT } from './transcriptScript'
 import transcriptTimingsJson from './transcriptTimings.json'
 import './TranscriptPanel.css'
@@ -70,18 +71,34 @@ export default function TranscriptPanel({
         </span>
         <p className="transcript-prompt">{entry.prompt}</p>
       </div>
-      {onSkip ? (
-        <button
-          type="button"
-          className="transcript-skip-button"
-          onClick={onSkip}
-          aria-label="Skip to the end of this response"
-          title="Skip to the end of this response"
-        >
-          <span>Skip</span>
-          <span className="transcript-skip-mark" aria-hidden="true">{'>>'}</span>
-        </button>
-      ) : null}
+      {(onSkip || onStartAudio) && (
+        <div className="transcript-top-actions">
+          {onStartAudio ? (
+            <button
+              type="button"
+              className="transcript-audio-start-button"
+              onClick={onStartAudio}
+              aria-label="Tap to turn on the avatar's voice"
+              title="Tap to turn on the avatar's voice"
+            >
+              <VolumeOnIcon className="transcript-audio-mark" />
+              <span>Tap for sound</span>
+            </button>
+          ) : null}
+          {onSkip ? (
+            <button
+              type="button"
+              className="transcript-skip-button"
+              onClick={onSkip}
+              aria-label="Skip to the end of this response"
+              title="Skip to the end of this response"
+            >
+              <span>Skip</span>
+              <span className="transcript-skip-mark" aria-hidden="true">{'>>'}</span>
+            </button>
+          ) : null}
+        </div>
+      )}
       <span className="transcript-divider" aria-hidden="true" />
       <p
         className={`transcript-response${isSpeaking ? ' is-typing' : ''}`}

@@ -87,12 +87,20 @@
   line-height: 1.35;
 }
 
-.transcript-skip-button {
-  all: unset;
+.transcript-top-actions {
   position: absolute;
   z-index: 3;
   top: 15px;
   right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.transcript-skip-button,
+.transcript-audio-start-button {
+  all: unset;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -111,6 +119,17 @@
   transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+.transcript-audio-start-button {
+  color: #d8f0ff;
+  border-color: rgba(105, 207, 255, 0.62);
+  background: rgba(13, 49, 69, 0.62);
+}
+
+.transcript-audio-start-button .transcript-audio-mark {
+  width: 12px;
+  height: 12px;
+}
+
 .transcript-skip-mark {
   color: #69cfff;
   font-size: 7px;
@@ -126,13 +145,15 @@
   max-width: calc(100% - 112px);
 }
 
-.transcript-skip-button:hover {
+.transcript-skip-button:hover,
+.transcript-audio-start-button:hover {
   color: #ffffff;
   border-color: rgba(105, 207, 255, 0.86);
   background: rgba(13, 49, 69, 0.82);
 }
 
-.transcript-skip-button:focus-visible {
+.transcript-skip-button:focus-visible,
+.transcript-audio-start-button:focus-visible {
   outline: 2px solid #69cfff;
   outline-offset: 3px;
 }
