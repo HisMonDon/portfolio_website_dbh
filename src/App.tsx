@@ -48,9 +48,10 @@ function App() {
   })
   const [activeSection, setActiveSection] = useState<SectionId>(INITIAL_SECTION)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [isMuted, setIsMuted] = useState(false)
   const isMobile = useIsMobile()
   const isAssistantVisible = activeSection !== 'projects'
-  const { handleInterfaceHover, handleInterfaceSelect } = useInterfaceSounds()
+  const { handleInterfaceHover, handleInterfaceSelect } = useInterfaceSounds(isMuted)
 
   useEffect(() => {
     const scrollStage = scrollStageRef.current
@@ -201,6 +202,8 @@ function App() {
         <PersistentAssistant
           visible={isAssistantVisible}
           activeSection={activeSection}
+          isMuted={isMuted}
+          onMutedChange={setIsMuted}
         />
       )}
 

@@ -44,6 +44,8 @@ const CHOICE_MARKERS: readonly ChoiceMarkerKind[] = [
 interface FaceChatWidgetProps {
   centered?: boolean
   activeSection?: SectionId
+  isMuted: boolean
+  onMutedChange: (isMuted: boolean) => void
 }
 
 type SectionPlaybackPhase = 'inactive' | 'waiting' | 'playing' | 'idle'
@@ -70,6 +72,8 @@ const SECTION_CLIP_IDS: Partial<Record<SectionId, string>> = {
 export default function FaceChatWidget({
   centered = false,
   activeSection = 'about',
+  isMuted,
+  onMutedChange,
 }: FaceChatWidgetProps) {
   const [currentNodeId, setCurrentNodeId] = useState<number>(INTRO_NODE_ID)
   const [activeOpeningId, setActiveOpeningId] = useState<number>(OPENING_NODE_IDS[0])
@@ -78,7 +82,6 @@ export default function FaceChatWidget({
   const [dialogueHistory, setDialogueHistory] = useState<DialogueHistoryEntry[]>([])
   const [playbackPhase, setPlaybackPhase] = useState<'idle' | 'answer'>('answer')
   const [idleClipIndex, setIdleClipIndex] = useState(0)
-  const [isMuted, setIsMuted] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [targetFps, setTargetFps] = useState(60)
@@ -423,10 +426,11 @@ export default function FaceChatWidget({
             <button
               type="button"
               className="face-chat-control-button"
-              onClick={() => setIsMuted((muted) => !muted)}
+              data-interface-sound-toggle="true"
+              onClick={() => onMutedChange(!isMuted)}
               aria-pressed={isMuted}
-              aria-label={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
-              title={isMuted ? 'Unmute avatar voice' : 'Mute avatar voice'}
+              aria-label={isMuted ? 'Unmute all sounds' : 'Mute all sounds'}
+              title={isMuted ? 'Unmute all sounds' : 'Mute all sounds'}
             >
               {isMuted
                 ? <VolumeOffIcon className="face-chat-control-icon" />

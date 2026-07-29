@@ -8,6 +8,8 @@ const INTERFACE_FADE_OUT_MS = 220
 interface PersistentAssistantProps {
   visible: boolean
   activeSection: SectionId
+  isMuted: boolean
+  onMutedChange: (isMuted: boolean) => void
 }
 
 // Site-wide dock for the face-chat assistant (desktop only — see useIsMobile
@@ -19,6 +21,8 @@ interface PersistentAssistantProps {
 export default function PersistentAssistant({
   visible,
   activeSection,
+  isMuted,
+  onMutedChange,
 }: PersistentAssistantProps) {
   const shouldCenter = activeSection === 'about'
   const [centered, setCentered] = useState(shouldCenter)
@@ -38,7 +42,12 @@ export default function PersistentAssistant({
       aria-hidden={!visible}
     >
       <Suspense fallback={null}>
-        <FaceChatWidget centered={shouldCenter} activeSection={activeSection} />
+        <FaceChatWidget
+          centered={shouldCenter}
+          activeSection={activeSection}
+          isMuted={isMuted}
+          onMutedChange={onMutedChange}
+        />
       </Suspense>
     </div>
   )
