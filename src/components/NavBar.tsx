@@ -1,7 +1,6 @@
 import './NavBar.css'
 import { useEffect, useState } from 'react'
 export type SectionId = 'about' | 'contact' | 'resume' | 'projects' | 'skills'
-
 interface NavItem {
   id: SectionId
   label: string
@@ -22,7 +21,6 @@ interface NavBarProps {
 
 export default function NavBar({ active, onSelect }: NavBarProps) {
   const [visualActive, setVisualActive] = useState<SectionId>(active)
-
   useEffect(() => {
     setVisualActive(active)
   }, [active])
@@ -38,6 +36,7 @@ export default function NavBar({ active, onSelect }: NavBarProps) {
               type="button"
               className={`navbar-item${isActive ? ' active' : ''}`}
               onClick={() => {
+                //cr7
                 setVisualActive(item.id)
                 onSelect(item.id)
               }}

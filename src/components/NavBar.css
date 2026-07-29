@@ -109,6 +109,8 @@
   animation-delay: 0.13s;
 }
 
+
+
 .navbar-triangle.three {
   left: 120px;
   background: linear-gradient(180deg, rgba(150, 204, 232, 0.58), rgba(8, 46, 76, 0.5));

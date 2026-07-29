@@ -9,6 +9,7 @@ import './App.css'
 import backgroundVideo from './assets/backgroung_portfolio.mp4'
 import { SECTION_ORDER } from './sections/sectionConfig'
 import { useIsMobile } from './hooks/useIsMobile'
+import { useInterfaceSounds } from './hooks/playSound'
 
 const INITIAL_SECTION: SectionId = 'about'
 const NAV_SCROLL_DURATION_MS = 900
@@ -49,6 +50,7 @@ function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const isMobile = useIsMobile()
   const isAssistantVisible = activeSection !== 'projects'
+  const { handleInterfaceHover, handleInterfaceSelect } = useInterfaceSounds()
 
   useEffect(() => {
     const scrollStage = scrollStageRef.current
@@ -99,9 +101,6 @@ function App() {
     const cancelProgrammaticScroll = (event?: Event) => {
       const target = event?.target
 
-      // Clicking an in-section control (such as the Resume download link) is not a scroll
-      // gesture. Let the current section transition finish so snapping cannot send the page
-      // back to About while the control is being activated.
       if (
         event?.type === 'pointerdown'
         && target instanceof Element
@@ -123,8 +122,6 @@ function App() {
       scrollStage?.classList.remove('is-programmatic-scrolling')
     }
 
-    // A real gesture always wins over an in-progress navbar animation. Otherwise the animation
-    // and the browser can alternately write scrollTop and create another apparent jump.
     scrollStage?.addEventListener('wheel', cancelProgrammaticScroll, { passive: true })
     scrollStage?.addEventListener('touchstart', cancelProgrammaticScroll, { passive: true })
     scrollStage?.addEventListener('pointerdown', cancelProgrammaticScroll, { passive: true })
@@ -167,7 +164,11 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      onClick={handleInterfaceSelect}
+      onPointerOver={handleInterfaceHover}
+    >
       <video
         className="background-video"
         autoPlay

@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react'
 
-// Matches the 720px breakpoint already used throughout the app's CSS
-// (App.css, NavBar.css, Projects.css) so JS-gated mounting decisions line
-// up with the same viewport width where the CSS layout itself switches.
 const MOBILE_QUERY = '(max-width: 720px)'
 
 export function useIsMobile(): boolean {
