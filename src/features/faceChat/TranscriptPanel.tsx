@@ -70,18 +70,7 @@ export default function TranscriptPanel({
         </span>
         <p className="transcript-prompt">{entry.prompt}</p>
       </div>
-      {onStartAudio ? (
-        <button
-          type="button"
-          className="transcript-skip-button transcript-audio-button"
-          onClick={onStartAudio}
-          aria-label="Play avatar voice"
-          title="Play avatar voice"
-        >
-          <span>Play sound</span>
-          <span className="transcript-audio-mark" aria-hidden="true">▶</span>
-        </button>
-      ) : onSkip ? (
+      {onSkip ? (
         <button
           type="button"
           className="transcript-skip-button"

@@ -180,11 +180,29 @@ function addLipGloss(mesh: THREE.Mesh) {
   mesh.material = [original, lipMaterial]
 }
 
+interface SmoothedSkinTextures {
+  colorMap: THREE.CanvasTexture
+  clearcoatMap: THREE.CanvasTexture | null
+  clearcoatRoughnessMap: THREE.CanvasTexture | null
+}
+
+function copyTextureTransform(source: THREE.Texture | null | undefined, texture: THREE.Texture) {
+  texture.flipY = source?.flipY ?? false
+  texture.wrapS = source?.wrapS ?? THREE.ClampToEdgeWrapping
+  texture.wrapT = source?.wrapT ?? THREE.ClampToEdgeWrapping
+  texture.needsUpdate = true
+}
+
 // Re-renders the original diffuse texture through a soft blur, which wipes out pore-level
 // high-frequency detail while leaving the larger features the texture already painted in
-// (eyebrows, lips, broad shading) intact. Falls back to null if the texture can't be read (e.g. a
-// tainted canvas), in which case the caller keeps the original, unblurred texture.
-function buildSmoothedSkinTexture(originalMap: THREE.Texture | null | undefined): THREE.CanvasTexture | null {
+// (eyebrows, lips, broad shading) intact. It then reveals the original, unblurred pixels again
+// wherever they're notably darker than the texture's brightest (typical skin) tone -- which in
+// practice isolates eyebrows/lash lines -- so those features stay crisp. The same darkness mask
+// becomes a clearcoatMap (more clearcoat on those pixels) and a clearcoatRoughnessMap (lower
+// roughness on those pixels, for a sharper specular highlight), so eyebrows read as glossy against
+// the rest of the matte, smoothed skin. Falls back to null if the texture can't be read (e.g. a
+// tainted canvas), in which case the caller keeps the original, unaltered texture.
+function buildSmoothedSkinTextures(originalMap: THREE.Texture | null | undefined): SmoothedSkinTextures | null {
   const image = originalMap?.image as (CanvasImageSource & { width?: number; height?: number }) | undefined
 
   if (!image || !image.width || !image.height) return null
@@ -194,28 +212,112 @@ function buildSmoothedSkinTexture(originalMap: THREE.Texture | null | undefined)
   const width = Math.max(1, Math.round(image.width * scale))
   const height = Math.max(1, Math.round(image.height * scale))
 
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  const context = canvas.getContext('2d')
+  const sharpCanvas = document.createElement('canvas')
+  sharpCanvas.width = width
+  sharpCanvas.height = height
+  const sharpContext = sharpCanvas.getContext('2d')
 
-  if (!context) return null
+  const blurCanvas = document.createElement('canvas')
+  blurCanvas.width = width
+  blurCanvas.height = height
+  const blurContext = blurCanvas.getContext('2d')
+
+  if (!sharpContext || !blurContext) return null
+
+  let sharpData: ImageData
+  let blurData: ImageData
 
   try {
-    context.filter = 'blur(4px)'
-    context.drawImage(image, 0, 0, width, height)
+    sharpContext.drawImage(image, 0, 0, width, height)
+    sharpData = sharpContext.getImageData(0, 0, width, height)
+
+    blurContext.filter = 'blur(4px)'
+    blurContext.drawImage(image, 0, 0, width, height)
+    blurData = blurContext.getImageData(0, 0, width, height)
   } catch {
     return null
   }
 
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.colorSpace = originalMap?.colorSpace ?? THREE.SRGBColorSpace
-  texture.flipY = originalMap?.flipY ?? false
-  texture.wrapS = originalMap?.wrapS ?? THREE.ClampToEdgeWrapping
-  texture.wrapT = originalMap?.wrapT ?? THREE.ClampToEdgeWrapping
-  texture.needsUpdate = true
+  const sharpPixels = sharpData.data
+  const blurPixels = blurData.data
 
-  return texture
+  let maxLuminance = 0
+
+  for (let i = 0; i < sharpPixels.length; i += 4) {
+    const luminance = 0.299 * sharpPixels[i] + 0.587 * sharpPixels[i + 1] + 0.114 * sharpPixels[i + 2]
+    if (luminance > maxLuminance) maxLuminance = luminance
+  }
+
+  if (maxLuminance <= 0) return null
+
+  const featureLow = maxLuminance * 0.35
+  const featureHigh = maxLuminance * 0.6
+  const clearcoatFloor = 0.1
+  const clearcoatRoughnessFloor = 0.25
+
+  const clearcoatCanvas = document.createElement('canvas')
+  clearcoatCanvas.width = width
+  clearcoatCanvas.height = height
+  const clearcoatContext = clearcoatCanvas.getContext('2d')
+
+  const clearcoatRoughnessCanvas = document.createElement('canvas')
+  clearcoatRoughnessCanvas.width = width
+  clearcoatRoughnessCanvas.height = height
+  const clearcoatRoughnessContext = clearcoatRoughnessCanvas.getContext('2d')
+
+  if (!clearcoatContext || !clearcoatRoughnessContext) return null
+
+  const clearcoatData = clearcoatContext.createImageData(width, height)
+  const clearcoatPixels = clearcoatData.data
+  const clearcoatRoughnessData = clearcoatRoughnessContext.createImageData(width, height)
+  const clearcoatRoughnessPixels = clearcoatRoughnessData.data
+
+  for (let i = 0; i < sharpPixels.length; i += 4) {
+    const luminance = 0.299 * sharpPixels[i] + 0.587 * sharpPixels[i + 1] + 0.114 * sharpPixels[i + 2]
+    const featureAmount = 1 - THREE.MathUtils.clamp(
+      (luminance - featureLow) / (featureHigh - featureLow),
+      0,
+      1,
+    )
+
+    // Reveal the sharp (unblurred) pixel only where the darkness mask is strong, i.e. eyebrows
+    // and lash lines; everywhere else keeps the blurred, pore-smoothed pixel.
+    blurPixels[i] = Math.round(THREE.MathUtils.lerp(blurPixels[i], sharpPixels[i], featureAmount))
+    blurPixels[i + 1] = Math.round(THREE.MathUtils.lerp(blurPixels[i + 1], sharpPixels[i + 1], featureAmount))
+    blurPixels[i + 2] = Math.round(THREE.MathUtils.lerp(blurPixels[i + 2], sharpPixels[i + 2], featureAmount))
+
+    // More clearcoat and a sharper (lower-roughness) specular highlight on the same feature
+    // pixels, so eyebrows read as glossy against the matte skin around them.
+    const clearcoatValue = Math.round(THREE.MathUtils.lerp(clearcoatFloor, 1, featureAmount) * 255)
+    clearcoatPixels[i] = clearcoatValue
+    clearcoatPixels[i + 1] = clearcoatValue
+    clearcoatPixels[i + 2] = clearcoatValue
+    clearcoatPixels[i + 3] = 255
+
+    const clearcoatRoughnessValue = Math.round(
+      THREE.MathUtils.lerp(1, clearcoatRoughnessFloor, featureAmount) * 255,
+    )
+    clearcoatRoughnessPixels[i] = clearcoatRoughnessValue
+    clearcoatRoughnessPixels[i + 1] = clearcoatRoughnessValue
+    clearcoatRoughnessPixels[i + 2] = clearcoatRoughnessValue
+    clearcoatRoughnessPixels[i + 3] = 255
+  }
+
+  blurContext.putImageData(blurData, 0, 0)
+  clearcoatContext.putImageData(clearcoatData, 0, 0)
+  clearcoatRoughnessContext.putImageData(clearcoatRoughnessData, 0, 0)
+
+  const colorMap = new THREE.CanvasTexture(blurCanvas)
+  colorMap.colorSpace = originalMap?.colorSpace ?? THREE.SRGBColorSpace
+  copyTextureTransform(originalMap, colorMap)
+
+  const clearcoatMap = new THREE.CanvasTexture(clearcoatCanvas)
+  copyTextureTransform(originalMap, clearcoatMap)
+
+  const clearcoatRoughnessMap = new THREE.CanvasTexture(clearcoatRoughnessCanvas)
+  copyTextureTransform(originalMap, clearcoatRoughnessMap)
+
+  return { colorMap, clearcoatMap, clearcoatRoughnessMap }
 }
 
 function makeGlossy(
@@ -236,8 +338,10 @@ function makeGlossy(
 // Converts the baked skin to a physical clearcoat material, keeping the original diffuse texture
 // (real skin tone, eyebrows, lips, and shading all stay) but running it through a soft blur to
 // smooth out pore-level detail, and stripping the normal/roughness maps that encoded surface
-// bumps, so scene lighting still carves out shadow/shading across the now-smooth geometry. Also
-// injects the source file's view-dependent cyan Fresnel term into the compiled fragment shader.
+// bumps, so scene lighting still carves out shadow/shading across the now-smooth geometry. The
+// eyebrows (and lash lines) stay sharp and get a stronger clearcoat gloss than the rest of the
+// smoothed skin. Also injects the source file's view-dependent cyan Fresnel term into the compiled
+// fragment shader.
 function applySyntheticSkin(
   mesh: THREE.Mesh,
   syntheticSkinUniforms: SyntheticSkinUniforms[],
@@ -246,14 +350,16 @@ function applySyntheticSkin(
 
   if (!original) return
 
-  const smoothedMap = buildSmoothedSkinTexture(original.map)
+  const smoothedSkin = buildSmoothedSkinTextures(original.map)
 
   const material = physicalMaterialFrom(original, {
-    map: smoothedMap ?? original.map,
+    map: smoothedSkin?.colorMap ?? original.map,
     normalMap: null,
     roughnessMap: null,
+    clearcoatMap: smoothedSkin?.clearcoatMap ?? null,
+    clearcoatRoughnessMap: smoothedSkin?.clearcoatRoughnessMap ?? null,
     roughness: 0.5,
-    clearcoat: 0.1,
+    clearcoat: 1,
     clearcoatRoughness: 0.2,
   })
   const uniforms: SyntheticSkinUniforms = {

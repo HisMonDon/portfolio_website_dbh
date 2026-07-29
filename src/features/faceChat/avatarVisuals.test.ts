@@ -67,8 +67,8 @@ describe('applyAvatarVisualTreatment', () => {
 
     expect(Array.isArray(head.material)).toBe(true)
     const headMaterials = head.material as unknown as THREE.MeshPhysicalMaterial[]
-    expect(headMaterials[0].clearcoat).toBe(0.15)
-    expect(headMaterials[0].roughness).toBe(0.4)
+    expect(headMaterials[0].clearcoat).toBe(1)
+    expect(headMaterials[0].roughness).toBe(0.5)
     expect(headMaterials[1].clearcoat).toBe(0.6)
     expect(headMaterials[1].clearcoatRoughness).toBe(0.15)
 
@@ -85,9 +85,9 @@ describe('applyAvatarVisualTreatment', () => {
     expect(compiledShader.uniforms).toHaveProperty('uRimIntensity')
 
     const bodyMaterial = body.material as THREE.MeshPhysicalMaterial
-    expect(bodyMaterial.clearcoat).toBe(0.15)
+    expect(bodyMaterial.clearcoat).toBe(1)
     expect(bodyMaterial.clearcoatRoughness).toBe(0.2)
-    expect(bodyMaterial.roughness).toBe(0.4)
+    expect(bodyMaterial.roughness).toBe(0.5)
 
     const hairMaterial = hair.material as THREE.MeshPhysicalMaterial
     expect(hairMaterial.roughness).toBe(0.3)
