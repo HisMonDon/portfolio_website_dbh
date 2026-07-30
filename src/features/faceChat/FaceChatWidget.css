@@ -78,7 +78,7 @@
 
 .face-chat-control-button {
   all: unset;
-  --option-accent: #8fd6ff;
+  --option-accent: #173f5b;
   position: relative;
   cursor: pointer;
   box-sizing: border-box;
@@ -88,13 +88,14 @@
   height: 38px;
   color: var(--option-accent);
   overflow: hidden;
-  border: 1px solid rgba(105, 207, 255, 0.48);
-  border-top-color: rgba(159, 221, 255, 0.7);
+  border: 1px solid rgba(31, 78, 121, 0.3);
   border-radius: 10px;
-  background: rgba(13, 43, 63, 0.78);
+  background: rgba(31, 78, 121, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   box-shadow:
-    inset 0 1px 0 rgba(159, 221, 255, 0.14),
-    0 3px 10px rgba(5, 18, 28, 0.24);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 10px rgba(5, 18, 28, 0.12);
   transition: color 160ms ease, border-color 160ms ease, filter 160ms ease;
 }
 
@@ -122,9 +123,9 @@
 
 .face-chat-control-button:hover,
 .face-chat-control-button[aria-expanded='true'] {
-  color: #69cfff;
-  border-color: rgba(105, 207, 255, 0.86);
-  background: rgba(13, 49, 69, 0.9);
+  color: #173f5b;
+  border-color: rgba(31, 78, 121, 0.5);
+  background: rgba(31, 78, 121, 0.24);
   filter: brightness(1.08);
 }
 
@@ -139,11 +140,13 @@
   right: 0;
   width: 190px;
   padding: 12px 14px 10px;
-  color: #f5fbff;
-  background: linear-gradient(90deg, rgba(8, 25, 38, 0.94), rgba(13, 49, 69, 0.94));
+  color: #173f5b;
+  background: rgba(31, 78, 121, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   border-radius: 10px;
-  border: 1px solid rgba(105, 207, 255, 0.86);
-  box-shadow: 0 5px 18px rgba(5, 18, 28, 0.34);
+  border: 1px solid rgba(31, 78, 121, 0.3);
+  box-shadow: 0 5px 18px rgba(5, 18, 28, 0.18);
   font-family: 'Gotham_thin', system-ui, -apple-system, sans-serif;
   pointer-events: auto;
 }
@@ -153,7 +156,7 @@
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 10px;
-  color: #eef3f6;
+  color: #173f5b;
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: 10px;
   letter-spacing: 0.8px;
@@ -161,7 +164,7 @@
 }
 
 .face-chat-fps-heading output {
-  color: #69cfff;
+  color: #173f5b;
   white-space: nowrap;
 }
 
@@ -169,7 +172,7 @@
   display: block;
   width: 100%;
   margin: 0;
-  accent-color: #69cfff;
+  accent-color: #173f5b;
   cursor: pointer;
 }
 
@@ -177,7 +180,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 5px;
-  color: #c3cdd3;
+  color: #173f5b;
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: 9px;
 }
@@ -358,15 +361,22 @@
   pointer-events: auto;
 }
 
-.face-chat-back-bar {
+.face-chat-option-bar.face-chat-back-bar {
   --option-accent: #173f5b;
-  background: rgba(26, 29, 35, 0.1);
-  backdrop-filter: blur(20px);
-  border-top-color: rgba(23, 63, 91, 0.62);
-  border-bottom-color: rgba(23, 63, 91, 0.38);
+  background: rgba(31, 78, 121, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border-top-color: rgba(31, 78, 121, 0.3);
+  border-bottom-color: rgba(31, 78, 121, 0.3);
+  border-radius: 10px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 3px 12px rgba(5, 18, 28, 0.12);
+}
+
+.face-chat-option-bar.face-chat-back-bar::before,
+.face-chat-option-bar.face-chat-back-bar .face-chat-option-number::after {
+  content: none;
 }
 
 .face-chat-back-bar .face-chat-option-label {
@@ -687,24 +697,25 @@
   padding: 3px;
   gap: 2px;
   transform: translateX(-50%);
-  border: 1px solid rgba(55, 74, 86, 0.72);
+  border: 1px solid rgba(31, 78, 121, 0.3);
   border-radius: 10px;
-  background: linear-gradient(105deg, rgba(5, 19, 29, 0.88), rgba(12, 35, 49, 0.8));
-  box-shadow: 0 8px 20px rgba(5, 18, 28, 0.2);
-  backdrop-filter: blur(6px);
+  background: rgba(31, 78, 121, 0.15);
+  box-shadow: 0 8px 20px rgba(5, 18, 28, 0.12);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
 }
 
 .face-chat-widget.is-centered-layout .face-chat-control-button {
   width: 40px;
   height: 40px;
-  border-color: rgba(105, 207, 255, 0.4);
-  background: rgba(13, 43, 63, 0.78);
+  border-color: rgba(31, 78, 121, 0.3);
+  background: rgba(31, 78, 121, 0.15);
 }
 
 .face-chat-widget.is-centered-layout .face-chat-control-button:hover,
 .face-chat-widget.is-centered-layout .face-chat-control-button[aria-expanded='true'] {
-  border-color: rgba(105, 207, 255, 0.62);
-  background: rgba(13, 49, 69, 0.9);
+  border-color: rgba(31, 78, 121, 0.5);
+  background: rgba(31, 78, 121, 0.24);
 }
 
 .face-chat-widget.is-centered-layout .face-chat-choice-layer,
