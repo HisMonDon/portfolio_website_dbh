@@ -31,12 +31,16 @@ interface ClipAvatarProps {
 const RENDERER_RETRY_LIMIT = 2
 const AVATAR_URL = new URL('./assets/avatar.glb', import.meta.url).href
 
-const BASE_CAMERA_FOV = 30
+// Leave a little breathing room above the hairline on shorter/wider viewports. The previous
+// 30-degree framing pushed the top of the head into the HUD at common laptop aspect ratios.
+const BASE_CAMERA_FOV = 33
 const BASE_CAMERA_POSITION = new THREE.Vector3(0, 1.63, 1)
-const BASE_CAMERA_LOOKAT = new THREE.Vector3(0, 1.6, 0)
+// Aim slightly above eye level so the portrait sits lower in the frame and the crown remains
+// visible even when recorded head motion tilts the avatar toward the camera.
+const BASE_CAMERA_LOOKAT = new THREE.Vector3(0, 1.67, 0)
 // How much closer/tighter the shot gets during a personal-moment answer.
 const PERSONAL_MOMENT_DOLLY = 0.16
-const PERSONAL_MOMENT_FOV_DELTA = 3
+const PERSONAL_MOMENT_FOV_DELTA = 2
 // Kept deliberately small so the idle sway reads as "alive and restless," not shaky or distracting.
 const IDLE_DRIFT_POSITION = 0.025
 const IDLE_DRIFT_LOOK = 0.02

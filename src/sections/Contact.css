@@ -43,10 +43,12 @@
   padding: 14px 34px 14px 15px;
   overflow: hidden;
   border-radius: 10px;
-  border: 1px solid rgba(113, 220, 255, 0.7);
-  background: rgba(23, 63, 91, 0.9);
+  border: 1px solid rgba(31, 78, 121, 0.3);
+  background: rgba(31, 78, 121, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   box-shadow: 0 9px 22px rgba(12, 57, 87, 0.13);
-  color: #f4fbff;
+  color: #173f5b;
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   text-decoration: none;
   transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
@@ -69,7 +71,7 @@
 .contact-link:hover,
 .contact-link:focus-visible {
   border-color: var(--contact-cyan);
-  background: #1d4b69;
+  background: rgba(31, 78, 121, 0.28);
   transform: translateY(-2px);
   outline: none;
 }
@@ -92,7 +94,7 @@
   z-index: 2;
   margin-top: 5px;
   overflow: hidden;
-  color: rgba(235, 247, 255, 0.72);
+  color: rgba(23, 63, 91, 0.75);
   font-size: 10px;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -124,22 +126,22 @@
 
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-1,
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-8 {
-  fill: rgba(143, 220, 255, 0.32);
+  fill: rgba(58, 105, 143, 0.32);
 }
 
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-2,
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-7 {
-  fill: rgba(11, 51, 80, 0.4);
+  fill: rgba(11, 34, 53, 0.4);
 }
 
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-3,
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-6 {
-  fill: rgba(166, 231, 255, 0.36);
+  fill: rgba(31, 78, 121, 0.36);
 }
 
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-4,
 .contact-link-triangle-mesh .hud-triangle-mesh-piece.is-5 {
-  fill: rgba(113, 220, 255, 0.32);
+  fill: rgba(23, 63, 91, 0.32);
 }
 
 .contact-link:hover .hud-triangle-mesh-piece,
@@ -210,11 +212,12 @@
   position: relative;
   padding: 20px 22px 18px;
   border-radius: 10px;
-  border: 1px solid rgba(23, 63, 91, 0.25);
+  border: 1px solid rgba(31, 78, 121, 0.3);
   border-left: 4px solid var(--contact-cyan);
-  background: rgba(238, 249, 255, 0.76);
+  background: rgba(31, 78, 121, 0.15);
   box-shadow: 0 18px 40px rgba(20, 64, 91, 0.12);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
 }
 
 .contact-compose-edge {
@@ -392,10 +395,12 @@
   gap: 14px;
   min-height: 42px;
   padding: 0 18px;
-  border: 1px solid var(--contact-cyan);
+  border: 1px solid rgba(31, 78, 121, 0.3);
   border-radius: 10px;
-  background: var(--contact-blue);
-  color: #f4fbff;
+  background: rgba(31, 78, 121, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  color: #173f5b;
   cursor: pointer;
   font: 11px 'Gotham_medium', system-ui, -apple-system, sans-serif;
   letter-spacing: 1.2px;
@@ -406,12 +411,12 @@
 .contact-submit:hover,
 .contact-submit:focus-visible {
   border-color: var(--contact-yellow);
-  background: #1d4b69;
+  background: rgba(31, 78, 121, 0.28);
   outline: none;
 }
 
 .contact-submit span {
-  color: #ffffff;
+  color: #173f5b;
   font-size: 16px;
 }
 
