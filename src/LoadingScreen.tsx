@@ -1,4 +1,5 @@
 import './LoadingScreen.css';
+import loadingVideo from './assets/loading_portfolio.mp4'
 interface LoadingScreenProps {
     onFinish: () => void
 }
@@ -8,8 +9,9 @@ export default function LoadingScreen({
         <div className="loading-screen">
             <video
                 className="loading-video"
-                src="./assets/loading_portfolio.mp4"
+                src={loadingVideo}
                 autoPlay={true}
+                muted
                 playsInline={true}
                 onEnded={onFinish}
             />

@@ -10,7 +10,7 @@ import backgroundVideo from './assets/backgroung_portfolio.mp4'
 import { SECTION_ORDER } from './sections/sectionConfig'
 import { useIsMobile } from './hooks/useIsMobile'
 import { useInterfaceSounds } from './hooks/playSound'
-import LoadingScreen from "./loadingScreen";
+import LoadingScreen from "./LoadingScreen";
 const INITIAL_SECTION: SectionId = 'about'
 const NAV_SCROLL_DURATION_MS = 900
 
