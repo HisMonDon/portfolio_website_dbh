@@ -10,11 +10,11 @@
   border-radius: 10px;
   border: 1px solid rgba(55, 90, 113, 0.82);
   border-top-color: rgba(113, 175, 207, 0.72);
-  background: var(--face-chat-panel-background);
+  background: rgba(26, 29, 35, 0.1);
   box-shadow:
     var(--face-chat-panel-shadow),
     0 12px 28px rgba(5, 18, 28, 0.18);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(20px);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: clamp(12px, 0.95vw, 14px);
 }
@@ -81,7 +81,7 @@
 
 .transcript-prompt {
   margin: 0;
-  color: #ffffff;
+  color: var(--dbh-navy);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: clamp(14px, 1.12vw, 17px);
   font-weight: normal;
@@ -107,7 +107,7 @@
   gap: 6px;
   min-height: 28px;
   padding: 0 8px;
-  color: #c3cdd3;
+  color: var(--dbh-navy);
   border-radius: 10px;
   border: 1px solid rgba(159, 174, 183, 0.42);
   background: rgba(8, 25, 38, 0.46);
@@ -127,7 +127,7 @@
 }
 
 .transcript-skip-button:hover {
-  color: #ffffff;
+  color: var(--dbh-navy);
   border-color: rgba(105, 207, 255, 0.86);
   background: rgba(13, 49, 69, 0.82);
 }
@@ -142,7 +142,7 @@
   z-index: 2;
   display: grid;
   margin: 0;
-  color: #eef3f6;
+  color: var(--dbh-navy);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-weight: normal;
   line-height: 1.6;
