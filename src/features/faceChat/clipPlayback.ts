@@ -165,6 +165,18 @@ export function isAutoplayBlocked(error: unknown): boolean {
     && error.name === 'NotAllowedError'
 }
 
+export function shouldRestartMutedAutoplayOnInteraction(params: {
+  audioCurrentTimeSec: number
+  audioPaused: boolean
+  audioMuted: boolean
+  desiredMuted: boolean
+}): boolean {
+  return !params.desiredMuted
+    && params.audioMuted
+    && !params.audioPaused
+    && params.audioCurrentTimeSec > 0.05
+}
+
 // Browsers always allow muted autoplay but block unmuted autoplay before the visitor has
 // interacted with the page at all. Every clip's audio therefore starts muted (see beginPlayback
 // below) and is unmuted here, synchronously inside the visitor's first real pointerdown/keydown
@@ -360,7 +372,28 @@ export function useClipPlayer(
             audioRef.current = audio
 
             const applyDesiredMute = () => {
-              if (audioRef.current === audio) audio.muted = isMutedRef.current
+              if (audioRef.current !== audio) return
+
+              const desiredMuted = isMutedRef.current
+
+              if (shouldRestartMutedAutoplayOnInteraction({
+                audioCurrentTimeSec: audio.currentTime,
+                audioPaused: audio.paused,
+                audioMuted: audio.muted,
+                desiredMuted,
+              })) {
+                const firstFrame = framesRef.current[0]
+
+                audio.currentTime = 0
+                cursorRef.current = 0
+                lastElapsedRef.current = 0
+                fallbackEpochRef.current = performance.now()
+                if (firstFrame) displayFrame(firstFrame)
+                displayPlaybackTime(0)
+                displayPlaybackProgress(0)
+              }
+
+              audio.muted = desiredMuted
             }
 
             if (hasPageInteracted) {

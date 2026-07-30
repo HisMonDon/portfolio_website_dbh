@@ -8,6 +8,7 @@ import {
   loadClip,
   resolveElapsedMs,
   resolvePlaybackProgress,
+  shouldRestartMutedAutoplayOnInteraction,
   type BlendshapeFrame,
 } from './clipPlayback'
 
@@ -31,6 +32,35 @@ describe('isAutoplayBlocked', () => {
   it('does not treat media and network failures as autoplay restrictions', () => {
     expect(isAutoplayBlocked({ name: 'NotSupportedError' })).toBe(false)
     expect(isAutoplayBlocked(new Error('network failed'))).toBe(false)
+  })
+})
+
+describe('shouldRestartMutedAutoplayOnInteraction', () => {
+  it('restarts an audible clip that has already advanced while muted for autoplay', () => {
+    expect(shouldRestartMutedAutoplayOnInteraction({
+      audioCurrentTimeSec: 5,
+      audioPaused: false,
+      audioMuted: true,
+      desiredMuted: false,
+    })).toBe(true)
+  })
+
+  it('does not restart when the visitor wants the clip muted', () => {
+    expect(shouldRestartMutedAutoplayOnInteraction({
+      audioCurrentTimeSec: 5,
+      audioPaused: false,
+      audioMuted: true,
+      desiredMuted: true,
+    })).toBe(false)
+  })
+
+  it('does not restart before muted autoplay has consumed meaningful playback time', () => {
+    expect(shouldRestartMutedAutoplayOnInteraction({
+      audioCurrentTimeSec: 0.01,
+      audioPaused: false,
+      audioMuted: true,
+      desiredMuted: false,
+    })).toBe(false)
   })
 })
 
