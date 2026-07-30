@@ -358,6 +358,22 @@
   pointer-events: auto;
 }
 
+.face-chat-back-bar {
+  --option-accent: #173f5b;
+  background: rgba(26, 29, 35, 0.1);
+  backdrop-filter: blur(20px);
+  border-top-color: rgba(23, 63, 91, 0.62);
+  border-bottom-color: rgba(23, 63, 91, 0.38);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 3px 12px rgba(5, 18, 28, 0.12);
+}
+
+.face-chat-back-bar .face-chat-option-label {
+  color: #173f5b;
+  text-shadow: none;
+}
+
 .face-chat-option-bar {
   all: unset;
   --option-accent: #9eabb3;

@@ -154,7 +154,7 @@
   display: block;
   height: 1px;
   margin: 0 0 10px;
-  background: linear-gradient(90deg, rgba(105, 207, 255, 0.72), rgba(105, 207, 255, 0.08));
+  background: linear-gradient(90deg, rgba(23, 63, 91, 0.72), rgba(23, 63, 91, 0.08));
 }
 
 .transcript-divider::after {
@@ -164,7 +164,7 @@
   left: 0;
   width: 5px;
   height: 5px;
-  background: #69cfff;
+  background: var(--dbh-navy);
   transform: rotate(45deg);
 }
 
