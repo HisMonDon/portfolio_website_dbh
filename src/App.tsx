@@ -10,7 +10,7 @@ import backgroundVideo from './assets/backgroung_portfolio.mp4'
 import { SECTION_ORDER } from './sections/sectionConfig'
 import { useIsMobile } from './hooks/useIsMobile'
 import { useInterfaceSounds } from './hooks/playSound'
-
+import LoadingScreen from "./loadingScreen";
 const INITIAL_SECTION: SectionId = 'about'
 const NAV_SCROLL_DURATION_MS = 900
 
@@ -35,7 +35,7 @@ function renderSection(
   }
 }
 
-function App() {
+export default function App() {
   const scrollStageRef = useRef<HTMLDivElement | null>(null)
   const navScrollEndTimeoutRef = useRef<number | null>(null)
   const isProgrammaticScrollRef = useRef(false)
@@ -170,6 +170,7 @@ function App() {
       onClick={handleInterfaceSelect}
       onPointerOver={handleInterfaceHover}
     >
+      <LoadingScreen></LoadingScreen>
       <video
         className="background-video"
         autoPlay
@@ -229,4 +230,4 @@ function App() {
   )
 }
 
-export default App
+//export default App
