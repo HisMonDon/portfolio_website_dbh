@@ -34,7 +34,8 @@ function renderSection(
       return null
   }
 }
-
+//=========================================================================
+//STARTS HERE
 export default function App() {
   const scrollStageRef = useRef<HTMLDivElement | null>(null)
   const navScrollEndTimeoutRef = useRef<number | null>(null)
