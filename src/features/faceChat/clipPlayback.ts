@@ -165,6 +165,29 @@ export function isAutoplayBlocked(error: unknown): boolean {
     && error.name === 'NotAllowedError'
 }
 
+// Browsers always allow muted autoplay but block unmuted autoplay before the visitor has
+// interacted with the page at all. Every clip's audio therefore starts muted (see beginPlayback
+// below) and is unmuted here, synchronously inside the visitor's first real pointerdown/keydown
+// anywhere on the page — a trusted event handler is the one place browsers reliably allow a
+// media element to go from muted to audible without restarting or losing sync.
+let hasPageInteracted = false
+const pendingUnmutes = new Set<() => void>()
+
+if (typeof window !== 'undefined') {
+  const markPageInteracted = () => {
+    if (hasPageInteracted) return
+
+    hasPageInteracted = true
+    pendingUnmutes.forEach((unmute) => unmute())
+    pendingUnmutes.clear()
+    window.removeEventListener('pointerdown', markPageInteracted)
+    window.removeEventListener('keydown', markPageInteracted)
+  }
+
+  window.addEventListener('pointerdown', markPageInteracted)
+  window.addEventListener('keydown', markPageInteracted)
+}
+
 export function resolvePlaybackProgress(params: {
   elapsedMs: number
   audioDurationSec: number
@@ -279,6 +302,7 @@ export function useClipPlayer(
     const requestId = ++requestIdRef.current
     const outgoingFrame = activeFrameRef.current
     let cancelled = false
+    let unmuteOnInteraction: (() => void) | null = null
 
     framesRef.current = []
     cursorRef.current = 0
@@ -328,8 +352,23 @@ export function useClipPlayer(
 
           if (audio) {
             audio.loop = mode === 'loop'
-            audio.muted = isMutedRef.current
+            // Always start muted so autoplay is never blocked by the browser, even for the very
+            // first clip on a fresh page load. See the module-level pendingUnmutes/hasPageInteracted
+            // above: this gets unmuted in place (no restart, no lost sync) as soon as the visitor
+            // interacts, or immediately below if that has already happened.
+            audio.muted = true
             audioRef.current = audio
+
+            const applyDesiredMute = () => {
+              if (audioRef.current === audio) audio.muted = isMutedRef.current
+            }
+
+            if (hasPageInteracted) {
+              applyDesiredMute()
+            } else {
+              unmuteOnInteraction = applyDesiredMute
+              pendingUnmutes.add(applyDesiredMute)
+            }
 
             audio
               .play()
@@ -342,8 +381,9 @@ export function useClipPlayer(
                 if (cancelled || requestIdRef.current !== requestId) return
 
                 if (isAutoplayBlocked(playError)) {
-                  // Keep the avatar and transcript moving silently. The sound button can still
-                  // restart the clip with audio after the visitor provides a user gesture.
+                  // Keep the avatar and transcript moving silently using the performance-clock
+                  // fallback. In practice this should no longer happen since the clip starts
+                  // muted, but stay defensive for unusual browser/media-policy edge cases.
                   setIsAudioBlocked(true)
                   fallbackEpochRef.current = performance.now()
                   setIsPlaying(true)
@@ -395,6 +435,7 @@ export function useClipPlayer(
       cancelled = true
       if (transitionRafRef.current !== null) cancelAnimationFrame(transitionRafRef.current)
       transitionRafRef.current = null
+      if (unmuteOnInteraction) pendingUnmutes.delete(unmuteOnInteraction)
       audioRef.current?.pause()
       audioRef.current = null
     }

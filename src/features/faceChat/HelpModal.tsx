@@ -21,7 +21,7 @@ const HELP_STEPS: HelpStep[] = [
     id: 'record',
     imageUrl: image1Url,
     title: '1. Recording',
-    body: 'Using a webcam and MediaPipe, I record myself answering each question. MediaPipe reads my facial expressions in real time as a set of blendshape values.',
+    body: 'Using a webcam and MediaPipe, I record myself answering each question. MediaPipe reads my facial expressions in real time as a set of blendshape values (Stored in JSON).',
   },
   {
     id: 'map',
@@ -33,7 +33,7 @@ const HELP_STEPS: HelpStep[] = [
     id: 'play',
     imageUrl: image3Url,
     title: '3. Playback',
-    body: "The mapped performance is saved as a clip. When you pick a question, that clip replays here — no camera or live tracking is needed on your end.",
+    body: "The mapped performance is saved as a clip. When you pick a question, that clip replays here.",
   },
 ]
 
