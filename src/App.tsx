@@ -167,16 +167,17 @@ export default function App() {
     scrollToSection(id)
     setActiveSection(id)
   }
-  {/*LOADING SCREEN */ }
-  if (isLoading) {
-    return <LoadingScreen onFinish={handleLoadingFinish} />
-  }
   //RETURN
+  // The app tree stays mounted underneath the loading screen (instead of being swapped out)
+  // so the avatar's model/JS chunk starts loading while the user is still on the Continue
+  // screen, rather than only starting after they click through.
   return (
+    <>
     <div
       className="app"
-      onClick={handleInterfaceSelect}
-      onPointerOver={handleInterfaceHover}
+      onClick={isLoading ? undefined : handleInterfaceSelect}
+      onPointerOver={isLoading ? undefined : handleInterfaceHover}
+      inert={isLoading}
     >
 
       <video
@@ -235,6 +236,9 @@ export default function App() {
         onSelect={handleSelect}
       />
     </div>
+
+    {isLoading && <LoadingScreen onFinish={handleLoadingFinish} />}
+    </>
   )
 }
 

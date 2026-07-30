@@ -26,6 +26,9 @@ interface ClipAvatarProps {
   // True while a personal (non-technical) answer is playing — see FaceChatWidget.tsx. Pushes the
   // camera into a tighter, more intimate framing for the duration of that answer.
   personalMoment?: boolean
+  // Fired the first time the avatar model has loaded and is about to render its first frame, so
+  // callers can time entrance effects to when there's actually something to reveal.
+  onReady?: () => void
 }
 
 const RENDERER_RETRY_LIMIT = 2
@@ -167,6 +170,7 @@ export default function ClipAvatar({
   yellowHud = false,
   targetFps = 60,
   personalMoment = false,
+  onReady,
 }: ClipAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const morphMeshesRef = useRef<THREE.Mesh[]>([])
@@ -186,6 +190,9 @@ export default function ClipAvatar({
   const [error, setError] = useState<string | null>(null)
   const [rendererAttempt, setRendererAttempt] = useState(0)
   const rotationRef = useScrollRotation()
+  const onReadyRef = useRef(onReady)
+
+  onReadyRef.current = onReady
 
   activeFrameRef.current = activeFrame
   criticalRef.current = critical
@@ -349,6 +356,7 @@ export default function ClipAvatar({
           }
 
           setReady(true)
+          onReadyRef.current?.()
         },
         undefined,
         (loadError) => {

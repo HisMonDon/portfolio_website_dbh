@@ -49,7 +49,10 @@ interface FaceChatWidgetProps {
 }
 
 type SectionPlaybackPhase = 'inactive' | 'waiting' | 'playing' | 'idle'
-type AvatarTransitionPhase = 'exiting' | 'entering' | 'steady'
+// 'pending' covers the initial load: the stage stays put (no glitch) until the 3D avatar has
+// actually finished loading, so the reveal animation lands on something visible instead of
+// playing out over the "Avatar loading…" placeholder.
+type AvatarTransitionPhase = 'pending' | 'exiting' | 'entering' | 'steady'
 
 interface SectionPlaybackState {
   section: SectionId | null
@@ -91,7 +94,8 @@ export default function FaceChatWidget({
     phase: 'inactive',
   })
   const [isAboutHudMounted, setIsAboutHudMounted] = useState(activeSection === 'about')
-  const [avatarTransitionPhase, setAvatarTransitionPhase] = useState<AvatarTransitionPhase>('entering')
+  const [avatarTransitionPhase, setAvatarTransitionPhase] = useState<AvatarTransitionPhase>('pending')
+  const [isAvatarReady, setIsAvatarReady] = useState(false)
   const [isCenteredLayout, setIsCenteredLayout] = useState(centered)
   const promptHeadingRef = useRef<HTMLHeadingElement | null>(null)
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -182,16 +186,26 @@ export default function FaceChatWidget({
     skipActiveClip()
   }, [centered, currentNodeId, isAboutSection, isIdling, skipActiveClip])
 
+  // First reveal: hold at 'pending' (no glitch) until the avatar actually finishes loading,
+  // then play the glitch-in over the real model instead of the loading placeholder. Runs once —
+  // guarded by isAvatarReady alone so the 'entering' -> 'steady' timeout it schedules isn't
+  // cancelled by its own state update re-triggering this effect.
+  useEffect(() => {
+    if (!isAvatarReady) return
+
+    setAvatarTransitionPhase('entering')
+
+    const finishInitialReveal = window.setTimeout(() => {
+      setAvatarTransitionPhase('steady')
+    }, AVATAR_GLITCH_IN_MS)
+
+    return () => window.clearTimeout(finishInitialReveal)
+  }, [isAvatarReady])
+
   useLayoutEffect(() => {
     const previousSection = previousSectionRef.current
 
-    if (previousSection === activeSection) {
-      const finishInitialReveal = window.setTimeout(() => {
-        setAvatarTransitionPhase('steady')
-      }, AVATAR_GLITCH_IN_MS)
-
-      return () => window.clearTimeout(finishInitialReveal)
-    }
+    if (previousSection === activeSection) return
 
     previousSectionRef.current = activeSection
 
@@ -383,6 +397,7 @@ export default function FaceChatWidget({
           yellowHud={activeSection === 'contact'}
           targetFps={targetFps}
           personalMoment={!isIdling && (node.type === 'followup' || node.type === 'closing')}
+          onReady={() => setIsAvatarReady(true)}
         />
       </div>
 
