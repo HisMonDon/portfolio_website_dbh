@@ -7,6 +7,7 @@
   min-width: 0;
   overflow: hidden;
   padding: clamp(18px, 1.8vw, 24px) clamp(18px, 2vw, 26px);
+  border-radius: 10px;
   border: 1px solid rgba(55, 90, 113, 0.82);
   border-top-color: rgba(113, 175, 207, 0.72);
   background: var(--face-chat-panel-background);
@@ -107,6 +108,7 @@
   min-height: 28px;
   padding: 0 8px;
   color: #c3cdd3;
+  border-radius: 10px;
   border: 1px solid rgba(159, 174, 183, 0.42);
   background: rgba(8, 25, 38, 0.46);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;

@@ -13,6 +13,7 @@
   min-height: 70px;
   padding: 12px 16px 12px 19px;
   overflow: hidden;
+  border-radius: 10px;
   border: 1px solid rgba(23, 63, 91, 0.22);
   background: rgba(243, 250, 253, 0.55);
   color: #26333b;

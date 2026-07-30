@@ -20,6 +20,7 @@
   max-width: 1240px;
   overflow-y: auto;
   padding: clamp(24px, 3.4vw, 44px) clamp(24px, 4vw, 56px) clamp(28px, 4vw, 44px);
+  border-radius: 10px;
   border: 1px solid rgba(105, 207, 255, 0.62);
   border-top-color: rgba(159, 221, 255, 0.86);
   background:
@@ -92,6 +93,7 @@
   width: 40px;
   height: 40px;
   color: #c3cdd3;
+  border-radius: 10px;
   border: 1px solid rgba(159, 174, 183, 0.42);
   background: rgba(8, 25, 38, 0.74);
   cursor: pointer;
@@ -131,6 +133,7 @@
   aspect-ratio: 4 / 3;
   width: 100%;
   object-fit: cover;
+  border-radius: 10px;
   border: 1px solid rgba(105, 207, 255, 0.5);
 }
 
@@ -180,6 +183,7 @@
 .help-demo-video {
   aspect-ratio: 16 / 9;
   width: 100%;
+  border-radius: 10px;
   border: 1px solid rgba(105, 207, 255, 0.5);
   background: #000;
 }

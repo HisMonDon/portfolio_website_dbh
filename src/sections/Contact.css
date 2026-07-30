@@ -42,6 +42,7 @@
   justify-content: center;
   padding: 14px 34px 14px 15px;
   overflow: hidden;
+  border-radius: 10px;
   border: 1px solid rgba(113, 220, 255, 0.7);
   background: rgba(23, 63, 91, 0.9);
   box-shadow: 0 9px 22px rgba(12, 57, 87, 0.13);
@@ -208,6 +209,7 @@
 .contact-compose {
   position: relative;
   padding: 20px 22px 18px;
+  border-radius: 10px;
   border: 1px solid rgba(23, 63, 91, 0.25);
   border-left: 4px solid var(--contact-cyan);
   background: rgba(238, 249, 255, 0.76);
@@ -332,7 +334,7 @@
   box-sizing: border-box;
   width: 100%;
   border: 1px solid rgba(23, 63, 91, 0.27);
-  border-radius: 0;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.78);
   color: #152c3a;
   font: 13px/1.4 'Gotham_medium', system-ui, -apple-system, sans-serif;
@@ -391,7 +393,7 @@
   min-height: 42px;
   padding: 0 18px;
   border: 1px solid var(--contact-cyan);
-  border-radius: 0;
+  border-radius: 10px;
   background: var(--contact-blue);
   color: #f4fbff;
   cursor: pointer;
