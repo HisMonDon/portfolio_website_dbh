@@ -19,28 +19,6 @@
   font-size: clamp(12px, 0.95vw, 14px);
 }
 
-.transcript-corner {
-  position: absolute;
-  z-index: 3;
-  width: 12px;
-  height: 12px;
-  pointer-events: none;
-}
-
-.transcript-corner.is-top-right {
-  top: 5px;
-  right: 5px;
-  border-top: 1px solid rgba(105, 207, 255, 0.82);
-  border-right: 1px solid rgba(105, 207, 255, 0.82);
-}
-
-.transcript-corner.is-bottom-left {
-  bottom: 5px;
-  left: 5px;
-  border-bottom: 1px solid rgba(105, 207, 255, 0.62);
-  border-left: 1px solid rgba(105, 207, 255, 0.62);
-}
-
 .transcript-heading {
   position: relative;
   z-index: 2;
@@ -110,7 +88,7 @@
   color: var(--dbh-navy);
   border-radius: 10px;
   border: 1px solid rgba(159, 174, 183, 0.42);
-  background: rgba(8, 25, 38, 0.46);
+  background: rgba(31, 78, 121, 0.16);
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
   font-size: 9px;
   letter-spacing: 0.8px;
@@ -129,7 +107,7 @@
 .transcript-skip-button:hover {
   color: var(--dbh-navy);
   border-color: rgba(105, 207, 255, 0.86);
-  background: rgba(13, 49, 69, 0.82);
+  background: rgba(31, 78, 121, 0.3);
 }
 
 .transcript-skip-button:focus-visible {

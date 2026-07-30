@@ -55,8 +55,6 @@ export default function TranscriptPanel({
       aria-label="Avatar transcript"
       aria-busy={isSpeaking}
     >
-      <span className="transcript-corner is-top-right" aria-hidden="true" />
-      <span className="transcript-corner is-bottom-left" aria-hidden="true" />
       <div className="transcript-heading">
         <span
           className={`transcript-activity${isSpeaking ? ' is-active' : ''}`}
