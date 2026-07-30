@@ -182,10 +182,18 @@ export function shouldRestartMutedAutoplayOnInteraction(params: {
 // below) and is unmuted here, synchronously inside the visitor's first real pointerdown/keydown
 // anywhere on the page — a trusted event handler is the one place browsers reliably allow a
 // media element to go from muted to audible without restarting or losing sync.
-let hasPageInteracted = false
+//
+// This module is behind FaceChatWidget's React.lazy() boundary, so it isn't evaluated until
+// after that chunk loads — which can be well after the visitor's first gesture (e.g. the loading
+// screen's "Continue" button, clicked before this module even exists yet). A live pointerdown/
+// keydown listener attached only now would never see that earlier gesture. navigator.userActivation
+// tracks sticky activation at the browser level regardless of when we start listening, so check it
+// up front and fall back to the listener for browsers that lack the API.
+let hasPageInteracted = typeof navigator !== 'undefined'
+  && Boolean(navigator.userActivation?.hasBeenActive)
 const pendingUnmutes = new Set<() => void>()
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && !hasPageInteracted) {
   const markPageInteracted = () => {
     if (hasPageInteracted) return
 

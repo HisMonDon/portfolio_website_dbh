@@ -11,3 +11,49 @@
     height: 100%;
     object-fit: cover;
 }
+
+.loading-continue-button {
+    all: unset;
+    box-sizing: border-box;
+    position: absolute;
+    left: 50%;
+    bottom: 12%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 28px;
+    color: #c3cdd3;
+    border: 1px solid rgba(159, 174, 183, 0.42);
+    background: rgba(8, 25, 38, 0.46);
+    font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+    animation: loading-continue-in 320ms ease;
+}
+
+.loading-continue-button:hover {
+    color: #ffffff;
+    border-color: rgba(105, 207, 255, 0.86);
+    background: rgba(13, 49, 69, 0.82);
+}
+
+.loading-continue-button:focus-visible {
+    outline: 2px solid #69cfff;
+    outline-offset: 3px;
+}
+
+@keyframes loading-continue-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
