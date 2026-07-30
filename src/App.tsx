@@ -167,6 +167,10 @@ export default function App() {
     scrollToSection(id)
     setActiveSection(id)
   }
+  {/*LOADING SCREEN */ }
+  if (isLoading) {
+    return <LoadingScreen onFinish={handleLoadingFinish} />
+  }
   //RETURN
   return (
     <div
@@ -174,7 +178,7 @@ export default function App() {
       onClick={handleInterfaceSelect}
       onPointerOver={handleInterfaceHover}
     >
-      {isLoading && <LoadingScreen onFinish={handleLoadingFinish} />}
+
       <video
         className="background-video"
         autoPlay
