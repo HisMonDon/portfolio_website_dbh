@@ -164,7 +164,7 @@ export default function App() {
     scrollToSection(id)
     setActiveSection(id)
   }
-
+  //RETURN
   return (
     <div
       className="app"
