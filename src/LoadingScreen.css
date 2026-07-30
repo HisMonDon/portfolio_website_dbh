@@ -26,13 +26,14 @@
 
 .loading-grid {
     position: absolute;
-    inset: 0;
+    inset: -20px;
     z-index: 0;
     opacity: 0.12;
     background-image:
         linear-gradient(rgba(105, 207, 255, 0.5) 1px, transparent 1px),
         linear-gradient(90deg, rgba(105, 207, 255, 0.5) 1px, transparent 1px);
     background-size: 64px 64px;
+    transition: transform 200ms ease-out;
 }
 
 .loading-vignette {
@@ -121,6 +122,7 @@
     position: relative;
     width: 44px;
     height: 44px;
+    transition: transform 200ms ease-out;
 }
 
 .loading-mark-square {
@@ -151,7 +153,7 @@
     padding: 0 46px;
     border-radius: 10px;
     color: #c3f5ff;
-    border: 1px solid rgba(159, 174, 183, 0.4);
+    border: 1px solid transparent;
     background: rgba(8, 25, 38, 0.55);
     font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
     font-size: 13px;
@@ -314,10 +316,10 @@
 
 @keyframes loading-scan {
     from {
-        transform: translateY(-10%);
+        transform: translateY(-2vh);
     }
     to {
-        transform: translateY(1100%);
+        transform: translateY(102vh);
     }
 }
 
