@@ -53,7 +53,10 @@ export default function App() {
   const isMobile = useIsMobile()
   const isAssistantVisible = activeSection !== 'projects'
   const { handleInterfaceHover, handleInterfaceSelect } = useInterfaceSounds(isMuted)
-
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const handleLoadingFinish = (): void => {
+    setIsLoading(false);
+  };
   useEffect(() => {
     const scrollStage = scrollStageRef.current
     const initialSection = sectionRefs.current[INITIAL_SECTION]
@@ -171,7 +174,7 @@ export default function App() {
       onClick={handleInterfaceSelect}
       onPointerOver={handleInterfaceHover}
     >
-      <LoadingScreen></LoadingScreen>
+      {isLoading && <LoadingScreen onFinish={handleLoadingFinish} />}
       <video
         className="background-video"
         autoPlay
