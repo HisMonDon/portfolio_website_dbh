@@ -415,7 +415,7 @@ export default function FaceChatWidget({
 
       <div className={`face-chat-top-hud${isOpeningMenu ? ' is-opening-menu' : ''}`}>
         <div className="face-chat-transcript-frame">
-          {shouldRenderAboutHud && !isOpeningMenu && (
+          {shouldRenderAboutHud && !isOpeningMenu && activeClipId && (
             <TranscriptPanel
               nodeId={currentNodeId}
               clipId={activeClipId}
