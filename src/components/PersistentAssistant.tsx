@@ -10,6 +10,7 @@ interface PersistentAssistantProps {
   activeSection: SectionId
   isMuted: boolean
   onMutedChange: (isMuted: boolean) => void
+  revealReady?: boolean
 }
 
 // Site-wide dock for the face-chat assistant (desktop only — see useIsMobile
@@ -23,6 +24,7 @@ export default function PersistentAssistant({
   activeSection,
   isMuted,
   onMutedChange,
+  revealReady = true,
 }: PersistentAssistantProps) {
   const shouldCenter = activeSection === 'about'
   const [centered, setCentered] = useState(shouldCenter)
@@ -47,6 +49,7 @@ export default function PersistentAssistant({
           activeSection={activeSection}
           isMuted={isMuted}
           onMutedChange={onMutedChange}
+          revealReady={revealReady}
         />
       </Suspense>
     </div>

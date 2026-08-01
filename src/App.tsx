@@ -214,6 +214,7 @@ export default function App() {
           activeSection={activeSection}
           isMuted={isMuted}
           onMutedChange={setIsMuted}
+          revealReady={!isLoading}
         />
       )}
 

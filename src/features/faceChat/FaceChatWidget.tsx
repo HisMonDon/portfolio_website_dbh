@@ -46,6 +46,10 @@ interface FaceChatWidgetProps {
   activeSection?: SectionId
   isMuted: boolean
   onMutedChange: (isMuted: boolean) => void
+  // False while the loading screen is still covering the page. The avatar loads underneath it
+  // (see App.tsx), but the glitch-in reveal is held back until this flips true so it plays where
+  // the user can actually see it, right as the loading screen clears — not hidden behind it.
+  revealReady?: boolean
 }
 
 type SectionPlaybackPhase = 'inactive' | 'waiting' | 'playing' | 'idle'
@@ -77,6 +81,7 @@ export default function FaceChatWidget({
   activeSection = 'about',
   isMuted,
   onMutedChange,
+  revealReady = true,
 }: FaceChatWidgetProps) {
   const [currentNodeId, setCurrentNodeId] = useState<number>(INTRO_NODE_ID)
   const [activeOpeningId, setActiveOpeningId] = useState<number>(OPENING_NODE_IDS[0])
@@ -157,11 +162,17 @@ export default function FaceChatWidget({
     setIdleClipIndex((index) => (index + 1) % IDLE_CLIP_IDS.length)
   }, [activeSection, currentNodeId, isAboutSection, isSectionClipPlaying, playbackPhase])
 
-  const activeClipId = isSectionClipPlaying && sectionClipId
-    ? sectionClipId
-    : isIdling
-      ? IDLE_CLIP_IDS[idleClipIndex]
-      : node.clipId
+  // Held to null until the loading screen clears: otherwise the intro clip (audio included)
+  // starts the instant the widget mounts underneath the loading screen and can finish playing
+  // — silently, since it's muted pre-interaction — before the visitor ever presses Continue,
+  // so the "first" line never actually plays for them to hear.
+  const activeClipId = !revealReady
+    ? null
+    : isSectionClipPlaying && sectionClipId
+      ? sectionClipId
+      : isIdling
+        ? IDLE_CLIP_IDS[idleClipIndex]
+        : node.clipId
   const {
     activeFrame,
     error: clipError,
@@ -186,12 +197,13 @@ export default function FaceChatWidget({
     skipActiveClip()
   }, [centered, currentNodeId, isAboutSection, isIdling, skipActiveClip])
 
-  // First reveal: hold at 'pending' (no glitch) until the avatar actually finishes loading,
-  // then play the glitch-in over the real model instead of the loading placeholder. Runs once —
-  // guarded by isAvatarReady alone so the 'entering' -> 'steady' timeout it schedules isn't
-  // cancelled by its own state update re-triggering this effect.
+  // First reveal: hold at 'pending' (no glitch) until the avatar has finished loading AND the
+  // loading screen has cleared, then play the glitch-in over the real, visible model instead of
+  // wasting it on the "Avatar loading…" placeholder or behind the loading screen. Deliberately
+  // left out of the dependency array: adding avatarTransitionPhase would re-run this effect when
+  // it sets 'entering', cancelling the 'steady' timeout via cleanup before it ever fires.
   useEffect(() => {
-    if (!isAvatarReady) return
+    if (!isAvatarReady || !revealReady) return
 
     setAvatarTransitionPhase('entering')
 
@@ -200,7 +212,7 @@ export default function FaceChatWidget({
     }, AVATAR_GLITCH_IN_MS)
 
     return () => window.clearTimeout(finishInitialReveal)
-  }, [isAvatarReady])
+  }, [isAvatarReady, revealReady])
 
   useLayoutEffect(() => {
     const previousSection = previousSectionRef.current
