@@ -5174,9 +5174,9 @@
     "intro": {
       "nodeId": 0,
       "durationMs": 34080,
-      "text": "Hi, I'm Chenyu Lu, but I also go by Eric. I'm a student and developer who enjoys turning technical ideas into projects that people can actually use. The avatar you're speaking with is one of those projects that is inside my portfolio. It uses real-time face tracking to mirror my expressions while answering questions about my work, experiences, and interests. You can start by choosing any of the questions on the screen.",
+      "text": "Hi, my name is Chenyu Lu, but I also go by Eric. I'm a student and developer who enjoys turning technical ideas into projects that people can actually use. The avatar you're speaking with is one of those projects that is inside my portfolio. It uses real-time face tracking to mirror my expressions while answering questions about my work, experiences, and interests. You can start by choosing any of the questions on the screen.",
       "recognizedText": "Hi, my name is Chen Yulu, but I also go by Eric. I'm a student and developer who enjoys turning technical ideas into projects that people can actually use. The avatar you're speaking with right now is one of those projects that is inside my portfolio. It uses real-time-faced tracking to mirror my expressions while answering questions about my work, experiences, and interests. You can start by choosing any of the questions on the screen.",
-      "alignmentCost": 0.0977,
+      "alignmentCost": 0.0613,
       "words": [
         {
           "text": "Hi,",
@@ -5186,499 +5186,513 @@
           "endMs": 1660
         },
         {
-          "text": "I'm",
+          "text": "my",
           "startChar": 4,
-          "endChar": 7,
+          "endChar": 6,
+          "startMs": 2260,
+          "endMs": 2360
+        },
+        {
+          "text": "name",
+          "startChar": 7,
+          "endChar": 11,
+          "startMs": 2360,
+          "endMs": 2580
+        },
+        {
+          "text": "is",
+          "startChar": 12,
+          "endChar": 14,
           "startMs": 2580,
           "endMs": 2920
         },
         {
           "text": "Chenyu",
-          "startChar": 8,
-          "endChar": 14,
+          "startChar": 15,
+          "endChar": 21,
           "startMs": 2920,
           "endMs": 3120
         },
         {
           "text": "Lu,",
-          "startChar": 15,
-          "endChar": 18,
+          "startChar": 22,
+          "endChar": 25,
           "startMs": 3130,
           "endMs": 3520
         },
         {
           "text": "but",
-          "startChar": 19,
-          "endChar": 22,
+          "startChar": 26,
+          "endChar": 29,
           "startMs": 3660,
           "endMs": 4000
         },
         {
           "text": "I",
-          "startChar": 23,
-          "endChar": 24,
+          "startChar": 30,
+          "endChar": 31,
           "startMs": 4000,
           "endMs": 4220
         },
         {
           "text": "also",
-          "startChar": 25,
-          "endChar": 29,
+          "startChar": 32,
+          "endChar": 36,
           "startMs": 4220,
           "endMs": 4500
         },
         {
           "text": "go",
-          "startChar": 30,
-          "endChar": 32,
+          "startChar": 37,
+          "endChar": 39,
           "startMs": 4500,
           "endMs": 4840
         },
         {
           "text": "by",
-          "startChar": 33,
-          "endChar": 35,
+          "startChar": 40,
+          "endChar": 42,
           "startMs": 4840,
           "endMs": 5200
         },
         {
           "text": "Eric.",
-          "startChar": 36,
-          "endChar": 41,
+          "startChar": 43,
+          "endChar": 48,
           "startMs": 5200,
           "endMs": 5580
         },
         {
           "text": "I'm",
-          "startChar": 42,
-          "endChar": 45,
+          "startChar": 49,
+          "endChar": 52,
           "startMs": 6340,
           "endMs": 6440
         },
         {
           "text": "a",
-          "startChar": 46,
-          "endChar": 47,
+          "startChar": 53,
+          "endChar": 54,
           "startMs": 6440,
           "endMs": 6620
         },
         {
           "text": "student",
-          "startChar": 48,
-          "endChar": 55,
+          "startChar": 55,
+          "endChar": 62,
           "startMs": 6620,
           "endMs": 6940
         },
         {
           "text": "and",
-          "startChar": 56,
-          "endChar": 59,
+          "startChar": 63,
+          "endChar": 66,
           "startMs": 6940,
           "endMs": 7220
         },
         {
           "text": "developer",
-          "startChar": 60,
-          "endChar": 69,
+          "startChar": 67,
+          "endChar": 76,
           "startMs": 7220,
           "endMs": 7640
         },
         {
           "text": "who",
-          "startChar": 70,
-          "endChar": 73,
+          "startChar": 77,
+          "endChar": 80,
           "startMs": 7680,
           "endMs": 8140
         },
         {
           "text": "enjoys",
-          "startChar": 74,
-          "endChar": 80,
+          "startChar": 81,
+          "endChar": 87,
           "startMs": 8140,
           "endMs": 8500
         },
         {
           "text": "turning",
-          "startChar": 81,
-          "endChar": 88,
+          "startChar": 88,
+          "endChar": 95,
           "startMs": 8500,
           "endMs": 8900
         },
         {
           "text": "technical",
-          "startChar": 89,
-          "endChar": 98,
+          "startChar": 96,
+          "endChar": 105,
           "startMs": 8900,
           "endMs": 9380
         },
         {
           "text": "ideas",
-          "startChar": 99,
-          "endChar": 104,
+          "startChar": 106,
+          "endChar": 111,
           "startMs": 9380,
           "endMs": 9940
         },
         {
           "text": "into",
-          "startChar": 105,
-          "endChar": 109,
+          "startChar": 112,
+          "endChar": 116,
           "startMs": 9970,
           "endMs": 10500
         },
         {
           "text": "projects",
-          "startChar": 110,
-          "endChar": 118,
+          "startChar": 117,
+          "endChar": 125,
           "startMs": 10500,
           "endMs": 10960
         },
         {
           "text": "that",
-          "startChar": 119,
-          "endChar": 123,
+          "startChar": 126,
+          "endChar": 130,
           "startMs": 10960,
           "endMs": 11300
         },
         {
           "text": "people",
-          "startChar": 124,
-          "endChar": 130,
+          "startChar": 131,
+          "endChar": 137,
           "startMs": 11300,
           "endMs": 11640
         },
         {
           "text": "can",
-          "startChar": 131,
-          "endChar": 134,
+          "startChar": 138,
+          "endChar": 141,
           "startMs": 11640,
           "endMs": 11980
         },
         {
           "text": "actually",
-          "startChar": 135,
-          "endChar": 143,
+          "startChar": 142,
+          "endChar": 150,
           "startMs": 11980,
           "endMs": 12420
         },
         {
           "text": "use.",
-          "startChar": 144,
-          "endChar": 148,
+          "startChar": 151,
+          "endChar": 155,
           "startMs": 12420,
           "endMs": 12820
         },
         {
           "text": "The",
-          "startChar": 149,
-          "endChar": 152,
+          "startChar": 156,
+          "endChar": 159,
           "startMs": 13460,
           "endMs": 13620
         },
         {
           "text": "avatar",
-          "startChar": 153,
-          "endChar": 159,
+          "startChar": 160,
+          "endChar": 166,
           "startMs": 13620,
           "endMs": 13960
         },
         {
           "text": "you're",
-          "startChar": 160,
-          "endChar": 166,
+          "startChar": 167,
+          "endChar": 173,
           "startMs": 13960,
           "endMs": 14300
         },
         {
           "text": "speaking",
-          "startChar": 167,
-          "endChar": 175,
+          "startChar": 174,
+          "endChar": 182,
           "startMs": 14300,
           "endMs": 14640
         },
         {
           "text": "with",
-          "startChar": 176,
-          "endChar": 180,
+          "startChar": 183,
+          "endChar": 187,
           "startMs": 14640,
           "endMs": 14960
         },
         {
           "text": "is",
-          "startChar": 181,
-          "endChar": 183,
+          "startChar": 188,
+          "endChar": 190,
           "startMs": 15570,
           "endMs": 15960
         },
         {
           "text": "one",
-          "startChar": 184,
-          "endChar": 187,
+          "startChar": 191,
+          "endChar": 194,
           "startMs": 15960,
           "endMs": 16140
         },
         {
           "text": "of",
-          "startChar": 188,
-          "endChar": 190,
+          "startChar": 195,
+          "endChar": 197,
           "startMs": 16140,
           "endMs": 16260
         },
         {
           "text": "those",
-          "startChar": 191,
-          "endChar": 196,
+          "startChar": 198,
+          "endChar": 203,
           "startMs": 16260,
           "endMs": 16640
         },
         {
           "text": "projects",
-          "startChar": 197,
-          "endChar": 205,
+          "startChar": 204,
+          "endChar": 212,
           "startMs": 16640,
           "endMs": 17000
         },
         {
           "text": "that",
-          "startChar": 206,
-          "endChar": 210,
+          "startChar": 213,
+          "endChar": 217,
           "startMs": 17000,
           "endMs": 17320
         },
         {
           "text": "is",
-          "startChar": 211,
-          "endChar": 213,
+          "startChar": 218,
+          "endChar": 220,
           "startMs": 17320,
           "endMs": 17620
         },
         {
           "text": "inside",
-          "startChar": 214,
-          "endChar": 220,
+          "startChar": 221,
+          "endChar": 227,
           "startMs": 17620,
           "endMs": 17940
         },
         {
           "text": "my",
-          "startChar": 221,
-          "endChar": 223,
+          "startChar": 228,
+          "endChar": 230,
           "startMs": 17940,
           "endMs": 18200
         },
         {
           "text": "portfolio.",
-          "startChar": 224,
-          "endChar": 234,
+          "startChar": 231,
+          "endChar": 241,
           "startMs": 18200,
           "endMs": 18700
         },
         {
           "text": "It",
-          "startChar": 235,
-          "endChar": 237,
+          "startChar": 242,
+          "endChar": 244,
           "startMs": 19400,
           "endMs": 19600
         },
         {
           "text": "uses",
-          "startChar": 238,
-          "endChar": 242,
+          "startChar": 245,
+          "endChar": 249,
           "startMs": 19600,
           "endMs": 19880
         },
         {
           "text": "real-time",
-          "startChar": 243,
-          "endChar": 252,
+          "startChar": 250,
+          "endChar": 259,
           "startMs": 20260,
           "endMs": 20600
         },
         {
           "text": "face",
-          "startChar": 253,
-          "endChar": 257,
+          "startChar": 260,
+          "endChar": 264,
           "startMs": 20600,
           "endMs": 20940
         },
         {
           "text": "tracking",
-          "startChar": 258,
-          "endChar": 266,
+          "startChar": 265,
+          "endChar": 273,
           "startMs": 20940,
           "endMs": 21320
         },
         {
           "text": "to",
-          "startChar": 267,
-          "endChar": 269,
+          "startChar": 274,
+          "endChar": 276,
           "startMs": 21320,
           "endMs": 21600
         },
         {
           "text": "mirror",
-          "startChar": 270,
-          "endChar": 276,
+          "startChar": 277,
+          "endChar": 283,
           "startMs": 21600,
           "endMs": 21760
         },
         {
           "text": "my",
-          "startChar": 277,
-          "endChar": 279,
+          "startChar": 284,
+          "endChar": 286,
           "startMs": 21760,
           "endMs": 22120
         },
         {
           "text": "expressions",
-          "startChar": 280,
-          "endChar": 291,
+          "startChar": 287,
+          "endChar": 298,
           "startMs": 22120,
           "endMs": 22560
         },
         {
           "text": "while",
-          "startChar": 292,
-          "endChar": 297,
+          "startChar": 299,
+          "endChar": 304,
           "startMs": 22560,
           "endMs": 23120
         },
         {
           "text": "answering",
-          "startChar": 298,
-          "endChar": 307,
+          "startChar": 305,
+          "endChar": 314,
           "startMs": 23120,
           "endMs": 23420
         },
         {
           "text": "questions",
-          "startChar": 308,
-          "endChar": 317,
+          "startChar": 315,
+          "endChar": 324,
           "startMs": 23420,
           "endMs": 24000
         },
         {
           "text": "about",
-          "startChar": 318,
-          "endChar": 323,
+          "startChar": 325,
+          "endChar": 330,
           "startMs": 24000,
           "endMs": 24420
         },
         {
           "text": "my",
-          "startChar": 324,
-          "endChar": 326,
+          "startChar": 331,
+          "endChar": 333,
           "startMs": 24420,
           "endMs": 24680
         },
         {
           "text": "work,",
-          "startChar": 327,
-          "endChar": 332,
+          "startChar": 334,
+          "endChar": 339,
           "startMs": 24910,
           "endMs": 25440
         },
         {
           "text": "experiences,",
-          "startChar": 333,
-          "endChar": 345,
+          "startChar": 340,
+          "endChar": 352,
           "startMs": 25620,
           "endMs": 26200
         },
         {
           "text": "and",
-          "startChar": 346,
-          "endChar": 349,
+          "startChar": 353,
+          "endChar": 356,
           "startMs": 26520,
           "endMs": 26940
         },
         {
           "text": "interests.",
-          "startChar": 350,
-          "endChar": 360,
+          "startChar": 357,
+          "endChar": 367,
           "startMs": 26940,
           "endMs": 27440
         },
         {
           "text": "You",
-          "startChar": 361,
-          "endChar": 364,
+          "startChar": 368,
+          "endChar": 371,
           "startMs": 28100,
           "endMs": 28200
         },
         {
           "text": "can",
-          "startChar": 365,
-          "endChar": 368,
+          "startChar": 372,
+          "endChar": 375,
           "startMs": 28200,
           "endMs": 28420
         },
         {
           "text": "start",
-          "startChar": 369,
-          "endChar": 374,
+          "startChar": 376,
+          "endChar": 381,
           "startMs": 28420,
           "endMs": 28660
         },
         {
           "text": "by",
-          "startChar": 375,
-          "endChar": 377,
+          "startChar": 382,
+          "endChar": 384,
           "startMs": 28660,
           "endMs": 28860
         },
         {
           "text": "choosing",
-          "startChar": 378,
-          "endChar": 386,
+          "startChar": 385,
+          "endChar": 393,
           "startMs": 28860,
           "endMs": 29080
         },
         {
           "text": "any",
-          "startChar": 387,
-          "endChar": 390,
+          "startChar": 394,
+          "endChar": 397,
           "startMs": 29080,
           "endMs": 29460
         },
         {
           "text": "of",
-          "startChar": 391,
-          "endChar": 393,
+          "startChar": 398,
+          "endChar": 400,
           "startMs": 29460,
           "endMs": 29600
         },
         {
           "text": "the",
-          "startChar": 394,
-          "endChar": 397,
+          "startChar": 401,
+          "endChar": 404,
           "startMs": 29600,
           "endMs": 29780
         },
         {
           "text": "questions",
-          "startChar": 398,
-          "endChar": 407,
+          "startChar": 405,
+          "endChar": 414,
           "startMs": 29780,
           "endMs": 30120
         },
         {
           "text": "on",
-          "startChar": 408,
-          "endChar": 410,
+          "startChar": 415,
+          "endChar": 417,
           "startMs": 30120,
           "endMs": 30480
         },
         {
           "text": "the",
-          "startChar": 411,
-          "endChar": 414,
+          "startChar": 418,
+          "endChar": 421,
           "startMs": 30480,
           "endMs": 30680
         },
         {
           "text": "screen.",
-          "startChar": 415,
-          "endChar": 422,
+          "startChar": 422,
+          "endChar": 429,
           "startMs": 30680,
           "endMs": 31100
         }
