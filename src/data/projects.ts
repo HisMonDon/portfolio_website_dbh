@@ -50,28 +50,7 @@ export const PROJECTS: Project[] = [
       },
     ],
   },
-  {
-    id: 'portfolio-website',
-    title: 'Portfolio Website',
-    description: 'An earlier portfolio built with Flutter Web to present my projects, skills, and experience through a space-themed interface.',
-    technologies: ['Flutter', 'Dart'],
-    githubUrl: 'https://github.com/HisMonDon/portfolioWebsite',
-    images: ['portfolio_project.png'].map(image),
-    story: [
-      {
-        title: 'Designing a personal interface',
-        body: 'This project was my first attempt to make a portfolio feel like an authored experience rather than a stack of resume sections. I used a space-inspired visual direction, animated backgrounds, and project-focused navigation to connect the presentation to my interest in technical and scientific work.',
-      },
-      {
-        title: 'Building with Flutter Web',
-        body: 'I organized the site as reusable Dart widgets so project cards, skill displays, and navigation could evolve without duplicating layout code. Working in Flutter also made responsive behavior a deliberate part of the component structure, because the same interface needed to remain understandable across very different screen sizes.',
-      },
-      {
-        title: 'What I carried forward',
-        body: 'The project taught me that a portfolio is itself a product: hierarchy, motion, loading behavior, and writing all affect whether someone understands the work. Its strongest ideas informed later iterations, while its limitations pushed me to become more intentional about accessibility, content depth, and performance.',
-      },
-    ],
-  },
+
   {
     id: 'chaos-roll',
     title: 'Chaos Roll',
@@ -130,12 +109,28 @@ export const PROJECTS: Project[] = [
       },
     ],
   },
+
   {
-    id: 'more-coming-soon',
-    title: 'More coming soon!',
-    description: 'Stay tuned for more projects coming soon!',
-    technologies: [],
-    images: ['coming_soon.png'].map(image),
+    id: 'portfolio-website',
+    title: 'Portfolio Website',
+    description: 'An earlier portfolio built with Flutter Web to present my projects, skills, and experience through a space-themed interface.',
+    technologies: ['Flutter', 'Dart'],
+    githubUrl: 'https://github.com/HisMonDon/portfolioWebsite',
+    images: ['portfolio_project.png'].map(image),
+    story: [
+      {
+        title: 'Designing a personal interface',
+        body: 'This project was my first attempt to make a portfolio feel like an authored experience rather than a stack of resume sections. I used a space-inspired visual direction, animated backgrounds, and project-focused navigation to connect the presentation to my interest in technical and scientific work.',
+      },
+      {
+        title: 'Building with Flutter Web',
+        body: 'I organized the site as reusable Dart widgets so project cards, skill displays, and navigation could evolve without duplicating layout code. Working in Flutter also made responsive behavior a deliberate part of the component structure, because the same interface needed to remain understandable across very different screen sizes.',
+      },
+      {
+        title: 'What I carried forward',
+        body: 'The project taught me that a portfolio is itself a product: hierarchy, motion, loading behavior, and writing all affect whether someone understands the work. Its strongest ideas informed later iterations, while its limitations pushed me to become more intentional about accessibility, content depth, and performance.',
+      },
+    ],
   },
   {
     id: 'face-tracking-avatar',
