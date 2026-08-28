@@ -1,5 +1,6 @@
 import './Section.css'
-import resumePdf from '../assets/eric-chen-resume-2026.pdf'
+
+const resumePdf = '/eric-chen-resume-2026.pdf'
 
 export default function Resume() {
   return (
