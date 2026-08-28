@@ -186,6 +186,33 @@ export const PROJECTS: Project[] = [
     images: ['cpt_project_1.png', 'cpt_project_2.png'].map(image),
   },
   {
+    id: 'distill',
+    title: 'Distill',
+    description: 'A Chrome extension that simplifies cluttered webpages by hiding ads, navigation clutter, and autoplay media, personalized through eye-tracking calibration. Winner of NGN Hacks 2026.',
+    technologies: ['React', 'Vite', 'TensorFlow', 'MediaPipe', 'FastAPI', 'Python', 'Qwen2.5-7B-Instruct'],
+    liveUrl: 'https://devpost.com/software/distill-ojsuza',
+    liveLabel: 'View on Devpost',
+    images: [],
+    story: [
+      {
+        title: 'The problem',
+        body: 'Modern webpages are often cluttered with ads, navigation menus, and autoplay media that compete for attention against the content someone actually came to read. Distill asks whether a browser extension can identify that clutter automatically and hide it, without also hiding anything the page needs to function or that protects the user, like consent banners or password fields.',
+      },
+      {
+        title: 'Personalizing with eye tracking',
+        body: 'Distill uses MediaPipe and TensorFlow to run an eye-tracking calibration pass so the extension can learn what a given user actually looks at versus skips over, then tune its simplification to that person rather than applying one fixed rule to every page and every visitor.',
+      },
+      {
+        title: 'A layered, safety-checked pipeline',
+        body: 'Page elements are classified through a layered pipeline that combines rule-based heuristics with LLM analysis from a Qwen2.5-7B-Instruct model served through a FastAPI backend. Deterministic safety flags sit on top of that pipeline so consent controls, password fields, and other sensitive elements are never hidden, regardless of what the classifier decides.',
+      },
+      {
+        title: 'Result',
+        body: 'Built with Lucy Yang at NGN Hacks 2026, Distill won first place, validating the idea that combining lightweight heuristics with model-based judgment, bounded by hard safety rules, can make a browsing experience genuinely calmer without sacrificing user control.',
+      },
+    ],
+  },
+  {
     id: 'more-coming-soon',
     title: 'More coming soon!',
     description: 'Stay tuned for more projects coming soon!',
