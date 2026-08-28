@@ -5,9 +5,110 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chenyu Lu | Portfolio</title>
+    <meta
+      name="description"
+      content="Chenyu (Eric) Lu is a student and developer who builds full-stack apps, games, and hackathon projects, including Vera, Distill, Chaos Roll, and Pocket Pilot. Portfolio featuring projects, technical skills, and a face-tracking avatar."
+    />
+    <!--
+      This site's UI is a client-rendered React app, so a crawler that does not execute
+      JavaScript would otherwise only see an empty #root div. The block below mirrors the
+      page's real content in plain, semantic HTML purely for that audience (search indexers,
+      AI crawlers, screen readers with scripting disabled). It is never shown to a JS-enabled
+      browser and has no effect on the app's rendered layout or styling.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Chenyu Lu",
+        "alternateName": "Eric Lu",
+        "email": "mailto:eric.luchenyu@gmail.com",
+        "sameAs": [
+          "https://github.com/HisMonDon",
+          "https://linkedin.com/in/chenyulu"
+        ],
+        "description": "Student and developer who turns technical ideas into projects people can actually use, including Vera, a physics learning platform, and several hackathon-winning apps.",
+        "knowsAbout": [
+          "React", "TypeScript", "JavaScript", "Flutter", "Dart", "C++", "Python", "Java",
+          "Firebase", "Three.js", "MediaPipe", "Git"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main>
+        <h1>Chenyu Lu (Eric Lu) — Portfolio</h1>
+        <p>
+          Hi, my name is Chenyu Lu, but I also go by Eric. I'm a student and developer who
+          enjoys turning technical ideas into projects that people can actually use. This
+          portfolio includes an interactive face-tracking avatar that answers questions
+          about my work, experiences, and interests, along with sections for my projects,
+          technical skills, resume, and contact info.
+        </p>
+
+        <h2>Projects</h2>
+        <ul>
+          <li>
+            <strong>Vera</strong> — A cross-platform learning platform for my school's Physics
+            Club, with student-made tutorials, authentication, and saved video progress.
+            Built with Flutter, Firebase, REST API, Cloudflare.
+          </li>
+          <li>
+            <strong>Distill</strong> — A Chrome extension that simplifies cluttered webpages by
+            hiding ads, navigation clutter, and autoplay media, personalized through eye-tracking
+            calibration. Winner of NGN Hacks 2026. Built with React, Vite, TensorFlow, MediaPipe,
+            FastAPI, Python, Qwen2.5-7B-Instruct.
+          </li>
+          <li>
+            <strong>Chaos Roll</strong> — A wave-survival game where Gemini generates playable
+            abilities and enemy waves in real time. Won first place at Hack the Valley Hack Day.
+            Built with React, TypeScript, Gemini API.
+          </li>
+          <li>
+            <strong>Face-Tracking Avatar</strong> — A browser-based 3D avatar that replays
+            recorded facial expressions, head movement, and speech through a conversational
+            portfolio interface. Built with MediaPipe, Three.js, React, TypeScript.
+          </li>
+          <li>
+            <strong>Pocket Pilot</strong> — A mobile app that analyzes receipts and turns them
+            into useful insights about personal spending habits. Built with React Native,
+            Firebase, Gemini API, Cloudinary.
+          </li>
+          <li>
+            <strong>Portfolio Website (earlier version)</strong> — An earlier portfolio built
+            with Flutter Web to present my projects, skills, and experience through a
+            space-themed interface.
+          </li>
+          <li>
+            <strong>Integrals Buoyancy Simulator</strong> — A C++ physics simulator using
+            calculus and integrals to simulate a ball's net motion when dropped in a liquid
+            with a customizable density. Built with C++, SFML, CMake, GLSL.
+          </li>
+          <li>
+            <strong>Competitive Programming</strong> — Solved problems on DMOJ, focusing on the
+            CCC contest, covering data structures, graph theory, and other algorithms. Achieved
+            distinction (top 25%) on CCC Senior 2026.
+          </li>
+          <li>
+            <strong>The Knight</strong> — A 2D adventure game with random world generation and a
+            battle and currency system, built with Python and Pygame as a Grade 11 Computer
+            Science CPT project.
+          </li>
+        </ul>
+
+        <h2>Technical Skills</h2>
+        <p>React, JavaScript, Flutter, Dart, C++, Python, Java, Git, SFML, VS Code.</p>
+
+        <h2>Contact</h2>
+        <ul>
+          <li>Email: <a href="mailto:eric.luchenyu@gmail.com">eric.luchenyu@gmail.com</a></li>
+          <li>GitHub: <a href="https://github.com/HisMonDon">github.com/HisMonDon</a></li>
+          <li>LinkedIn: <a href="https://linkedin.com/in/chenyulu">linkedin.com/in/chenyulu</a></li>
+        </ul>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
