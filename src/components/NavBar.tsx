@@ -26,7 +26,7 @@ export default function NavBar({ active, onSelect }: NavBarProps) {
   }, [active])
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" onMouseLeave={() => setVisualActive(active)}>
       {NAV_ITEMS.map((item, i) => {
         const isActive = visualActive === item.id
 
