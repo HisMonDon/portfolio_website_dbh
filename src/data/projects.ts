@@ -75,7 +75,7 @@ export const PROJECTS: Project[] = [
   {
     id: 'chaos-roll',
     title: 'Chaos Roll',
-    description: 'A wave-survival game where Gemini generates playable abilities and enemy waves in real time. Winner of Hack the Valley Hack Day.',
+    description: 'A wave-survival game where Gemini generates playable abilities and enemy waves in real time. Won first place at Hack the Valley Hack Day.',
     technologies: ['React', 'TypeScript', 'Gemini API', 'Structured JSON'],
     liveUrl: 'https://devpost.com/software/live-forge',
     liveLabel: 'View on Devpost',
@@ -188,7 +188,7 @@ export const PROJECTS: Project[] = [
   {
     id: 'distill',
     title: 'Distill',
-    description: 'A Chrome extension that simplifies cluttered webpages by hiding ads, navigation clutter, and autoplay media, personalized through eye-tracking calibration. Winner of NGN Hacks 2026.',
+    description: 'A Chrome extension that simplifies cluttered webpages by hiding ads, navigation clutter, and autoplay media, personalized through eye-tracking calibration. Won first place at NGN Hacks 2026.',
     technologies: ['React', 'Vite', 'TensorFlow', 'MediaPipe', 'FastAPI', 'Python', 'Qwen2.5-7B-Instruct'],
     liveUrl: 'https://devpost.com/software/distill-ojsuza',
     liveLabel: 'View on Devpost',
