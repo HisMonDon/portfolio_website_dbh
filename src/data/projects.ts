@@ -192,7 +192,7 @@ export const PROJECTS: Project[] = [
     technologies: ['React', 'Vite', 'TensorFlow', 'MediaPipe', 'FastAPI', 'Python', 'Qwen2.5-7B-Instruct'],
     liveUrl: 'https://devpost.com/software/distill-ojsuza',
     liveLabel: 'View on Devpost',
-    images: [],
+    images: ['distill_1.png', 'distill_2.jpg', 'distill_3.jpg'].map(image),
     story: [
       {
         title: 'The problem',
