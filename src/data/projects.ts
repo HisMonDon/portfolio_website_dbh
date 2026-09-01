@@ -7,6 +7,7 @@ export interface Project {
   id: string
   title: string
   description: string
+  tier: 'featured' | 'more'
   images: string[]
   technologies: string[]
   githubUrl?: string
@@ -23,6 +24,7 @@ export const PROJECTS: Project[] = [
     id: 'vera',
     title: 'Vera',
     description: "A cross-platform learning platform for my school's Physics Club, with student-made tutorials, authentication, and saved video progress.",
+    tier: 'featured',
     technologies: ['Flutter', 'Firebase', 'Rest API', 'Cloudflare'],
     githubUrl: 'https://github.com/HisMonDon/Vera',
     liveUrl: 'https://veraphysics.com/about',
@@ -54,7 +56,8 @@ export const PROJECTS: Project[] = [
   {
     id: 'chaos-roll',
     title: 'Chaos Roll',
-    description: 'A wave-survival game where Gemini generates playable abilities and enemy waves in real time. Won first place at Hack the Valley Hack Day.',
+    description: 'A wave-survival game where Gemini generates playable abilities and enemy waves in real time. 1st Overall, Hack the Valley Hack Day.',
+    tier: 'featured',
     technologies: ['React', 'TypeScript', 'Gemini API', 'Structured JSON'],
     liveUrl: 'https://devpost.com/software/live-forge',
     liveLabel: 'View on Devpost',
@@ -85,7 +88,8 @@ export const PROJECTS: Project[] = [
   {
     id: 'distill',
     title: 'Distill',
-    description: 'A Chrome extension that simplifies cluttered webpages by hiding ads, navigation clutter, and autoplay media, personalized through eye-tracking calibration. Won first place at NGN Hacks 2026.',
+    description: 'Eye-tracking Chrome extension that calibrates to what a reader actually looks at, then hides the ads, navigation clutter, and autoplay media competing for their attention. 1st Overall, NGN Hacks 2026.',
+    tier: 'featured',
     technologies: ['React', 'Vite', 'TensorFlow', 'MediaPipe', 'FastAPI', 'Python', 'Qwen2.5-7B-Instruct'],
     liveUrl: 'https://devpost.com/software/distill-ojsuza',
     liveLabel: 'View on Devpost',
@@ -111,31 +115,10 @@ export const PROJECTS: Project[] = [
   },
 
   {
-    id: 'portfolio-website',
-    title: 'Portfolio Website',
-    description: 'An earlier portfolio built with Flutter Web to present my projects, skills, and experience through a space-themed interface.',
-    technologies: ['Flutter', 'Dart'],
-    githubUrl: 'https://github.com/HisMonDon/portfolioWebsite',
-    images: ['portfolio_project.png'].map(image),
-    story: [
-      {
-        title: 'Designing a personal interface',
-        body: 'This project was my first attempt to make a portfolio feel like an authored experience rather than a stack of resume sections. I used a space-inspired visual direction, animated backgrounds, and project-focused navigation to connect the presentation to my interest in technical and scientific work.',
-      },
-      {
-        title: 'Building with Flutter Web',
-        body: 'I organized the site as reusable Dart widgets so project cards, skill displays, and navigation could evolve without duplicating layout code. Working in Flutter also made responsive behavior a deliberate part of the component structure, because the same interface needed to remain understandable across very different screen sizes.',
-      },
-      {
-        title: 'What I carried forward',
-        body: 'The project taught me that a portfolio is itself a product: hierarchy, motion, loading behavior, and writing all affect whether someone understands the work. Its strongest ideas informed later iterations, while its limitations pushed me to become more intentional about accessibility, content depth, and performance.',
-      },
-    ],
-  },
-  {
     id: 'face-tracking-avatar',
     title: 'Face-Tracking Avatar',
     description: 'A browser-based 3D avatar that replays recorded facial expressions, head movement, and speech through a conversational portfolio interface.',
+    tier: 'featured',
     technologies: ['MediaPipe', 'Three.js', 'React', 'TypeScript'],
     githubUrl: 'https://github.com/HisMonDon/portfolio_website_dbh',
     images: [],
@@ -163,9 +146,20 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    id: 'integrals-buoyancy-simulator',
+    title: 'Integrals buoyancy Simulator',
+    description: "Models buoyancy and vertical motion by numerically integrating force relationships across submerged geometry, with a customizable liquid density.",
+    tier: 'featured',
+    technologies: ['C++', 'SFML', 'CMake', 'GLSL'],
+    githubUrl: 'https://github.com/HisMonDon/Buoyancy-Simulator',
+    images: ['buoyancy_project_1.png', 'buoyancy_project_2.png'].map(image),
+  },
+
+  {
     id: 'pocket-pilot',
     title: 'Pocket Pilot',
     description: 'A mobile app that analyzes receipts and turns them into useful insights about personal spending habits.',
+    tier: 'more',
     technologies: ['React Native', 'Firebase', 'Gemini API', 'Cloudinary'],
     githubUrl: 'https://github.com/justinnova0915/hack-canada-2026',
     liveUrl: 'https://devpost.com/software/pocketpilot-gi9m3v',
@@ -189,28 +183,44 @@ export const PROJECTS: Project[] = [
       },
     ],
   },
-
-  {
-    id: 'integrals-buoyancy-simulator',
-    title: 'Integrals buoyancy Simulator',
-    description: "A C++ based physics simulator using calculus and integrals to simulate a ball's net motion when dropped in a liquid with a customizable density.",
-    technologies: ['C++', 'SFML', 'CMake', 'GLSL'],
-    githubUrl: 'https://github.com/HisMonDon/Buoyancy-Simulator',
-    images: ['buoyancy_project_1.png', 'buoyancy_project_2.png'].map(image),
-  },
   {
     id: 'competitive-programming',
     title: 'Competitive Programming',
-    description: 'Solved problems on DMOJ, focusing on the CCC contest. Worked with data strucutures, graph theory, and other algorithms. Achieved distinction (top 25%) on CCC Senior 2026.',
+    description: 'Solved problems on DMOJ, focusing on the CCC contest. Worked with data structures, graph theory, and other algorithms.',
+    tier: 'more',
     technologies: ['C++', 'Python', 'Java'],
     githubUrl: 'https://github.com/HisMonDon/CCC_Senior',
     liveUrl: 'https://dmoj.ca/user/HisMonDon',
     images: ['competitive_project_0.png', 'competitive_project_1.png', 'competitive_project_2.png'].map(image),
   },
   {
+    id: 'portfolio-website',
+    title: 'Portfolio Website',
+    description: 'An earlier portfolio built with Flutter Web to present my projects, skills, and experience through a space-themed interface.',
+    tier: 'more',
+    technologies: ['Flutter', 'Dart'],
+    githubUrl: 'https://github.com/HisMonDon/portfolioWebsite',
+    images: ['portfolio_project.png'].map(image),
+    story: [
+      {
+        title: 'Designing a personal interface',
+        body: 'This project was my first attempt to make a portfolio feel like an authored experience rather than a stack of resume sections. I used a space-inspired visual direction, animated backgrounds, and project-focused navigation to connect the presentation to my interest in technical and scientific work.',
+      },
+      {
+        title: 'Building with Flutter Web',
+        body: 'I organized the site as reusable Dart widgets so project cards, skill displays, and navigation could evolve without duplicating layout code. Working in Flutter also made responsive behavior a deliberate part of the component structure, because the same interface needed to remain understandable across very different screen sizes.',
+      },
+      {
+        title: 'What I carried forward',
+        body: 'The project taught me that a portfolio is itself a product: hierarchy, motion, loading behavior, and writing all affect whether someone understands the work. Its strongest ideas informed later iterations, while its limitations pushed me to become more intentional about accessibility, content depth, and performance.',
+      },
+    ],
+  },
+  {
     id: 'the-knight',
     title: 'The Knight',
     description: '2D adventure game, with random world generation, and a battle and currency system. This was my Grade 11 Computer Science CPT, and I finished with a 99.',
+    tier: 'more',
     technologies: ['Python', 'Pygame'],
     images: ['cpt_project_1.png', 'cpt_project_2.png'].map(image),
   },

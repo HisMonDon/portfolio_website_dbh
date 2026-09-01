@@ -81,7 +81,7 @@
   width: 4px;
 }
 
-.project-list::-webkit-scrollbar-thumb {
+.projects-overview::-webkit-scrollbar-thumb {
   background: #0c598c;
 }
 
