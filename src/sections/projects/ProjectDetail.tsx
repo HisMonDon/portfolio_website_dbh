@@ -30,6 +30,9 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         <div className="project-detail-left">
           <section className="project-detail-summary">
             <h1>{project.title}</h1>
+            {project.resultBadge && (
+              <p className="project-result-badge">{project.resultBadge}</p>
+            )}
             <p className="project-detail-lead">{project.description}</p>
 
             {project.technologies.length > 0 && (
@@ -40,7 +43,7 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
               </div>
             )}
 
-            {(project.githubUrl || project.liveUrl) && (
+            {(project.githubUrl || project.liveUrl || project.deepDive?.length) && (
               <div className="project-links">
                 {project.githubUrl && (
                   <a href={project.githubUrl} target="_blank" rel="noreferrer">
@@ -51,6 +54,19 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                   <a href={project.liveUrl} target="_blank" rel="noreferrer">
                     {project.liveLabel ?? 'View Live Demo'} <span aria-hidden="true">↗</span>
                   </a>
+                )}
+                {project.deepDive && project.deepDive.length > 0 && (
+                  <button
+                    type="button"
+                    className="project-deep-dive-link"
+                    onClick={() => {
+                      document
+                        .getElementById(`deep-dive-${project.id}`)
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                  >
+                    Technical Deep Dive <span aria-hidden="true">↓</span>
+                  </button>
                 )}
               </div>
             )}
@@ -125,27 +141,75 @@ export default function ProjectDetail({ project, onBack }: ProjectDetailProps) {
           </section>
         </div>
 
-        {project.story && project.story.length > 0 && (
+        {(project.story?.length || project.challenges?.length || project.deepDive?.length) ? (
           <article className="project-detail-content">
-            <header className="project-story-header">
-              <p className="project-detail-eyebrow">Behind the build</p>
-              <h2>From problem to outcome</h2>
-            </header>
-            <div className="project-story">
-              {project.story.map((section, index) => (
-                <section className="project-story-section" key={section.title}>
-                  <span className="project-story-number" aria-hidden="true">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <div>
-                    <h2>{section.title}</h2>
-                    <p>{section.body}</p>
-                  </div>
-                </section>
-              ))}
-            </div>
+            {project.story && project.story.length > 0 && (
+              <>
+                <header className="project-story-header">
+                  <p className="project-detail-eyebrow">Behind the build</p>
+                  <h2>From problem to outcome</h2>
+                </header>
+                <div className="project-story">
+                  {project.story.map((section, index) => (
+                    <section className="project-story-section" key={section.title}>
+                      <span className="project-story-number" aria-hidden="true">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <div>
+                        <h2>{section.title}</h2>
+                        <p>{section.body}</p>
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {project.challenges && project.challenges.length > 0 && (
+              <section className="project-challenges">
+                <header className="project-story-header">
+                  <p className="project-detail-eyebrow">Technical challenges</p>
+                  <h2>Problems and how they were solved</h2>
+                </header>
+                <ul className="project-challenges-list">
+                  {project.challenges.map((challenge) => (
+                    <li className="project-challenge" key={challenge.problem}>
+                      <p className="project-challenge-problem">{challenge.problem}</p>
+                      <p className="project-challenge-approach">{challenge.approach}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {project.architecture && (
+              <section className="project-architecture-section">
+                <header className="project-story-header">
+                  <p className="project-detail-eyebrow">Architecture</p>
+                  <h2>How data moves through the system</h2>
+                </header>
+                <pre className="project-architecture">{project.architecture}</pre>
+              </section>
+            )}
+
+            {project.deepDive && project.deepDive.length > 0 && (
+              <section className="project-deep-dive" id={`deep-dive-${project.id}`}>
+                <header className="project-story-header">
+                  <p className="project-detail-eyebrow">Technical deep dive</p>
+                  <h2>Past the demo</h2>
+                </header>
+                <div className="project-deep-dive-list">
+                  {project.deepDive.map((entry) => (
+                    <div className="project-deep-dive-entry" key={entry.question}>
+                      <h3>{entry.question}</h3>
+                      <p>{entry.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </article>
-        )}
+        ) : null}
       </div>
     </div>
   )

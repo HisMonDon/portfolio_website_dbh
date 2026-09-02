@@ -34,6 +34,10 @@
           "https://github.com/HisMonDon",
           "https://linkedin.com/in/chenyulu"
         ],
+        "award": [
+          "1st Place, Hack the Valley Hack Day, Chaos Roll",
+          "1st Place, NGN Hacks 2026, Distill"
+        ],
         "description": "Student and developer who turns technical ideas into projects people can actually use, including Vera, a physics learning platform, and several hackathon-winning apps.",
         "knowsAbout": [
           "React", "TypeScript", "JavaScript", "Flutter", "Dart", "C++", "Python", "Java",
@@ -70,50 +74,177 @@
         </p>
 
         <h2>Projects</h2>
+
+        <article>
+          <h3>Vera</h3>
+          <p>1,000+ visitors in 30 days.</p>
+          <p>
+            A cross-platform learning platform for my school's Physics Club, with student-made
+            tutorials, authentication, and saved video progress. Built with Flutter, Firebase,
+            REST API, Cloudflare.
+          </p>
+          <h4>Technical challenges</h4>
+          <ul>
+            <li>
+              Problem: existing physics resources did not match the specific course structure
+              students needed. Approach: built a single, curriculum-aligned platform by working
+              directly with the physics department head to organize lessons by course and topic.
+            </li>
+            <li>
+              Problem: the original video playback package could not reliably play Vera's WebM
+              lesson videos. Approach: traced the failure to the media layer specifically and
+              replaced it with Chewie on top of Flutter's video_player package.
+            </li>
+            <li>
+              Problem: content needed authentication and per-user saved progress without a
+              dedicated backend team. Approach: used Firebase for accounts, content storage, and
+              saved video progress.
+            </li>
+          </ul>
+        </article>
+
+        <article>
+          <h3>Distill</h3>
+          <p>1st Place, NGN Hacks 2026.</p>
+          <p>
+            A Chrome extension that simplifies cluttered webpages by hiding ads, navigation
+            clutter, and autoplay media, personalized through eye-tracking calibration. Built
+            with React, Vite, TensorFlow, MediaPipe, FastAPI, Python, Qwen2.5-7B-Instruct.
+          </p>
+          <h4>Technical challenges</h4>
+          <ul>
+            <li>
+              Problem: automatically hiding page clutter risks hiding something the page actually
+              needs, like a consent banner or a password field. Approach: deterministic safety
+              flags sit above the classifier and are never overridden by the model.
+            </li>
+            <li>
+              Problem: a single fixed rule for what counts as clutter does not fit every reader.
+              Approach: an eye-tracking calibration pass built with MediaPipe and TensorFlow
+              learns what a specific user actually looks at, and simplification is tuned to that
+              person.
+            </li>
+            <li>
+              Problem: classifying page elements accurately needed more judgment than simple
+              heuristics alone. Approach: combined rule-based heuristics with LLM analysis from a
+              Qwen2.5-7B-Instruct model served through a FastAPI backend.
+            </li>
+          </ul>
+        </article>
+
+        <article>
+          <h3>Chaos Roll</h3>
+          <p>1st Place, Hack the Valley Hack Day.</p>
+          <p>
+            A wave-survival game where Gemini generates playable abilities and enemy waves in
+            real time. The challenge was not calling an LLM, it was making unpredictable model
+            output safe enough to drive a live game. Built with React, TypeScript, Gemini API.
+          </p>
+          <h4>Technical challenges</h4>
+          <ul>
+            <li>
+              Problem: Gemini occasionally returned malformed or semantically invalid ability and
+              enemy definitions. Approach: every response is checked against an expected schema
+              before it is allowed anywhere near game state.
+            </li>
+            <li>
+              Problem: even schema-valid responses could still break game balance. Approach:
+              every numeric value is clamped to a wave-scaled power curve, so nothing generated
+              can exceed what the game can safely handle.
+            </li>
+            <li>
+              Problem: a malformed or unsafe candidate needed a fallback that did not break the
+              wave. Approach: invalid candidates are rejected and the match falls back to
+              deterministic assets instead of executing untrusted output.
+            </li>
+            <li>
+              Problem: generation could not be allowed to freeze the match while waiting on the
+              model. Approach: ability and enemy generation runs asynchronously against a shared
+              match clock.
+            </li>
+          </ul>
+          <h4>Technical deep dive</h4>
+          <p>
+            Why not trust Gemini's output directly? Gemini can return syntactically valid JSON
+            that is still unsafe for the game, so generation was treated as untrusted input from
+            the start, the same way any external API response would be.
+          </p>
+          <p>
+            What would I change with another week? I would add an automated revision step that
+            sends invalid responses back to the model with the specific validation error, instead
+            of only discarding them.
+          </p>
+        </article>
+
+        <article>
+          <h3>Face-Tracking Avatar</h3>
+          <p>
+            A browser-based 3D avatar that replays recorded facial expressions, head movement,
+            and speech through a conversational portfolio interface. Built with MediaPipe,
+            Three.js, React, TypeScript.
+          </p>
+          <h4>Technical challenges</h4>
+          <ul>
+            <li>
+              Problem: raw MediaPipe blendshape scores do not map cleanly onto a 3D model's
+              resting expression. Approach: ran a neutral calibration pass to compensate for the
+              performer's resting expression before applying scores to the avatar mesh.
+            </li>
+            <li>
+              Problem: recording and rendering frame rates do not match, which would otherwise
+              cause visible stuttering. Approach: interpolated between recorded frames at
+              playback time so the result stays stable.
+            </li>
+            <li>
+              Problem: a recorded conversational avatar needed to feel intentional even when
+              audio is muted or the browser cannot render WebGL. Approach: wrapped the system in
+              dialogue logic, synchronized transcript timing, skip behavior, and loading
+              fallbacks.
+            </li>
+          </ul>
+        </article>
+
+        <article>
+          <h3>Pocket Pilot</h3>
+          <p>
+            A mobile app that analyzes receipts and turns them into useful insights about
+            personal spending habits. Built with React Native, Firebase, Gemini API, Cloudinary.
+          </p>
+          <h4>Technical challenges</h4>
+          <ul>
+            <li>
+              Problem: receipt photos vary wildly in lighting, layout, and merchant formatting.
+              Approach: Gemini interprets receipt content into structured spending information,
+              but the interface treats every generated result as reviewable rather than
+              unquestionably correct.
+            </li>
+            <li>
+              Problem: uploads, persistence, and AI-assisted analysis needed to stay independently
+              reasoned about. Approach: split responsibilities cleanly across React Native,
+              Cloudinary, Firestore, and Gemini.
+            </li>
+          </ul>
+        </article>
+
+        <h3>Other projects</h3>
         <ul>
           <li>
-            <strong>Vera</strong> — A cross-platform learning platform for my school's Physics
-            Club, with student-made tutorials, authentication, and saved video progress.
-            Built with Flutter, Firebase, REST API, Cloudflare.
-          </li>
-          <li>
-            <strong>Distill</strong> — A Chrome extension that simplifies cluttered webpages by
-            hiding ads, navigation clutter, and autoplay media, personalized through eye-tracking
-            calibration. Winner of NGN Hacks 2026. Built with React, Vite, TensorFlow, MediaPipe,
-            FastAPI, Python, Qwen2.5-7B-Instruct.
-          </li>
-          <li>
-            <strong>Chaos Roll</strong> — A wave-survival game where Gemini generates playable
-            abilities and enemy waves in real time. Won first place at Hack the Valley Hack Day.
-            Built with React, TypeScript, Gemini API.
-          </li>
-          <li>
-            <strong>Face-Tracking Avatar</strong> — A browser-based 3D avatar that replays
-            recorded facial expressions, head movement, and speech through a conversational
-            portfolio interface. Built with MediaPipe, Three.js, React, TypeScript.
-          </li>
-          <li>
-            <strong>Pocket Pilot</strong> — A mobile app that analyzes receipts and turns them
-            into useful insights about personal spending habits. Built with React Native,
-            Firebase, Gemini API, Cloudinary.
-          </li>
-          <li>
-            <strong>Portfolio Website (earlier version)</strong> — An earlier portfolio built
+            <strong>Portfolio Website (earlier version)</strong>: an earlier portfolio built
             with Flutter Web to present my projects, skills, and experience through a
             space-themed interface.
           </li>
           <li>
-            <strong>Integrals Buoyancy Simulator</strong> — A C++ physics simulator using
+            <strong>Integrals Buoyancy Simulator</strong>: a C++ physics simulator using
             calculus and integrals to simulate a ball's net motion when dropped in a liquid
             with a customizable density. Built with C++, SFML, CMake, GLSL.
           </li>
           <li>
-            <strong>Competitive Programming</strong> — Solved problems on DMOJ, focusing on the
+            <strong>Competitive Programming</strong>: solved problems on DMOJ, focusing on the
             CCC contest, covering data structures, graph theory, and other algorithms. Achieved
             distinction (top 25%) on CCC Senior 2026.
           </li>
           <li>
-            <strong>The Knight</strong> — A 2D adventure game with random world generation and a
+            <strong>The Knight</strong>: a 2D adventure game with random world generation and a
             battle and currency system, built with Python and Pygame as a Grade 11 Computer
             Science CPT project.
           </li>
