@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import ProjectList from './ProjectList'
 import ProjectDetail from './ProjectDetail'
 import Honors from './Honors'
@@ -8,10 +9,20 @@ import './Projects.css'
 interface ProjectsProps {
   selectedId: string | null
   onSelect: (id: string | null) => void
+  isActive: boolean
 }
 
-export default function Projects({ selectedId, onSelect }: ProjectsProps) {
+export default function Projects({ selectedId, onSelect, isActive }: ProjectsProps) {
+  const overviewRef = useRef<HTMLDivElement | null>(null)
   const selected = PROJECTS.find((project) => project.id === selectedId) ?? null
+
+  // The section stays mounted across nav switches, so its scroll position
+  // otherwise survives a trip away and back, landing mid-scroll on return.
+  useEffect(() => {
+    if (isActive) {
+      overviewRef.current?.scrollTo({ top: 0 })
+    }
+  }, [isActive])
 
   if (selected) {
     return <ProjectDetail project={selected} onBack={() => onSelect(null)} />
@@ -21,7 +32,7 @@ export default function Projects({ selectedId, onSelect }: ProjectsProps) {
   const more = PROJECTS.filter((project) => project.tier === 'more')
 
   return (
-    <div className="projects-overview">
+    <div className="projects-overview" ref={overviewRef}>
       <h1 className="section-title">My Projects</h1>
       <p className="section-text">Here are a few things I&apos;ve been working on.</p>
 

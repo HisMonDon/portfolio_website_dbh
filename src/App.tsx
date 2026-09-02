@@ -16,6 +16,7 @@ const NAV_SCROLL_DURATION_MS = 900
 
 function renderSection(
   active: SectionId,
+  activeSection: SectionId,
   selectedProjectId: string | null,
   onSelectProject: (id: string | null) => void,
 ) {
@@ -27,7 +28,13 @@ function renderSection(
     case 'resume':
       return <Resume />
     case 'projects':
-      return <Projects selectedId={selectedProjectId} onSelect={onSelectProject} />
+      return (
+        <Projects
+          selectedId={selectedProjectId}
+          onSelect={onSelectProject}
+          isActive={activeSection === 'projects'}
+        />
+      )
     case 'skills':
       return <Skills />
     default:
@@ -199,10 +206,10 @@ export default function App() {
               sectionRefs.current[id] = el;
             }}
             data-section={id}
-            className={`section-page${id === 'projects' && selectedProjectId ? ' is-project-detail' : ''}`}
+            className={`section-page${id === 'projects' ? ' is-full-width' : ''}`}
           >
             <div className="app-panel">
-              {renderSection(id, selectedProjectId, setSelectedProjectId)}
+              {renderSection(id, activeSection, selectedProjectId, setSelectedProjectId)}
             </div>
           </div>
         ))}

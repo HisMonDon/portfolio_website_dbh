@@ -3,8 +3,9 @@
   flex-direction: column;
   height: calc(100dvh - 156px);
   min-height: 0;
+  margin-right: -64px;
+  padding-right: 64px;
   overflow-y: auto;
-  padding-right: 4px;
 }
 
 .projects-overview::-webkit-scrollbar {
@@ -28,8 +29,13 @@
 }
 
 .project-grid-more {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.project-grid-more .project-card {
+  flex-direction: row;
+  align-items: stretch;
 }
 
 .project-card {
@@ -68,7 +74,13 @@
 }
 
 .project-grid-more .project-card-image {
-  aspect-ratio: 16 / 10;
+  width: 148px;
+  height: 92px;
+  flex: 0 0 148px;
+  aspect-ratio: auto;
+  align-self: center;
+  border-radius: 8px;
+  margin: 10px 0 10px 10px;
 }
 
 .project-card-body {
@@ -76,6 +88,15 @@
   flex-direction: column;
   gap: 8px;
   padding: 16px;
+}
+
+.project-grid-more .project-card-body {
+  justify-content: center;
+  padding: 12px 18px;
+}
+
+.project-grid-more .project-card-desc {
+  -webkit-line-clamp: 2;
 }
 
 .project-card-title {
@@ -91,7 +112,7 @@
   color: #3a4f5b;
   line-height: 1.55;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
@@ -424,7 +445,7 @@
   left: -70px;
 }
 
-.project-system-visual > p {
+.project-system-visual>p {
   margin: 0 0 8px;
   color: #79dfff;
   font-family: 'Gotham_medium', system-ui, -apple-system, sans-serif;
@@ -599,6 +620,8 @@
 @media (max-width: 720px) {
   .projects-overview {
     height: calc(100dvh - 138px);
+    margin-right: -24px;
+    padding-right: 24px;
   }
 
   .project-grid,
