@@ -1,4 +1,5 @@
 import type { Project } from '../../data/projects'
+import ProjectCardAvatarPreview from './ProjectCardAvatarPreview'
 
 interface ProjectListProps {
   projects: Project[]
@@ -16,7 +17,9 @@ export default function ProjectList({ projects, onSelect, variant = 'featured' }
           className="project-card"
           onClick={() => onSelect(project.id)}
         >
-          {project.images[0] ? (
+          {project.id === 'face-tracking-avatar' ? (
+            <ProjectCardAvatarPreview />
+          ) : project.images[0] ? (
             <img className="project-card-image" src={project.images[0]} alt="" />
           ) : (
             <div className="project-card-image project-card-image-empty" aria-hidden="true" />
