@@ -1,6 +1,6 @@
 # Portfolio Website (Detroit: Become Human Edition)
 
-**Chenyu Lu's portfolio**, rebuilt in React, TypeScript and Three.js with an interface inspired by *Detroit: Become Human*. At its centre is a 3D android avatar that you can actually talk to: it answers questions in a branching dialogue using real recorded facial performances, captured with webcam face tracking and replayed frame by frame onto a morph-target model, complete with a temple LED ring, synced transcripts and choice markers straight out of the game. Live at [chenyulu.dev](https://chenyulu.dev).
+**Chenyu Lu's portfolio**, rebuilt in React, TypeScript and Three.js with an interface inspired by *Detroit: Become Human*. At its centre is a 3D android avatar that you can actually talk to: it answers questions in a branching dialogue using real recorded facial performances, captured with webcam face tracking and replayed frame by frame onto a morph-target model, complete with a temple LED ring, synced transcripts and choice markers straight out of the game. Live at [chenyu.lu](https://chenyu.lu).
 
 ## Core Philosophy: Let the Portfolio Introduce Itself
 
