@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import {
@@ -9,12 +9,27 @@ import {
 } from './blendshapeCalibration'
 import {
   applyAvatarVisualTreatment,
+  HUD_LAYER,
   type AvatarVisualController,
 } from './avatarVisuals'
+import { applyLegacyAvatarVisualTreatment } from './avatarVisualsLegacy'
+import { setupLegacyStage, setupRealisticStage, type AvatarStage } from './avatarStage'
+import type { AvatarPostProcessing } from './avatarPostProcessing'
 import type { InternalFrame, RecordedPose } from './clipFormat'
 import { applyBlendshapesToMeshes, loadClip } from './clipPlayback'
 import { IDLE_CLIP_ID } from './dialogueGraph'
 import { useScrollRotation } from './scrollRotation'
+import { captureAvatarCrop, installShotHelper, readAvatarDebug } from './avatarDebug'
+import { currentRenderMode, type AvatarRenderMode } from './renderMode'
+import {
+  computeRenderCrop,
+  createAdaptiveQuality,
+  effectivePixelRatio,
+  QUALITY_TIERS,
+  selectInitialTier,
+  type AdaptiveQualityController,
+  type QualityTierId,
+} from './renderQuality'
 import './ClipAvatar.css'
 
 interface ClipAvatarProps {
@@ -49,6 +64,42 @@ const IDLE_DRIFT_POSITION = 0.025
 const IDLE_DRIFT_LOOK = 0.02
 // Approach rate (per millisecond) for easing toward the personal-moment dolly target.
 const CLOSENESS_EASE_PER_MS = 0.0035
+// The realistic path only renders a window this many canvas-heights wide around the avatar
+// (±0.47 m at the avatar's depth: shoulders, relaxed arms and gestures all fit). The rest of the
+// extra-wide canvas is always empty, so skipping it roughly halves the pixel cost.
+const RENDER_CROP_ASPECT = 1.6
+
+const TONE_MAPPINGS = {
+  neutral: THREE.NeutralToneMapping,
+  agx: THREE.AgXToneMapping,
+  aces: THREE.ACESFilmicToneMapping,
+} as const
+const REALISTIC_TONE_MAPPING = THREE.NeutralToneMapping
+const REALISTIC_EXPOSURE = 1.0
+
+function detectMobile() {
+  if (typeof window === 'undefined') return false
+  const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false
+  return coarse && (navigator.maxTouchPoints ?? 0) > 0
+}
+
+function readGpuRenderer(renderer: THREE.WebGLRenderer) {
+  try {
+    const gl = renderer.getContext()
+    const info = gl.getExtension('WEBGL_debug_renderer_info')
+    return info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : null
+  } catch {
+    return null
+  }
+}
+
+function readQualityOverride() {
+  try {
+    return new URLSearchParams(window.location.search).get('quality')
+  } catch {
+    return null
+  }
+}
 
 function disposeAvatar(root: THREE.Object3D) {
   const materials = new Set<THREE.Material>()
@@ -172,11 +223,13 @@ export default function ClipAvatar({
   personalMoment = false,
   onReady,
 }: ClipAvatarProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const morphMeshesRef = useRef<THREE.Mesh[]>([])
   const avatarRootRef = useRef<THREE.Group | null>(null)
   const poseBoneRegistryRef = useRef<PoseBoneRegistry>({})
   const calibratorRef = useRef<BlendshapeCalibrator | null>(null)
+  const visualControllerRef = useRef<AvatarVisualController | null>(null)
   const latestCalibratedCategoriesRef = useRef<BlendshapeCategory[] | null>(null)
   const latestPoseRef = useRef<RecordedPose | null>(null)
   const jawOpenAmountRef = useRef(0)
@@ -186,9 +239,11 @@ export default function ClipAvatar({
   const targetFpsRef = useRef(targetFps)
   const personalMomentRef = useRef(personalMoment)
   const closenessRef = useRef(0)
+  const [renderMode] = useState<AvatarRenderMode>(currentRenderMode)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rendererAttempt, setRendererAttempt] = useState(0)
+  const [canvasCrop, setCanvasCrop] = useState<{ x: number; width: number } | null>(null)
   const rotationRef = useScrollRotation()
   const onReadyRef = useRef(onReady)
 
@@ -199,6 +254,17 @@ export default function ClipAvatar({
   yellowHudRef.current = yellowHud
   targetFpsRef.current = Math.min(60, Math.max(15, targetFps))
   personalMomentRef.current = personalMoment
+
+  const applyCalibrated = (calibrated: BlendshapeCategory[]) => {
+    latestCalibratedCategoriesRef.current = calibrated
+    jawOpenAmountRef.current = calibrated.find(
+      ({ categoryName }) => categoryName === 'jawOpen',
+    )?.score ?? 0
+    applyBlendshapesToMeshes(calibrated, morphMeshesRef.current)
+    visualControllerRef.current?.setBlendshapes?.(calibrated)
+  }
+  const applyCalibratedRef = useRef(applyCalibrated)
+  applyCalibratedRef.current = applyCalibrated
 
   useEffect(() => {
     let cancelled = false
@@ -211,12 +277,7 @@ export default function ClipAvatar({
 
       if (!categories) return
 
-      const calibrated = calibrator.apply(categories)
-      latestCalibratedCategoriesRef.current = calibrated
-      jawOpenAmountRef.current = calibrated.find(
-        ({ categoryName }) => categoryName === 'jawOpen',
-      )?.score ?? 0
-      applyBlendshapesToMeshes(calibrated, morphMeshesRef.current)
+      applyCalibratedRef.current(calibrator.apply(categories))
     }
 
     // The exported takes contain raw MediaPipe scores. Recreate the recording harness's 60-frame
@@ -238,9 +299,13 @@ export default function ClipAvatar({
 
   useEffect(() => {
     const canvas = canvasRef.current
+    const container = containerRef.current
 
-    if (!canvas) return
+    if (!canvas || !container) return
 
+    if (import.meta.env.DEV) installShotHelper()
+
+    const realistic = renderMode === 'realistic'
     let cancelled = false
     let frameId: number | null = null
     // Declared outside the try so cleanup can still dispose whatever got created before a
@@ -250,9 +315,22 @@ export default function ClipAvatar({
     let scene: THREE.Scene | null = null
     let avatarRoot: THREE.Group | null = null
     let avatarVisualController: AvatarVisualController | null = null
+    let stage: AvatarStage | null = null
+    let post: AvatarPostProcessing | null = null
+    let postFailed = !realistic
+    let modelLoaded = false
     let resizeObserver: ResizeObserver | null = null
+    let intersectionObserver: IntersectionObserver | null = null
     let removeResizeListener: (() => void) | null = null
     let retryTimer: number | null = null
+
+    // Ready once the model is in the scene and (realistic mode) the lazily loaded post pipeline has
+    // arrived or failed, so the first visible frame is never an unfiltered one.
+    const maybeReady = () => {
+      if (cancelled || !modelLoaded || (!post && !postFailed)) return
+      setReady(true)
+      onReadyRef.current?.()
+    }
 
     try {
       setError(null)
@@ -266,48 +344,130 @@ export default function ClipAvatar({
       camera.position.copy(BASE_CAMERA_POSITION)
       camera.lookAt(BASE_CAMERA_LOOKAT)
       camera.layers.enable(1)
+      camera.layers.enable(HUD_LAYER)
+      camera.layers.enable(3)
 
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+      renderer = realistic
+        ? new THREE.WebGLRenderer({
+            canvas,
+            // MSAA happens in the HDR scene target instead; a multisampled canvas would be wasted.
+            antialias: false,
+            alpha: true,
+            premultipliedAlpha: true,
+            powerPreference: 'high-performance',
+          })
+        : new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
       renderer.setClearColor(0x000000, 0)
-      renderer.toneMapping = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 1.35
+      // Stats cover the whole frame (scene + post passes), reset once per rendered frame below.
+      renderer.info.autoReset = false
+
+      // `?dpr=2` (dev only) simulates a high-density display for performance testing.
+      const devicePixelRatio = (import.meta.env.DEV && Number(new URLSearchParams(window.location.search).get('dpr')))
+        || window.devicePixelRatio
+        || 1
+      let adaptive: AdaptiveQualityController | null = null
+      let tierId: QualityTierId = 'high'
+
+      if (realistic) {
+        tierId = selectInitialTier({
+          devicePixelRatio,
+          isMobile: detectMobile(),
+          hardwareConcurrency: navigator.hardwareConcurrency,
+          gpuRenderer: readGpuRenderer(renderer),
+          override: readQualityOverride(),
+        })
+        adaptive = readQualityOverride() ? null : createAdaptiveQuality(tierId, performance.now())
+        renderer.setPixelRatio(effectivePixelRatio(QUALITY_TIERS[tierId], devicePixelRatio))
+        renderer.shadowMap.enabled = true
+        renderer.shadowMap.type = THREE.PCFShadowMap
+        renderer.toneMapping = REALISTIC_TONE_MAPPING
+        renderer.toneMappingExposure = REALISTIC_EXPOSURE
+        stage = setupRealisticStage(renderer, scene, QUALITY_TIERS[tierId])
+      } else {
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+        renderer.toneMapping = THREE.ACESFilmicToneMapping
+        renderer.toneMappingExposure = 1.35
+        stage = setupLegacyStage(scene)
+      }
+
+      let fullWidth = 1
+      let fullHeight = 1
 
       const resizeRenderer = () => {
         if (!renderer) return
 
-        const width = Math.max(1, Math.round(canvas.clientWidth || 320))
-        const height = Math.max(1, Math.round(canvas.clientHeight || 240))
+        fullWidth = Math.max(1, Math.round(container.clientWidth || 320))
+        fullHeight = Math.max(1, Math.round(container.clientHeight || 240))
+        camera.aspect = fullWidth / fullHeight
 
-        camera.aspect = width / height
+        if (realistic) {
+          const crop = computeRenderCrop(fullWidth, fullHeight, RENDER_CROP_ASPECT)
+          camera.setViewOffset(fullWidth, fullHeight, crop.x, 0, crop.width, fullHeight)
+          renderer.setSize(crop.width, fullHeight, false)
+          post?.setSize(
+            renderer.domElement.width,
+            renderer.domElement.height,
+            { offsetX: crop.x, fullWidth, fullHeight },
+          )
+          setCanvasCrop((previous) => (previous?.x === crop.x && previous.width === crop.width ? previous : crop))
+        } else {
+          camera.clearViewOffset()
+          renderer.setSize(fullWidth, fullHeight, false)
+        }
+
         camera.updateProjectionMatrix()
-        renderer.setSize(width, height, false)
       }
 
       resizeRenderer()
 
       if (typeof ResizeObserver !== 'undefined') {
         resizeObserver = new ResizeObserver(resizeRenderer)
-        resizeObserver.observe(canvas)
+        resizeObserver.observe(container)
       } else {
         window.addEventListener('resize', resizeRenderer)
         removeResizeListener = () => window.removeEventListener('resize', resizeRenderer)
       }
 
-      scene.add(new THREE.HemisphereLight(0xdcecff, 0x293241, 1.3))
+      const applyTier = (nextTier: QualityTierId) => {
+        if (!renderer) return
+        tierId = nextTier
+        const tier = QUALITY_TIERS[nextTier]
+        renderer.setPixelRatio(effectivePixelRatio(tier, devicePixelRatio))
+        stage?.applyTier?.(tier)
+        post?.setTier(tier)
+        resizeRenderer()
+      }
 
-      const keyLight = new THREE.DirectionalLight(0xf2f7ff, 2)
-      keyLight.position.set(1, 2, 2)
-      scene.add(keyLight)
-
-      const fillLight = new THREE.DirectionalLight(0xd7e6ff, 1.2)
-      fillLight.position.set(-1.5, 1, 1.5)
-      scene.add(fillLight)
-
-      const rimLight = new THREE.DirectionalLight(0x6fe3ff, 1.5)
-      rimLight.position.set(-0.5, 2.2, -2)
-      rimLight.layers.set(1)
-      scene.add(rimLight)
+      if (realistic) {
+        import('./avatarPostProcessing')
+          .then(({ createAvatarPostProcessing }) => {
+            if (cancelled || !renderer || !scene) return
+            post = createAvatarPostProcessing({
+              renderer,
+              scene,
+              camera,
+              tier: QUALITY_TIERS[tierId],
+              toneMapping: REALISTIC_TONE_MAPPING,
+            })
+            resizeRenderer()
+            maybeReady()
+          })
+          .catch((postError) => {
+            if (cancelled) return
+            console.warn('ClipAvatar post-processing failed to load; rendering directly.', postError)
+            postFailed = true
+            // Without the MSAA target, alpha-to-coverage hair would render as solid cards.
+            avatarRoot?.traverse((object) => {
+              const material = (object as THREE.Mesh).material as THREE.Material | undefined
+              if (material && !Array.isArray(material) && material.alphaToCoverage) {
+                material.alphaToCoverage = false
+                material.alphaHash = true
+                material.needsUpdate = true
+              }
+            })
+            maybeReady()
+          })
+      }
 
       new GLTFLoader().load(
         AVATAR_URL,
@@ -340,7 +500,27 @@ export default function ClipAvatar({
 
           // The source GLB is authored in a T-pose. Reuse the recording harness's neutral-pose
           // adjustment so the HUD shows a natural bust instead of horizontal arms.
-          avatarVisualController = applyAvatarVisualTreatment(avatarRoot)
+          avatarVisualController = realistic
+            ? applyAvatarVisualTreatment(avatarRoot)
+            : applyLegacyAvatarVisualTreatment(avatarRoot)
+          visualControllerRef.current = avatarVisualController
+
+          if (realistic) {
+            // Hair cards and corneas render normally but stay out of the AO depth/normal buffer.
+            avatarRoot.traverse((object) => {
+              if (/haircut|cornea/i.test(object.name)) object.layers.set(3)
+            })
+            if (postFailed) {
+              avatarRoot.traverse((object) => {
+                const material = (object as THREE.Mesh).material as THREE.Material | undefined
+                if (material && !Array.isArray(material) && material.alphaToCoverage) {
+                  material.alphaToCoverage = false
+                  material.alphaHash = true
+                }
+              })
+            }
+          }
+
           relaxAvatarArms(avatarRoot)
           avatarRootRef.current = avatarRoot
           poseBoneRegistryRef.current = createPoseBoneRegistry(avatarRoot)
@@ -349,14 +529,15 @@ export default function ClipAvatar({
 
           if (latestCalibratedCategoriesRef.current) {
             applyBlendshapesToMeshes(latestCalibratedCategoriesRef.current, morphMeshes)
+            avatarVisualController.setBlendshapes?.(latestCalibratedCategoriesRef.current)
           }
 
           if (latestPoseRef.current) {
             applyRecordedPose(latestPoseRef.current, avatarRoot, poseBoneRegistryRef.current)
           }
 
-          setReady(true)
-          onReadyRef.current?.()
+          modelLoaded = true
+          maybeReady()
         },
         undefined,
         (loadError) => {
@@ -368,12 +549,109 @@ export default function ClipAvatar({
 
       const renderScene = scene
       const renderer_ = renderer
+      const hudPosition = new THREE.Vector3()
 
       let lastRenderTime = 0
+      let lastFrameTime = 0
+      let canvasOnScreen = true
+      let canvasVisible = true
+      let visibilityCheckCountdown = 0
+
+      if (typeof IntersectionObserver !== 'undefined') {
+        intersectionObserver = new IntersectionObserver((entries) => {
+          canvasOnScreen = entries.some((entry) => entry.isIntersecting)
+        })
+        intersectionObserver.observe(container)
+      }
+
+      const drawFrame = (now: number) => {
+        if (realistic) {
+          if (post) {
+            const hud = avatarVisualController?.hud
+            if (hud) hud.ring.getWorldPosition(hudPosition)
+            post.render(now, hud ? { position: hudPosition, brightness: hud.brightness } : null)
+          } else if (postFailed) {
+            renderer_.render(renderScene, camera)
+          }
+        } else {
+          renderer_.render(renderScene, camera)
+        }
+      }
+
+      if (import.meta.env.DEV) {
+        // window.__avatarBench(60): renders frames back to back, forcing GPU completion with a
+        // 1px readback each time, and reports the mean/p95 wall time per frame. Works even when
+        // the tab's rAF is throttled, so tiers can be compared without the window in focus.
+        ;(window as unknown as { __avatarBench?: unknown }).__avatarBench = async (
+          frames = 60,
+          overrides: Partial<(typeof QUALITY_TIERS)[QualityTierId]> = {},
+        ) => {
+          if (canvas.clientWidth <= 600) return null
+          const hasOverrides = Object.keys(overrides).length > 0
+          if (hasOverrides) post?.setTier({ ...QUALITY_TIERS[tierId], ...overrides })
+          const gl = renderer_.getContext()
+          const pixel = new Uint8Array(4)
+          const times: number[] = []
+          const gpuTimes: number[] = []
+          for (let index = 0; index < frames + 5; index += 1) {
+            const start = performance.now()
+            drawFrame(start)
+            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+            if (index >= 5) times.push(performance.now() - start)
+            await new Promise((resolve) => setTimeout(resolve, 0))
+            if (index >= 8 && post?.gpuMs) gpuTimes.push(post.gpuMs)
+          }
+          if (hasOverrides) post?.setTier(QUALITY_TIERS[tierId])
+          times.sort((a, b) => a - b)
+          const mean = times.reduce((sum, value) => sum + value, 0) / times.length
+          return {
+            tier: tierId,
+            pixelRatio: renderer_.getPixelRatio(),
+            drawingBuffer: [renderer_.domElement.width, renderer_.domElement.height],
+            meanMs: Math.round(mean * 100) / 100,
+            p95Ms: Math.round(times[Math.floor(times.length * 0.95)] * 100) / 100,
+            gpuMeanMs: gpuTimes.length
+              ? Math.round((gpuTimes.reduce((sum, value) => sum + value, 0) / gpuTimes.length) * 100) / 100
+              : null,
+          }
+        }
+      }
 
       const animate = (now: number) => {
         if (cancelled) return
         frameId = requestAnimationFrame(animate)
+
+        // Skip all GPU work while the avatar cannot be seen: scrolled off-screen (the project card
+        // preview) or faded out (the persistent assistant is kept mounted at opacity 0).
+        visibilityCheckCountdown -= 1
+        if (visibilityCheckCountdown <= 0) {
+          const checkVisibility = (canvas as HTMLCanvasElement & {
+            checkVisibility?: (options?: Record<string, boolean>) => boolean
+          }).checkVisibility
+          canvasVisible = checkVisibility
+            ? checkVisibility.call(canvas, { opacityProperty: true, visibilityProperty: true })
+            : true
+          // While hidden, re-check every frame so the first frame after a reveal is never stale.
+          visibilityCheckCountdown = canvasVisible ? 20 : 1
+        }
+        if (!canvasOnScreen || !canvasVisible) {
+          lastFrameTime = 0
+          return
+        }
+
+        const debug = import.meta.env.DEV ? readAvatarDebug() : undefined
+
+        // Adaptive quality looks at every rAF interval (not just rendered frames): if the GPU
+        // cannot keep up, the browser delivers callbacks late regardless of the FPS cap.
+        if (realistic && lastFrameTime > 0 && modelLoaded && post) {
+          if (debug?.tier && debug.tier !== tierId) {
+            applyTier(debug.tier)
+          } else if (!debug?.tier && adaptive) {
+            const nextTier = adaptive.sample(now - lastFrameTime, now, 1000 / targetFpsRef.current, post.gpuMs)
+            if (nextTier) applyTier(nextTier)
+          }
+        }
+        lastFrameTime = now
 
         const frameInterval = 1000 / targetFpsRef.current
         const elapsed = now - lastRenderTime
@@ -386,11 +664,11 @@ export default function ClipAvatar({
         // loop just samples whatever the ref currently holds every frame.
         // Rendering is rate-limited by the user's HUD setting while the latest
         // prerecorded pose and blendshapes continue updating independently.
-        if (avatarRoot) avatarRoot.rotation.y = rotationRef.current
+        if (avatarRoot) avatarRoot.rotation.y = debug?.rotation ?? rotationRef.current
 
         // Ease toward a closer, tighter framing while a personal-moment answer plays, and back
         // out to the base shot otherwise — smoothed so the dolly never snaps.
-        const targetCloseness = personalMomentRef.current ? 1 : 0
+        const targetCloseness = (debug?.personalMoment ?? personalMomentRef.current) ? 1 : 0
         closenessRef.current += (targetCloseness - closenessRef.current)
           * Math.min(1, CLOSENESS_EASE_PER_MS * dt)
 
@@ -414,13 +692,59 @@ export default function ClipAvatar({
           BASE_CAMERA_LOOKAT.y + idleLookY,
           BASE_CAMERA_LOOKAT.z,
         )
+        if (debug?.blendshapes) {
+          const forced = Object.entries(debug.blendshapes).map(([categoryName, score]) => ({ categoryName, score }))
+          const merged = [
+            ...(latestCalibratedCategoriesRef.current ?? []).filter(({ categoryName }) => !(categoryName in debug.blendshapes!)),
+            ...forced,
+          ]
+          applyBlendshapesToMeshes(merged, morphMeshesRef.current)
+          avatarVisualController?.setBlendshapes?.(merged)
+        }
+
         avatarVisualController?.update(
           now,
           jawOpenAmountRef.current,
-          criticalRef.current,
-          yellowHudRef.current,
+          debug?.critical ?? criticalRef.current,
+          debug?.yellowHud ?? yellowHudRef.current,
         )
-        renderer_.render(renderScene, camera)
+
+        renderer_.info.reset()
+
+        if (realistic) {
+          if (debug?.toneMapping || debug?.exposure !== undefined) {
+            const toneMapping = TONE_MAPPINGS[debug.toneMapping ?? 'neutral']
+            if (renderer_.toneMapping !== toneMapping) {
+              renderer_.toneMapping = toneMapping
+              post?.setToneMapping(toneMapping)
+            }
+            renderer_.toneMappingExposure = debug.exposure ?? REALISTIC_EXPOSURE
+          }
+        }
+
+        drawFrame(now)
+
+        if (import.meta.env.DEV) {
+          if (canvas.clientWidth > 600) {
+            ;(window as unknown as { __avatarRenderer?: unknown }).__avatarRenderer = renderer_
+            ;(window as unknown as { __avatarScene?: unknown }).__avatarScene = renderScene
+          }
+          ;(window as unknown as { __avatarStats?: unknown }).__avatarStats = {
+            mode: renderMode,
+            tier: tierId,
+            smoothedFrameMs: adaptive?.smoothedFrameMs ?? null,
+            smoothedGpuMs: adaptive?.smoothedGpuMs ?? post?.gpuMs ?? null,
+            pixelRatio: renderer_.getPixelRatio(),
+            drawingBuffer: [renderer_.domElement.width, renderer_.domElement.height],
+            calls: renderer_.info.render.calls,
+            triangles: renderer_.info.render.triangles,
+          }
+        }
+
+        if (debug?.capture && (debug.capture.small ? canvas.clientWidth <= 600 : canvas.clientWidth > 600)) {
+          captureAvatarCrop(canvas, camera, poseBoneRegistryRef.current.head ?? null, debug.capture)
+          debug.capture = undefined
+        }
       }
 
       frameId = requestAnimationFrame(animate)
@@ -443,13 +767,28 @@ export default function ClipAvatar({
       morphMeshesRef.current = []
       avatarRootRef.current = null
       poseBoneRegistryRef.current = {}
+      visualControllerRef.current = null
 
       if (frameId !== null) cancelAnimationFrame(frameId)
       if (retryTimer !== null) window.clearTimeout(retryTimer)
       resizeObserver?.disconnect()
+      intersectionObserver?.disconnect()
       removeResizeListener?.()
 
+      if (import.meta.env.DEV) {
+        const debugGlobals = window as unknown as Record<string, unknown>
+        if (debugGlobals.__avatarRenderer === renderer) {
+          delete debugGlobals.__avatarRenderer
+          delete debugGlobals.__avatarScene
+          delete debugGlobals.__avatarBench
+        }
+      }
+
+      post?.dispose()
+      post = null
+      avatarVisualController?.dispose?.()
       if (avatarRoot) disposeAvatar(avatarRoot)
+      stage?.dispose()
       scene?.clear()
       renderer?.dispose()
       // Do not force-loss the canvas context here. React StrictMode deliberately runs an
@@ -458,20 +797,14 @@ export default function ClipAvatar({
       // releases Three.js resources, and the browser releases the context when the canvas is
       // actually removed.
     }
-  }, [rendererAttempt, rotationRef])
+  }, [rendererAttempt, rotationRef, renderMode])
 
   useEffect(() => {
     if (!activeFrame) return
 
     const calibrated = calibratorRef.current?.apply(activeFrame.categories)
 
-    if (calibrated) {
-      latestCalibratedCategoriesRef.current = calibrated
-      jawOpenAmountRef.current = calibrated.find(
-        ({ categoryName }) => categoryName === 'jawOpen',
-      )?.score ?? 0
-      applyBlendshapesToMeshes(calibrated, morphMeshesRef.current)
-    }
+    if (calibrated) applyCalibratedRef.current(calibrated)
 
     if (activeFrame.pose) {
       latestPoseRef.current = activeFrame.pose
@@ -482,13 +815,24 @@ export default function ClipAvatar({
     }
   }, [activeFrame])
 
+  const canvasStyle: CSSProperties = canvasCrop && renderMode === 'realistic'
+    ? {
+        display: ready ? 'block' : 'none',
+        position: 'absolute',
+        top: 0,
+        left: canvasCrop.x,
+        width: canvasCrop.width,
+        height: '100%',
+      }
+    : { display: ready ? 'block' : 'none' }
+
   return (
-    <div className="clip-avatar">
+    <div className="clip-avatar" ref={containerRef}>
       <canvas
         key={rendererAttempt}
         ref={canvasRef}
         className="clip-avatar-canvas"
-        style={{ display: ready ? 'block' : 'none' }}
+        style={canvasStyle}
       />
       {!ready && (
         <div
