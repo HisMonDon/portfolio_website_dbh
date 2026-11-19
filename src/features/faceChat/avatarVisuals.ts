@@ -843,12 +843,17 @@ export function applyAvatarVisualTreatment(root: THREE.Group, options: Realistic
       alphaToCoverage: true,
       alphaTest: 0.42,
       depthWrite: true,
-      // Coverage already encodes the strand edge; the alpha channel must not let the page show
-      // through hair that sits over skin, so alpha keeps the maximum of hair and what's behind.
+      // Alpha-to-coverage covers ~a of the samples, and every covered sample also stores the
+      // fragment's alpha. Writing `a` there gave strand edges an effective alpha of a² over the
+      // page (see-through, grey hair edges) while their colour assumed a. The shader outputs
+      // √a instead, and colour blends by that same √a inside each covered sample, so a pixel
+      // resolves to a·hair + (1 − a)·background over skin and to (a·hair, a) premultiplied over
+      // the transparent page. Alpha keeps the maximum of hair and what's behind it, so skin under
+      // the hair stays opaque.
       blending: THREE.CustomBlending,
       blendEquation: THREE.AddEquation,
-      blendSrc: THREE.OneFactor,
-      blendDst: THREE.ZeroFactor,
+      blendSrc: THREE.SrcAlphaFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
       blendEquationAlpha: THREE.MaxEquation,
     })
     // The albedo is pure black; real black hair still carries a little warm brown in its body.
@@ -865,13 +870,13 @@ export function applyAvatarVisualTreatment(root: THREE.Group, options: Realistic
           [
             '#ifdef USE_ALPHATEST',
             '  float hairEdge = max( fwidth( diffuseColor.a ), 1e-3 ) * 1.25;',
-            '  diffuseColor.a = smoothstep( alphaTest - hairEdge, alphaTest + hairEdge, diffuseColor.a );',
+            '  diffuseColor.a = sqrt( smoothstep( alphaTest - hairEdge, alphaTest + hairEdge, diffuseColor.a ) );',
             '  if ( diffuseColor.a <= 0.0 ) discard;',
             '#endif',
           ].join('\n'),
         )
     }
-    material.customProgramCacheKey = () => 'avatar-realistic-hair-v2'
+    material.customProgramCacheKey = () => 'avatar-realistic-hair-v3'
     replaceMaterial(hair, material)
   }
 

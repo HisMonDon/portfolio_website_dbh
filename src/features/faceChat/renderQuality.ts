@@ -267,10 +267,114 @@ export interface RenderCrop {
   width: number
 }
 
+// Fixed centred window, used only until the avatar's real extent is known (before the model loads).
 export function computeRenderCrop(containerWidth: number, containerHeight: number, maxAspect: number): RenderCrop {
   const width = Math.max(1, Math.round(containerWidth))
   const height = Math.max(1, Math.round(containerHeight))
   const cropWidth = Math.min(width, Math.max(1, Math.round(height * maxAspect)))
 
   return { x: Math.round((width - cropWidth) / 2), width: cropWidth }
+}
+
+export interface RenderCropPlannerOptions {
+  // Empty space kept on each side of the measured silhouette, as a fraction of the frame height.
+  padding?: number
+  // Extra room added whenever the crop has to grow, so a moving hand does not regrow it every
+  // frame (each resize reallocates the render targets), as a fraction of the frame height.
+  headroom?: number
+  // Crop edges snap outward to multiples of this many CSS pixels.
+  step?: number
+  // The crop shrinks back only after it has been oversized for this long.
+  shrinkAfterMs?: number
+  // Shrink only when it would save at least this fraction of the current width.
+  shrinkThreshold?: number
+  // Window used while the avatar extent is unknown, in frame heights (centred).
+  fallbackAspect?: number
+}
+
+export interface RenderCropPlanner {
+  readonly crop: RenderCrop | null
+  // Returns the crop to render this frame. `extent` is the avatar's horizontal span in
+  // full-frame CSS pixels, or null while it is unknown. Growth is immediate (never a frame with a
+  // cut-off silhouette); shrinking waits `shrinkAfterMs`.
+  update: (frameWidth: number, frameHeight: number, extent: { min: number; max: number } | null, nowMs: number) => RenderCrop
+  reset: () => void
+}
+
+export function createRenderCropPlanner(options: RenderCropPlannerOptions = {}): RenderCropPlanner {
+  const padding = options.padding ?? 0.07
+  const headroom = options.headroom ?? 0.18
+  const step = Math.max(1, options.step ?? 16)
+  const shrinkAfterMs = options.shrinkAfterMs ?? 1500
+  const shrinkThreshold = options.shrinkThreshold ?? 0.15
+  const fallbackAspect = options.fallbackAspect ?? 1.6
+
+  let crop: RenderCrop | null = null
+  let frame = { width: 0, height: 0 }
+  let oversizedSince: number | null = null
+
+  const snap = (left: number, right: number, width: number): RenderCrop => {
+    const x = Math.max(0, Math.floor(left / step) * step)
+    const end = Math.min(width, Math.ceil(right / step) * step)
+    return { x, width: Math.max(1, end - x) }
+  }
+
+  return {
+    get crop() {
+      return crop
+    },
+    reset() {
+      crop = null
+      oversizedSince = null
+    },
+    update(frameWidth, frameHeight, extent, nowMs) {
+      const width = Math.max(1, Math.round(frameWidth))
+      const height = Math.max(1, Math.round(frameHeight))
+
+      if (width !== frame.width || height !== frame.height) {
+        frame = { width, height }
+        crop = null
+        oversizedSince = null
+      }
+
+      if (!extent || !(extent.max > extent.min)) {
+        crop ??= computeRenderCrop(width, height, fallbackAspect)
+        return crop
+      }
+
+      const pad = padding * height
+      const needLeft = Math.max(0, extent.min - pad)
+      const needRight = Math.min(width, extent.max + pad)
+
+      if (needRight <= needLeft) {
+        // The avatar is entirely outside the frame horizontally; keep whatever we have.
+        crop ??= computeRenderCrop(width, height, fallbackAspect)
+        return crop
+      }
+
+      const slack = headroom * height
+      const ideal = snap(needLeft - slack, needRight + slack, width)
+
+      if (!crop || needLeft < crop.x || needRight > crop.x + crop.width) {
+        // Grow now, keeping the side that already fits so the crop does not oscillate.
+        const left = crop ? Math.min(crop.x, ideal.x) : ideal.x
+        const right = crop ? Math.max(crop.x + crop.width, ideal.x + ideal.width) : ideal.x + ideal.width
+        crop = snap(left, right, width)
+        oversizedSince = null
+        return crop
+      }
+
+      if (ideal.width < crop.width * (1 - shrinkThreshold)) {
+        oversizedSince ??= nowMs
+        if (nowMs - oversizedSince >= shrinkAfterMs) {
+          crop = ideal
+          oversizedSince = null
+        }
+      } else {
+        oversizedSince = null
+      }
+
+      return crop
+    },
+  }
 }

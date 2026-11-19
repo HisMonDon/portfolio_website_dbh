@@ -20,15 +20,17 @@ import { applyBlendshapesToMeshes, loadClip } from './clipPlayback'
 import { IDLE_CLIP_ID } from './dialogueGraph'
 import { useScrollRotation } from './scrollRotation'
 import { captureAvatarCrop, installShotHelper, readAvatarDebug } from './avatarDebug'
+import { createAvatarExtentProbe, measureAvatarExtent, type AvatarExtentProbe } from './avatarCrop'
 import { currentRenderMode, type AvatarRenderMode } from './renderMode'
 import {
-  computeRenderCrop,
   createAdaptiveQuality,
+  createRenderCropPlanner,
   effectivePixelRatio,
   QUALITY_TIERS,
   selectInitialTier,
   type AdaptiveQualityController,
   type QualityTierId,
+  type RenderCrop,
 } from './renderQuality'
 import './ClipAvatar.css'
 
@@ -64,10 +66,11 @@ const IDLE_DRIFT_POSITION = 0.025
 const IDLE_DRIFT_LOOK = 0.02
 // Approach rate (per millisecond) for easing toward the personal-moment dolly target.
 const CLOSENESS_EASE_PER_MS = 0.0035
-// The realistic path only renders a window this many canvas-heights wide around the avatar
-// (±0.47 m at the avatar's depth: shoulders, relaxed arms and gestures all fit). The rest of the
-// extra-wide canvas is always empty, so skipping it roughly halves the pixel cost.
-const RENDER_CROP_ASPECT = 1.6
+// The realistic path only renders a horizontal window around the avatar: the extra-wide canvas
+// is mostly empty, so skipping it roughly halves the pixel cost. The window follows the avatar's
+// measured on-screen extent every frame (avatarCrop.ts), so gestures, scroll rotation and the
+// personal-moment push-in are never cut off. This is only the window used before the model loads.
+const RENDER_CROP_FALLBACK_ASPECT = 1.6
 
 const TONE_MAPPINGS = {
   neutral: THREE.NeutralToneMapping,
@@ -243,7 +246,6 @@ export default function ClipAvatar({
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rendererAttempt, setRendererAttempt] = useState(0)
-  const [canvasCrop, setCanvasCrop] = useState<{ x: number; width: number } | null>(null)
   const rotationRef = useScrollRotation()
   const onReadyRef = useRef(onReady)
 
@@ -392,6 +394,46 @@ export default function ClipAvatar({
 
       let fullWidth = 1
       let fullHeight = 1
+      const cropPlanner = createRenderCropPlanner({ fallbackAspect: RENDER_CROP_FALLBACK_ASPECT })
+      let appliedCrop: RenderCrop | null = null
+      let extentProbe: AvatarExtentProbe | null = null
+
+      if (realistic) {
+        // The canvas box is positioned here, in the same task that resizes the drawing buffer and
+        // offsets the projection, never through React state: a state update commits a frame or
+        // more later, and in between the new buffer is shown stretched into the old box.
+        Object.assign(canvas.style, { position: 'absolute', top: '0px', height: '100%' })
+      }
+
+      // Applies a crop to the renderer, the projection, the post targets and the canvas box.
+      const applyCrop = (crop: RenderCrop, force = false) => {
+        if (!renderer) return
+        if (!force && appliedCrop && appliedCrop.x === crop.x && appliedCrop.width === crop.width) return
+        appliedCrop = crop
+        camera.setViewOffset(fullWidth, fullHeight, crop.x, 0, crop.width, fullHeight)
+        camera.updateProjectionMatrix()
+        renderer.setSize(crop.width, fullHeight, false)
+        post?.setSize(
+          renderer.domElement.width,
+          renderer.domElement.height,
+          { offsetX: crop.x, fullWidth, fullHeight },
+        )
+        canvas.style.left = `${crop.x}px`
+        canvas.style.width = `${crop.width}px`
+      }
+
+      // Re-plans the crop around the avatar as posed and framed right now. Call after the camera
+      // and pose for the frame are final and before drawing.
+      const updateCrop = (now: number, force = false) => {
+        if (!realistic) return
+        let extent = null
+        if (extentProbe && avatarRoot) {
+          camera.updateMatrixWorld()
+          avatarRoot.updateMatrixWorld(true)
+          extent = measureAvatarExtent(extentProbe, camera, fullWidth, fullHeight)
+        }
+        applyCrop(cropPlanner.update(fullWidth, fullHeight, extent, now), force)
+      }
 
       const resizeRenderer = () => {
         if (!renderer) return
@@ -401,15 +443,7 @@ export default function ClipAvatar({
         camera.aspect = fullWidth / fullHeight
 
         if (realistic) {
-          const crop = computeRenderCrop(fullWidth, fullHeight, RENDER_CROP_ASPECT)
-          camera.setViewOffset(fullWidth, fullHeight, crop.x, 0, crop.width, fullHeight)
-          renderer.setSize(crop.width, fullHeight, false)
-          post?.setSize(
-            renderer.domElement.width,
-            renderer.domElement.height,
-            { offsetX: crop.x, fullWidth, fullHeight },
-          )
-          setCanvasCrop((previous) => (previous?.x === crop.x && previous.width === crop.width ? previous : crop))
+          updateCrop(performance.now(), true)
         } else {
           camera.clearViewOffset()
           renderer.setSize(fullWidth, fullHeight, false)
@@ -420,12 +454,21 @@ export default function ClipAvatar({
 
       resizeRenderer()
 
+      // Resizing a canvas clears its drawing buffer, and ResizeObserver callbacks run after this
+      // frame's requestAnimationFrame callbacks but before paint. Without an immediate redraw,
+      // every resize (window resize, the dock's 700 ms size transition) paints an empty canvas.
+      let redrawAfterResize: (() => void) | null = null
+      const handleResize = () => {
+        resizeRenderer()
+        redrawAfterResize?.()
+      }
+
       if (typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver(resizeRenderer)
+        resizeObserver = new ResizeObserver(handleResize)
         resizeObserver.observe(container)
       } else {
-        window.addEventListener('resize', resizeRenderer)
-        removeResizeListener = () => window.removeEventListener('resize', resizeRenderer)
+        window.addEventListener('resize', handleResize)
+        removeResizeListener = () => window.removeEventListener('resize', handleResize)
       }
 
       const applyTier = (nextTier: QualityTierId) => {
@@ -522,6 +565,7 @@ export default function ClipAvatar({
           }
 
           relaxAvatarArms(avatarRoot)
+          if (realistic) extentProbe = createAvatarExtentProbe(avatarRoot)
           avatarRootRef.current = avatarRoot
           poseBoneRegistryRef.current = createPoseBoneRegistry(avatarRoot)
           scene?.add(avatarRoot)
@@ -537,6 +581,7 @@ export default function ClipAvatar({
           }
 
           modelLoaded = true
+          if (import.meta.env.DEV && container.clientWidth > 600) publishDebugGlobals()
           maybeReady()
         },
         undefined,
@@ -556,6 +601,7 @@ export default function ClipAvatar({
       let canvasOnScreen = true
       let canvasVisible = true
       let visibilityCheckCountdown = 0
+      let pendingTier: QualityTierId | null = null
 
       if (typeof IntersectionObserver !== 'undefined') {
         intersectionObserver = new IntersectionObserver((entries) => {
@@ -578,15 +624,25 @@ export default function ClipAvatar({
         }
       }
 
+      // Dev-only handles for the hero avatar (the project-card preview is ≤ 600 px wide).
+      const publishDebugGlobals = () => {
+        const globals = window as unknown as Record<string, unknown>
+        globals.__avatarRenderer = renderer_
+        globals.__avatarScene = renderScene
+        globals.__avatarCamera = camera
+        globals.__avatarBench = bench
+      }
+
+      let bench: unknown = null
       if (import.meta.env.DEV) {
         // window.__avatarBench(60): renders frames back to back, forcing GPU completion with a
         // 1px readback each time, and reports the mean/p95 wall time per frame. Works even when
         // the tab's rAF is throttled, so tiers can be compared without the window in focus.
-        ;(window as unknown as { __avatarBench?: unknown }).__avatarBench = async (
+        bench = async (
           frames = 60,
           overrides: Partial<(typeof QUALITY_TIERS)[QualityTierId]> = {},
         ) => {
-          if (canvas.clientWidth <= 600) return null
+          if (container.clientWidth <= 600) return null
           const hasOverrides = Object.keys(overrides).length > 0
           if (hasOverrides) post?.setTier({ ...QUALITY_TIERS[tierId], ...overrides })
           const gl = renderer_.getContext()
@@ -642,13 +698,15 @@ export default function ClipAvatar({
         const debug = import.meta.env.DEV ? readAvatarDebug() : undefined
 
         // Adaptive quality looks at every rAF interval (not just rendered frames): if the GPU
-        // cannot keep up, the browser delivers callbacks late regardless of the FPS cap.
+        // cannot keep up, the browser delivers callbacks late regardless of the FPS cap. The
+        // switch itself waits for the next rendered frame: changing the pixel ratio resizes (and
+        // clears) the canvas, so on a frame the FPS cap skips it would paint an empty canvas.
         if (realistic && lastFrameTime > 0 && modelLoaded && post) {
           if (debug?.tier && debug.tier !== tierId) {
-            applyTier(debug.tier)
+            pendingTier = debug.tier
           } else if (!debug?.tier && adaptive) {
             const nextTier = adaptive.sample(now - lastFrameTime, now, 1000 / targetFpsRef.current, post.gpuMs)
-            if (nextTier) applyTier(nextTier)
+            if (nextTier) pendingTier = nextTier
           }
         }
         lastFrameTime = now
@@ -665,6 +723,7 @@ export default function ClipAvatar({
         // Rendering is rate-limited by the user's HUD setting while the latest
         // prerecorded pose and blendshapes continue updating independently.
         if (avatarRoot) avatarRoot.rotation.y = debug?.rotation ?? rotationRef.current
+        if (debug?.pose && avatarRoot) applyRecordedPose(debug.pose, avatarRoot, poseBoneRegistryRef.current)
 
         // Ease toward a closer, tighter framing while a personal-moment answer plays, and back
         // out to the base shot otherwise — smoothed so the dolly never snaps.
@@ -709,6 +768,10 @@ export default function ClipAvatar({
           debug?.yellowHud ?? yellowHudRef.current,
         )
 
+        if (pendingTier && pendingTier !== tierId) applyTier(pendingTier)
+        pendingTier = null
+        updateCrop(now)
+
         renderer_.info.reset()
 
         if (realistic) {
@@ -725,10 +788,7 @@ export default function ClipAvatar({
         drawFrame(now)
 
         if (import.meta.env.DEV) {
-          if (canvas.clientWidth > 600) {
-            ;(window as unknown as { __avatarRenderer?: unknown }).__avatarRenderer = renderer_
-            ;(window as unknown as { __avatarScene?: unknown }).__avatarScene = renderScene
-          }
+          if (container.clientWidth > 600) publishDebugGlobals()
           ;(window as unknown as { __avatarStats?: unknown }).__avatarStats = {
             mode: renderMode,
             tier: tierId,
@@ -745,6 +805,12 @@ export default function ClipAvatar({
           captureAvatarCrop(canvas, camera, poseBoneRegistryRef.current.head ?? null, debug.capture)
           debug.capture = undefined
         }
+      }
+
+      redrawAfterResize = () => {
+        if (cancelled || !modelLoaded || !canvasOnScreen || !canvasVisible) return
+        if (realistic && !post && !postFailed) return
+        drawFrame(performance.now())
       }
 
       frameId = requestAnimationFrame(animate)
@@ -780,6 +846,7 @@ export default function ClipAvatar({
         if (debugGlobals.__avatarRenderer === renderer) {
           delete debugGlobals.__avatarRenderer
           delete debugGlobals.__avatarScene
+          delete debugGlobals.__avatarCamera
           delete debugGlobals.__avatarBench
         }
       }
@@ -815,16 +882,9 @@ export default function ClipAvatar({
     }
   }, [activeFrame])
 
-  const canvasStyle: CSSProperties = canvasCrop && renderMode === 'realistic'
-    ? {
-        display: ready ? 'block' : 'none',
-        position: 'absolute',
-        top: 0,
-        left: canvasCrop.x,
-        width: canvasCrop.width,
-        height: '100%',
-      }
-    : { display: ready ? 'block' : 'none' }
+  // Realistic mode positions and sizes the canvas imperatively alongside the render crop (see
+  // applyCrop); React only toggles visibility so it never overwrites those properties.
+  const canvasStyle: CSSProperties = { display: ready ? 'block' : 'none' }
 
   return (
     <div className="clip-avatar" ref={containerRef}>
