@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computeRenderCrop,
   createAdaptiveQuality,
+  createRenderCropPlanner,
   effectivePixelRatio,
   QUALITY_TIER_ORDER,
   QUALITY_TIERS,
@@ -128,5 +129,78 @@ describe('computeRenderCrop', () => {
 
   it('uses the full width when the container is already narrow', () => {
     expect(computeRenderCrop(400, 300, 1.6)).toEqual({ x: 0, width: 400 })
+  })
+})
+
+describe('createRenderCropPlanner', () => {
+  // The hero canvas at a 1440×900 viewport (170% of the stage width).
+  const W = 2448
+  const H = 824
+  const options = { padding: 0.05, headroom: 0.1, step: 16, shrinkAfterMs: 1000 }
+  const contains = (crop: { x: number; width: number }, min: number, max: number) =>
+    crop.x <= min && crop.x + crop.width >= max
+
+  it('uses the fixed centred window until the avatar extent is known', () => {
+    const planner = createRenderCropPlanner({ fallbackAspect: 1.6 })
+    expect(planner.update(W, H, null, 0)).toEqual(computeRenderCrop(W, H, 1.6))
+  })
+
+  it('fits the measured silhouette plus padding, snapped outward to the step', () => {
+    const planner = createRenderCropPlanner(options)
+    const crop = planner.update(W, H, { min: 900, max: 1550 }, 0)
+    expect(contains(crop, 900 - 0.05 * H, 1550 + 0.05 * H)).toBe(true)
+    expect(crop.x % 16).toBe(0)
+    expect((crop.x + crop.width) % 16).toBe(0)
+    // Far narrower than the frame, so the pixel saving is kept.
+    expect(crop.width).toBeLessThan(W * 0.4)
+  })
+
+  it('follows an off-centre avatar instead of staying centred on the frame', () => {
+    const planner = createRenderCropPlanner(options)
+    const crop = planner.update(W, H, { min: 1500, max: 2100 }, 0)
+    expect(contains(crop, 1500, 2100)).toBe(true)
+    expect(crop.x + crop.width / 2).toBeGreaterThan(W / 2 + 300)
+  })
+
+  it('grows in the same frame a gesture leaves the crop, keeping the side that fits', () => {
+    const planner = createRenderCropPlanner(options)
+    const rest = planner.update(W, H, { min: 900, max: 1550 }, 0)
+    // A hand thrown out to the right (the intro, 0_2 and 4_3 gestures reach 2.4-3.3 half-heights).
+    const grown = planner.update(W, H, { min: 900, max: 2300 }, 16)
+    expect(contains(grown, 900, 2300 + 0.05 * H)).toBe(true)
+    expect(grown.x).toBeLessThanOrEqual(rest.x)
+  })
+
+  it('never extends past the frame', () => {
+    const planner = createRenderCropPlanner(options)
+    expect(planner.update(W, H, { min: -400, max: W + 400 }, 0)).toEqual({ x: 0, width: W })
+  })
+
+  it('holds a grown crop through the return motion and shrinks only after a delay', () => {
+    const planner = createRenderCropPlanner(options)
+    planner.update(W, H, { min: 900, max: 1550 }, 0)
+    const grown = planner.update(W, H, { min: 900, max: 2300 }, 16)
+    // The arm comes back down: no reallocation yet.
+    expect(planner.update(W, H, { min: 900, max: 1550 }, 32)).toEqual(grown)
+    expect(planner.update(W, H, { min: 900, max: 1550 }, 900)).toEqual(grown)
+    const shrunk = planner.update(W, H, { min: 900, max: 1550 }, 1100)
+    expect(shrunk.width).toBeLessThan(grown.width)
+    expect(contains(shrunk, 900 - 0.05 * H, 1550 + 0.05 * H)).toBe(true)
+  })
+
+  it('does not shrink for a saving below the threshold', () => {
+    const planner = createRenderCropPlanner({ ...options, shrinkThreshold: 0.15 })
+    const first = planner.update(W, H, { min: 900, max: 1550 }, 0)
+    expect(planner.update(W, H, { min: 920, max: 1530 }, 5000)).toEqual(first)
+    expect(planner.update(W, H, { min: 920, max: 1530 }, 10000)).toEqual(first)
+  })
+
+  it('re-plans from scratch when the frame is resized', () => {
+    const planner = createRenderCropPlanner(options)
+    planner.update(W, H, { min: 900, max: 2300 }, 0)
+    const resized = planner.update(1200, 400, { min: 450, max: 750 }, 16)
+    expect(contains(resized, 450, 750)).toBe(true)
+    expect(resized.x + resized.width).toBeLessThanOrEqual(1200)
+    expect(resized.width).toBeLessThan(500)
   })
 })

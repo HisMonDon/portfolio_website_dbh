@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { RecordedPose } from './clipFormat'
 
 // Dev-only tooling for side-by-side render comparisons. Nothing in here runs in production:
 // every entry point is gated on import.meta.env.DEV by the caller.
@@ -18,6 +19,9 @@ export interface AvatarDebugOverrides {
   tier?: 'ultra' | 'high' | 'medium' | 'low'
   toneMapping?: 'neutral' | 'agx' | 'aces'
   exposure?: number
+  // Hold a recorded body pose (a clip frame's `pose`) instead of the playing clip's, e.g.
+  //   __avatarDebug = { pose: (await (await fetch('/src/features/faceChat/clips/intro.json')).json())[80].pose }
+  pose?: RecordedPose
   // Force blendshape scores (e.g. { eyeLookOutLeft: 1, eyeLookInRight: 1 }) on top of the clip.
   blendshapes?: Record<string, number>
   capture?: {
@@ -25,6 +29,8 @@ export interface AvatarDebugOverrides {
     background?: string
     // Crop size as a fraction of the canvas height.
     scale?: number
+    // Crop width / height (default 1, a square). Large values capture the whole canvas width.
+    aspect?: number
     // Vertical offset of the crop centre, in world metres above the Head bone.
     lift?: number
     // When set, the crop is POSTed to the screenshot dev server (vite.shots config) under this
@@ -55,19 +61,20 @@ export function captureAvatarCrop(
   const cx = (center.x * 0.5 + 0.5) * canvas.width
   const cy = (1 - (center.y * 0.5 + 0.5)) * canvas.height
   const size = Math.round(canvas.height * (request.scale ?? 0.55))
+  const width = Math.min(Math.round(size * (request.aspect ?? 1)), request.aspect ? canvas.width : Infinity)
 
   document.getElementById(OVERLAY_ID)?.remove()
 
   const overlay = document.createElement('canvas')
   overlay.id = OVERLAY_ID
-  overlay.width = size
+  overlay.width = width
   overlay.height = size
   Object.assign(overlay.style, {
     position: 'fixed',
     inset: '0',
     margin: 'auto',
     height: '100vh',
-    width: '100vh',
+    width: `${(100 * width) / size}vh`,
     zIndex: '2147483647',
     imageRendering: 'auto',
     cursor: 'pointer',
@@ -78,8 +85,9 @@ export function captureAvatarCrop(
   if (!context) return
 
   context.fillStyle = request.background ?? '#dfe9f2'
-  context.fillRect(0, 0, size, size)
-  context.drawImage(canvas, cx - size / 2, cy - size / 2, size, size, 0, 0, size, size)
+  context.fillRect(0, 0, width, size)
+  const left = request.aspect ? Math.max(0, Math.min(canvas.width - width, cx - width / 2)) : cx - width / 2
+  context.drawImage(canvas, left, cy - size / 2, width, size, 0, 0, width, size)
 
   if (request.save) {
     const name = request.save

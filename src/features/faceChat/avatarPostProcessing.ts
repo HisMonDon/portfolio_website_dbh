@@ -233,6 +233,13 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
 
   const quad = new FullScreenQuad()
 
+  // AO fades in and out over this long when a tier switch turns it on or off, so the adaptive
+  // controller never makes the face's creases visibly pop. 0 = off, 1 = full strength.
+  const AO_FADE_MS = 500
+  const AO_STRENGTH = 0.85
+  let aoBlend = tier.ambientOcclusion ? 1 : 0
+  let lastRenderMs: number | null = null
+
   // Non-blocking GPU timing: results are read a few frames later, never with a stall.
   const gl = renderer.getContext() as WebGL2RenderingContext
   const timerExtension = gl.getExtension('EXT_disjoint_timer_query_webgl2') as {
@@ -367,16 +374,24 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
         sceneTarget.dispose()
       }
       if (aoScaleChanged) resizeTargets()
-      if (!nextTier.ambientOcclusion && gtao) {
-        gtao.dispose()
-        gtao = null
-      }
+      // GTAO is released by render() once its fade-out has finished.
     },
     setToneMapping,
     get gpuMs() {
       return gpuMs
     },
     render(nowMs, hud) {
+      const deltaMs = lastRenderMs === null ? 0 : Math.min(100, Math.max(0, nowMs - lastRenderMs))
+      lastRenderMs = nowMs
+      const aoTarget = tier.ambientOcclusion ? 1 : 0
+      aoBlend = aoTarget > aoBlend
+        ? Math.min(aoTarget, aoBlend + deltaMs / AO_FADE_MS)
+        : Math.max(aoTarget, aoBlend - deltaMs / AO_FADE_MS)
+      if (aoBlend === 0 && gtao) {
+        gtao.dispose()
+        gtao = null
+      }
+
       collectQueries()
       let query: WebGLQuery | null = null
       if (timerExtension && pendingQueries.length < 4) {
@@ -392,7 +407,7 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
       renderer.clear()
       renderer.render(scene, camera)
 
-      if (tier.ambientOcclusion) {
+      if (aoBlend > 0) {
         const pass = ensureGtao()
         aoCamera.copy(camera)
         aoCamera.layers.set(0)
@@ -400,7 +415,7 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
         aoCamera.updateMatrixWorld()
         pass.render(renderer, sceneTarget, sceneTarget, 0, false)
         finalMaterial.uniforms.tAo.value = pass.pdRenderTarget.texture
-        finalMaterial.uniforms.uAoStrength.value = 0.85
+        finalMaterial.uniforms.uAoStrength.value = AO_STRENGTH * aoBlend
       } else {
         finalMaterial.uniforms.tAo.value = white
         finalMaterial.uniforms.uAoStrength.value = 0
@@ -444,7 +459,9 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
       finalMaterial.uniforms.tBloomB.value = bloomActive ? bloomQuarterA.texture : black
       finalMaterial.uniforms.uBloomStrength.value = bloomActive ? 0.8 : 0
       finalMaterial.uniforms.uGrain.value = tier.filmGrain ? 0.022 : 0
-      finalMaterial.uniforms.uVignette.value = tier.filmGrain ? 0.16 : 0.1
+      // The vignette costs nothing, so it stays the same on every tier: a per-tier strength made
+      // the shoulders visibly brighten or darken whenever the adaptive controller switched.
+      finalMaterial.uniforms.uVignette.value = 0.16
       finalMaterial.uniforms.uTime.value = nowMs / 1000
       finalMaterial.uniforms.tScene.value = sceneTarget.texture
       finalMaterial.uniforms.toneMappingExposure.value = renderer.toneMappingExposure
