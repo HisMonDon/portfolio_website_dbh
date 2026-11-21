@@ -3,11 +3,11 @@ import * as THREE from 'three'
 // A procedural portrait studio used as the image-based lighting source. It is rendered once into
 // a PMREM cube-UV texture, so it costs nothing per frame and adds no download. The layout is a
 // classic three-quarter portrait setup around a subject facing +Z with the head at ~1.65 m:
-//   - a large warm key softbox front-right and above (broad, soft key + rectangular catchlights)
+//   - a large neutral-cool key softbox front-right and above (broad, soft key + rectangular catchlights)
 //   - a big dim cool fill front-left
 //   - a tall narrow cyan strip behind-left (the android rim)
 //   - a narrow neutral strip behind-right for separation
-//   - a soft overhead panel and a dim warm floor bounce under the chin
+//   - a soft overhead panel and a dim neutral floor bounce under the chin
 // Everything else is a dark grey cyclorama, so reflections have something to show without
 // washing out contrast.
 
@@ -23,11 +23,11 @@ const SUBJECT = new THREE.Vector3(0, 1.65, 0)
 
 const PANELS: Panel[] = [
   // Key
-  { width: 1.5, height: 1.8, position: [1.55, 2.45, 1.85], color: 0xfff1e0, intensity: 7.5 },
+  { width: 1.5, height: 1.8, position: [1.55, 2.45, 1.85], color: 0xf6f8fc, intensity: 7.5 },
   // Fill
-  { width: 2.4, height: 2.0, position: [-2.3, 1.75, 1.5], color: 0xf1ede8, intensity: 1.15 },
+  { width: 2.4, height: 2.0, position: [-2.3, 1.75, 1.5], color: 0xe2edf9, intensity: 1.35 },
   // Cyan rim strip
-  { width: 0.32, height: 2.6, position: [-1.1, 2.0, -2.6], color: 0x5fd6ff, intensity: 2.4 },
+  { width: 0.32, height: 2.6, position: [-1.1, 2.0, -2.6], color: 0x5fd6ff, intensity: 3.0 },
   // Neutral back strip
   { width: 0.28, height: 2.2, position: [1.7, 2.1, -1.6], color: 0xeef4ff, intensity: 2.4 },
   // Overhead
@@ -38,7 +38,7 @@ export function createStudioEnvironmentScene() {
   const scene = new THREE.Scene()
   const disposables: { dispose: () => void }[] = []
 
-  // Cyclorama: dark grey walls with a slightly lighter, warmer floor for under-chin bounce.
+  // Cyclorama: dark grey walls with a slightly lighter neutral floor for under-chin bounce.
   const roomGeometry = new THREE.SphereGeometry(9, 32, 16)
   const roomColors: number[] = []
   const position = roomGeometry.getAttribute('position')
@@ -46,8 +46,8 @@ export function createStudioEnvironmentScene() {
 
   for (let index = 0; index < position.count; index += 1) {
     const y = position.getY(index) / 9
-    // Floor (y < 0): warm grey bounce; walls: dark cool grey fading darker toward the ceiling.
-    if (y < -0.15) color.setRGB(0.16, 0.13, 0.11)
+    // Floor (y < 0): neutral grey bounce; walls: dark cool grey fading darker toward the ceiling.
+    if (y < -0.15) color.setRGB(0.135, 0.14, 0.15)
     else color.setRGB(0.03, 0.034, 0.04).multiplyScalar(1.15 - Math.max(0, y) * 0.6)
     roomColors.push(color.r, color.g, color.b)
   }

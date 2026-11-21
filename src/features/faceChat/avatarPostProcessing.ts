@@ -93,6 +93,9 @@ uniform float uVignette;
 uniform float uTime;
 uniform vec4 uFrame; // crop offset (xy) and full frame size (zw), in pixels
 uniform vec2 uVignetteCenter; // in full-frame UV
+uniform vec2 uTexel; // 1 / scene target size
+uniform vec3 uWrapColor; // page background tint behind the avatar, display-referred
+uniform float uWrap; // light-wrap strength at the silhouette
 varying vec2 vUv;
 
 // colorspace_pars_fragment (sRGBTransferOETF) is already in three's ShaderMaterial prefix;
@@ -115,11 +118,28 @@ vec3 toneMap( vec3 color ) {
   #endif
 }
 
+float alphaAt( vec2 offset ) {
+  return clamp( texture2D( tScene, vUv + offset * uTexel ).a, 0.0, 1.0 );
+}
+
 void main() {
   vec4 scene = texture2D( tScene, vUv );
   float alpha = clamp( scene.a, 0.0, 1.0 );
   bool covered = alpha > 0.003;
   vec3 color = covered ? scene.rgb / alpha : scene.rgb;
+
+  // Silhouette integration. The page behind the avatar is a heavily blurred photo, so a razor-sharp
+  // MSAA edge reads as a cut-out. Feather the edge inward by about a pixel (never outward: there is
+  // no colour outside the silhouette to feather into), and let the background's light wrap a few
+  // pixels around the edge, the way a real backlit subject picks up its surroundings.
+  float nearAlpha = ( alphaAt( vec2( 1.0, 0.0 ) ) + alphaAt( vec2( -1.0, 0.0 ) )
+    + alphaAt( vec2( 0.0, 1.0 ) ) + alphaAt( vec2( 0.0, -1.0 ) ) ) * 0.25;
+  float farAlpha = ( alphaAt( vec2( 3.0, 3.0 ) ) + alphaAt( vec2( -3.0, 3.0 ) )
+    + alphaAt( vec2( 3.0, -3.0 ) ) + alphaAt( vec2( -3.0, -3.0 ) )
+    + alphaAt( vec2( 4.0, 0.0 ) ) + alphaAt( vec2( -4.0, 0.0 ) )
+    + alphaAt( vec2( 0.0, 4.0 ) ) + alphaAt( vec2( 0.0, -4.0 ) ) ) * 0.125;
+  float edgeAlpha = min( alpha, mix( alpha, nearAlpha, 0.6 ) );
+  float wrap = covered ? clamp( ( 1.0 - farAlpha ) * uWrap, 0.0, 1.0 ) : 0.0;
 
   float ao = texture2D( tAo, vUv ).r;
   color *= mix( 1.0, ao, uAoStrength );
@@ -133,20 +153,22 @@ void main() {
   vec2 fromCenter = ( frameUv - uVignetteCenter ) * vec2( uFrame.z / uFrame.w, 1.0 );
   encoded *= 1.0 - uVignette * smoothstep( 0.25, 0.95, length( fromCenter ) );
 
+  encoded = mix( encoded, uWrapColor, wrap );
+
   // Luma-weighted film grain (stronger in midtones, like real film/sensor noise).
   float grainLuma = dot( encoded, vec3( 0.299, 0.587, 0.114 ) );
   float noise = hash12( framePixel + fract( uTime * 0.6180339 ) * 1024.0 ) - 0.5;
   encoded += noise * uGrain * ( 0.35 + grainLuma * ( 1.0 - grainLuma ) * 2.6 );
 
-  vec3 premultiplied = covered ? clamp( encoded, 0.0, 1.0 ) * alpha : vec3( 0.0 );
+  vec3 premultiplied = covered ? clamp( encoded, 0.0, 1.0 ) * edgeAlpha : vec3( 0.0 );
 
   // Bloom is emitted light: added in premultiplied space without touching alpha, so it glows over
   // the transparent page instead of drawing an opaque halo.
   vec3 bloom = ( texture2D( tBloomA, vUv ).rgb * 0.7 + texture2D( tBloomB, vUv ).rgb * 0.9 ) * uBloomStrength * toneMappingExposure;
   bloom = 1.0 - exp( - bloom );
-  premultiplied += sRGBTransferOETF( vec4( bloom, 1.0 ) ).rgb * ( 1.0 - alpha * 0.35 );
+  premultiplied += sRGBTransferOETF( vec4( bloom, 1.0 ) ).rgb * ( 1.0 - edgeAlpha * 0.35 );
 
-  gl_FragColor = vec4( min( premultiplied, vec3( 1.0 ) ), alpha );
+  gl_FragColor = vec4( min( premultiplied, vec3( 1.0 ) ), edgeAlpha );
 }
 `
 
@@ -300,6 +322,10 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
       uTime: { value: 0 },
       uFrame: { value: new THREE.Vector4(0, 0, 1, 1) },
       uVignetteCenter: { value: new THREE.Vector2(0.5, 0.55) },
+      uTexel: { value: new THREE.Vector2(1, 1) },
+      // Pale blue of the blurred window photo behind the avatar (NodeField), in sRGB.
+      uWrapColor: { value: new THREE.Vector3(0.82, 0.9, 0.96) },
+      uWrap: { value: 0.3 },
       toneMappingExposure: { value: 1 },
     },
     vertexShader: FULLSCREEN_VERTEX,
@@ -330,6 +356,7 @@ export function createAvatarPostProcessing(options: AvatarPostProcessingOptions)
     bloomQuarterA.setSize(quarterWidth, quarterHeight)
     bloomQuarterB.setSize(quarterWidth, quarterHeight)
     prefilterMaterial.uniforms.uTexel.value.set(1 / width, 1 / height)
+    finalMaterial.uniforms.uTexel.value.set(1 / width, 1 / height)
     gtao?.setSize(Math.max(1, Math.round(width * tier.aoResolutionScale)), Math.max(1, Math.round(height * tier.aoResolutionScale)))
   }
 

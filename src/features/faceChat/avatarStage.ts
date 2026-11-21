@@ -15,12 +15,14 @@ const HEAD_CENTER = new THREE.Vector3(0, 1.62, 0)
 // Portrait lighting on top of the studio IBL: the environment supplies the soft area light and
 // the catchlights; a shadow-casting key aligned with the key softbox adds self-shadowing (nose,
 // jaw onto neck, hair onto forehead); a cyan rim from behind-left separates the silhouette.
+// The rig is balanced cool-neutral to sit in the page's icy blue-white scene: warm studio lights
+// made the avatar read as pasted on top of the background instead of standing in it.
 export function setupRealisticStage(renderer: THREE.WebGLRenderer, scene: THREE.Scene, tier: QualityTier): AvatarStage {
   const environment = createStudioEnvironment(renderer)
   scene.environment = environment.texture
   scene.environmentIntensity = 0.62
 
-  const key = new THREE.DirectionalLight(0xfff5ec, 2.8)
+  const key = new THREE.DirectionalLight(0xf5f8fc, 2.8)
   key.position.copy(HEAD_CENTER).addScaledVector(STUDIO_KEY_DIRECTION, 3)
   key.target.position.copy(HEAD_CENTER)
   key.castShadow = true
@@ -39,13 +41,14 @@ export function setupRealisticStage(renderer: THREE.WebGLRenderer, scene: THREE.
   key.shadow.normalBias = 0.0035
   scene.add(key, key.target)
 
-  const rim = new THREE.DirectionalLight(0x74dcff, 0.75)
+  const rim = new THREE.DirectionalLight(0x74dcff, 1.3)
   rim.position.copy(HEAD_CENTER).addScaledVector(STUDIO_RIM_DIRECTION, 3)
   rim.target.position.copy(HEAD_CENTER)
   scene.add(rim, rim.target)
 
-  // A faint warm kicker from behind-right keeps the jaw line from merging into dark clothing.
-  const kicker = new THREE.DirectionalLight(0xffe6d0, 0.45)
+  // A faint cool kicker from behind-right keeps the jaw line from merging into dark clothing and
+  // echoes the bright window behind the avatar.
+  const kicker = new THREE.DirectionalLight(0xe6f1ff, 0.5)
   kicker.position.set(1.6, 2.0, -1.6)
   kicker.target.position.copy(HEAD_CENTER)
   scene.add(kicker, kicker.target)
